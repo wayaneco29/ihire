@@ -118,7 +118,17 @@
 - Added `scripts/seed-local-demo.mjs`, a local-only synthetic fixture for HR, Evaluator, and two Applicants. It uses invented names and records and does not read the sample PDS spreadsheet. `LOCAL_DEMO_PASSWORD` is documented in `.env.example`.
 - Extended the role-based RLS verifier to check direct access to PDS identity, address, family, education, eligibility, work, questionnaire, and reference tables. Moved SQL assertion generation to `scripts/rls-verification-assertions.mjs`; the verifier and demo seeder are both below 500 lines.
 - Updated README setup and deployment steps for Yarn, local migration and seeding, RLS checks, environment variables, and Vercel.
-- Static review confirmed all TypeScript and JavaScript files under `src/` and `scripts/` are at most 500 lines. Browser rendering, lint/build, and the expanded RLS script were not run in this authoring shell because Node.js and Yarn are unavailable on PATH. Phase 5 and Phase 7 migrations also still need to be applied locally before a fresh RLS run.
+- Static review confirmed all TypeScript and JavaScript files under `src/` and `scripts/` are at most 500 lines. The later UI modernization work below records current build and public-route browser checks. The expanded local RLS script still needs a fresh run after the latest migrations.
+
+### UI/UX modernization (2026-11-07)
+
+- Added the audit at `docs/ui-audit.md`, centralized semantic light/dark palettes and layout/motion tokens, and a System/Light/Dark theme control persisted per browser.
+- Added reusable `SurfaceCard` and `SkeletonLoader` components; aligned Ant Design tokens with the active palette; migrated interactive routes from fixed light colors to semantic theme classes. The printable PDS retains paper-specific styles.
+- Updated the public overview, responsive shell, empty/error/loading presentation, action target sizes, focus styles, reduced-motion behavior, and notification loading skeleton.
+- Documented theme usage in `README.md` and decisions in `CHANGELOG.md`; updated `UI_UX_MODERNIZATION.md` with completed and pending verification items.
+- `yarn build` passes. The changed theme, form upload, notification, and shared UI files pass scoped ESLint.
+- Headless Chrome 156 and Edge 156 axe-core checks found no violations on `/`, `/login`, and `/register`, including explicit light/dark checks in Edge. The local Admin account also passed axe on `/admin/invitations` in both themes after an Ant Design primary-button contrast fix. Public/Admin pages had no horizontal overflow at 320px and 1920px; the Admin mobile drawer passed its open/focus/Escape smoke check. Applicant/HR/Evaluator routes, screen-reader review, and all-route Lighthouse scoring remain unverified.
+- A keyboard Tab check focused the skip link first and confirmed its visible 3px focus outline.
 
 ## Local setup and useful commands
 
@@ -146,14 +156,14 @@ The migration script uses the local database owner role needed to apply private 
 
 - A previous `node scripts/verify-local-rls.mjs` run passed for Applicant, HR, Evaluator, and Admin before the Phase 8 checks were added. The expanded verifier has not been run after the Phase 7 migration and Phase 8 updates.
 - HR and Evaluator profile reads are filtered to zero rows by RLS; the SQL query itself does not raise a permission error.
-- The package currently has `dev`, `build`, `start`, and `lint` scripts, but no unit or E2E test runner. Phase 1 and Phase 3 were not run through a build, lint, or browser test during this work.
-- `git diff --check` was run; Git emitted line-ending configuration warnings, not whitespace errors.
-- No build, lint, or browser test was run for Phases 4 through 7.
+- The package has `dev`, `build`, `start`, and `lint` scripts, but no unit, integration, or E2E test runner. `yarn build` passes. The full lint command still reports existing hook purity/effect errors in the PDS autosave, notifications, and HR dashboard, plus React's JSX-in-try/catch error for the printable PDS; React Hook Form `watch()` and script unused-variable warnings also remain.
+- Scoped ESLint passes for the new theme provider/switcher, shared surface/skeleton components, upload control, and notification bell.
+- Public-route axe and viewport checks pass in headless Chrome and Edge at 320px and 1920px. Authenticated page/device testing and screen-reader testing remain open.
+- The expanded local RLS verifier has not been run after the latest schema work; run it only after confirming the local Supabase stack and migrations are current.
 
 ## Open decisions and remaining work
 
 - **Identity unlock timing is still awaiting confirmation** in section 3 of `PROJECT_SPEC.md`. Phase 7 follows the documented working default: keep identity hidden until HR marks an applicant `HIRED`, then unlock the printable PDS.
-- The Phase 5 and Phase 7 migrations have not been applied in this authoring shell because Node.js is not available on PATH. From the development environment with local Supabase running, run `node scripts/migrate-local.mjs` to apply pending migrations and seed document types.
+- Confirm local Supabase migrations are current before running the expanded RLS verifier with `node scripts/verify-local-rls.mjs`.
 - Phase 8 items 8.1 and 8.2 remain open in [PROJECT_SPEC.md](PROJECT_SPEC.md): inspect each route at mobile, tablet, and desktop browser widths; apply pending migrations and run the expanded local RLS verifier.
-- This authoring shell has no `node`, `yarn`, or `npm` command on PATH, so lint/build, browser rendering, local migration, demo seeding, and the current RLS verifier could not be run here.
-- Authentication and invitation code has not received an end-to-end browser test. Confirm local Supabase is running and `.env.local` is configured before testing it.
+- Authentication and invitation flows have not received an end-to-end browser test in this pass. Confirm local Supabase is running and `.env.local` is configured before testing them.

@@ -75,6 +75,16 @@ The `SUPABASE_SERVICE_ROLE_KEY` is for server-only use. Never expose it through 
 
 The portal includes applicant PDS, profile, jobs, applications, documents, notifications, evaluator review, HR hiring, and Admin invitations. Role routing, database RLS, anonymized review views, and private document storage protect the workflow. Use `PROJECT_SPEC.md` for the completed phase checklist and `turnover.md` for the implementation handoff.
 
+## Interface preferences
+
+- Use the theme control in the workspace header to select System, Light, or Dark. The preference is stored in this browser; System follows the operating system setting.
+- Shared palette and layout values live in `src/constants/colors.ts` and `src/app/globals.css`. Ant Design reads the active palette from the root provider.
+- Use `SurfaceCard`, `EmptyState`, `SkeletonLoader`, `PageHeader`, and `WorkflowStatusTag` for new screens where they fit. Form controls should use the shared components in `src/components/form/` so field labels and validation messages stay connected.
+- Interactive controls have visible keyboard focus. Motion uses the shared duration and respects `prefers-reduced-motion`; primary mobile actions use a 44px minimum target.
+- The HR printable PDS keeps fixed paper colors and dimensions so browser printing remains legible.
+
+See `CHANGELOG.md` for the UI modernization decisions and verification notes.
+
 ## Production deployment
 
 1. Apply the Supabase migrations to the intended project from a trusted development or CI environment. The local migration script refuses non-local URLs; use the Supabase CLI to link the project and push migrations.

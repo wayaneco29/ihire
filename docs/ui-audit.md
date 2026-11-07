@@ -25,7 +25,7 @@
 - `PageHeader`, `EmptyState`, `StatusTag`, and `WorkflowStatusTag`: page hierarchy, empty/error surfaces, and workflow statuses.
 - Ant Design buttons, alerts, popovers, badges, forms, and confirmation dialogs provide disabled, loading, validation, and action feedback states.
 - Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide global loading, recovery, and unknown-route states.
-- Icons are consistently from `@ant-design/icons`; the brand seal and school photo use `next/image`.
+- Icons are consistently from `@ant-design/icons`; the brand seal uses `next/image`. Other public image assets were preserved and are not referenced by the current interface.
 
 ## Pain points found
 
