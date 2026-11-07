@@ -6,47 +6,45 @@ import {
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { StatusTag } from "./StatusTag";
+import { SurfaceCard } from "./SurfaceCard";
 
-const upcomingModules = [
+const workspaces = [
   {
     title: "Applicant workspace",
-    description: "PDS, profile, job search, and application tracking.",
+    description: "Keep your PDS, job search, applications, and documents together.",
     icon: FileProtectOutlined,
-    phase: "Phases 3–5",
+            role: "Applicant",
   },
   {
-    title: "Evaluator reviews",
-    description: "Anonymized document review and qualification decisions.",
+    title: "Evaluator workspace",
+    description: "Review applications and supporting documents with identity protections.",
     icon: AuditOutlined,
-    phase: "Phase 6",
+    role: "Evaluator",
   },
   {
-    title: "HR hiring tools",
-    description: "Job postings, anonymized applicant lists, and hiring.",
+    title: "HR workspace",
+    description: "Manage postings, review candidates, and record hiring decisions.",
     icon: SafetyCertificateOutlined,
-    phase: "Phase 7",
+    role: "HR",
   },
 ];
 
 export function RoadmapCards() {
   return (
     <div className="mt-4 grid gap-4 md:grid-cols-3">
-      {upcomingModules.map(({ title, description, icon: Icon, phase }) => (
-        <article
-          className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/[0.02]"
-          key={title}
-        >
+      {workspaces.map(({ title, description, icon: Icon, role }) => (
+        <SurfaceCard as="article" className="p-5" key={title} tone="interactive">
           <div className="flex items-start justify-between gap-3">
             <span className="grid size-11 place-items-center rounded-xl bg-primary-light text-lg text-primary">
               <Icon />
             </span>
-            <StatusTag className="border-slate-200 bg-slate-50 text-slate-600">
-              {phase}
+            <StatusTag className="border-line bg-panel-muted text-muted">
+              {role}
             </StatusTag>
           </div>
           <h3 className="mt-5 text-base font-semibold text-ink">{title}</h3>
           <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
-        </article>
+        </SurfaceCard>
       ))}
     </div>
   );

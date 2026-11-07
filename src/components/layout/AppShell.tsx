@@ -5,14 +5,14 @@ import { Sidebar } from "./Sidebar";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="min-h-screen bg-surface lg:flex">
-      <div className="fixed inset-y-0 left-0 z-30 hidden w-[272px] border-r border-slate-200/80 lg:block">
+    <div className="min-h-screen bg-canvas lg:flex">
+      <div className="fixed inset-y-0 left-0 z-30 hidden w-sidebar border-r border-line lg:block">
         <Sidebar />
       </div>
-      <div className="min-w-0 flex-1 lg:pl-[272px]">
+      <div className="min-w-0 flex-1 lg:pl-sidebar">
         <Header />
         <MobileDrawer />
-        <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <main className="mx-auto w-full max-w-workspace px-4 py-6 sm:px-6 sm:py-8 lg:px-10" id="main-content">
           {children}
         </main>
       </div>

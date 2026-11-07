@@ -30,21 +30,21 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-full w-full flex-col bg-white px-4 py-5">
-      <div className="border-b border-slate-100 px-2 pb-5">
+    <aside className="flex h-full w-full flex-col bg-panel px-4 py-5 text-ink">
+      <div className="border-b border-line-subtle px-2 pb-5">
         <BrandMark />
       </div>
 
       <nav aria-label="Main navigation" className="flex-1 space-y-7 py-6">
         {sections.map((section) => (
           <div key={section.title}>
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+            <p className="px-3 text-xs font-semibold uppercase tracking-widest text-muted">
               {section.title}
             </p>
             <ul className="mt-2 space-y-1">
               {section.items.map(({ label, href, icon: Icon, available }) => {
                 const itemClasses =
-                  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition";
+                  "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition";
                 const icon = <Icon className="text-base" />;
                 const isApplicantOverview = href === "/applicant";
                 const isActive = isApplicantOverview
@@ -56,7 +56,7 @@ export function Sidebar() {
                     {available ? (
                       <Link
                         aria-current={isActive ? "page" : undefined}
-                        className={`${itemClasses} ${isActive ? "bg-primary-light font-medium text-primary" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
+                        className={`${itemClasses} ${isActive ? "bg-primary-light font-medium text-primary" : "text-muted hover:bg-panel-muted hover:text-ink"}`}
                         href={href}
                         onClick={() => setMobileNavOpen(false)}
                       >
@@ -66,12 +66,12 @@ export function Sidebar() {
                     ) : (
                       <span
                         aria-disabled="true"
-                        className={`${itemClasses} cursor-not-allowed text-muted`}
+                        className={`${itemClasses} cursor-not-allowed text-disabled`}
                         title="This section will be available in a later build phase"
                       >
                         {icon}
                         <span className="flex-1">{label}</span>
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                        <span className="rounded-full bg-panel-muted px-2 py-0.5 text-xs font-medium text-muted-strong">
                           Soon
                         </span>
                       </span>
@@ -84,15 +84,15 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="rounded-2xl border border-primary/10 bg-primary-light/70 p-4">
+      <div className="rounded-2xl border border-primary/10 bg-primary-light p-4">
         <p className="text-xs font-semibold text-primary">
           {role ?? "Recruitment portal"}
         </p>
-        <p className="mt-1 text-xs leading-5 text-slate-600">
+        <p className="mt-1 text-xs leading-5 text-muted">
           {user?.email ??
             (loading
               ? "Loading your account…"
-              : "Some workspace sections are being built in later phases.")}
+              : "Southern Leyte recruitment workspace.")}
         </p>
       </div>
 

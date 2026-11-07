@@ -49,9 +49,8 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
             >
               <button
                 aria-describedby={fieldState.error ? `${uploadId}-error` : hint ? `${uploadId}-hint` : undefined}
-                aria-label={`Choose ${label.toLocaleLowerCase()} file`}
-                aria-required={required}
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={`${label}${required ? ", required" : ""}`}
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line-strong bg-panel px-3 text-sm font-medium text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={uploadProps.disabled}
                 type="button"
               >

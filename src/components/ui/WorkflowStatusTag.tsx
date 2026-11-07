@@ -1,20 +1,20 @@
 import { StatusTag } from "./StatusTag";
 
 const statusStyles: Record<string, string> = {
-  DRAFT: "border-slate-200 bg-slate-50 text-slate-600",
-  SUBMITTED: "border-blue-200 bg-blue-50 text-blue-700",
-  UNDER_EVALUATION: "border-amber-200 bg-amber-50 text-amber-800",
-  FOR_REVIEW: "border-amber-200 bg-amber-50 text-amber-800",
-  PENDING: "border-slate-200 bg-slate-50 text-slate-600",
-  FOR_RESUBMISSION: "border-orange-200 bg-orange-50 text-orange-800",
+  DRAFT: "border-line bg-panel-muted text-muted",
+  SUBMITTED: "border-info/20 bg-info/10 text-info",
+  UNDER_EVALUATION: "border-warning/30 bg-warning/10 text-warning",
+  FOR_REVIEW: "border-warning/30 bg-warning/10 text-warning",
+  PENDING: "border-line bg-panel-muted text-muted",
+  FOR_RESUBMISSION: "border-warning/30 bg-warning/10 text-warning",
   VERIFIED: "border-primary/20 bg-primary-light text-primary",
   QUALIFIED: "border-primary/20 bg-primary-light text-primary",
   HIRED: "border-primary/20 bg-primary-light text-primary",
   OPEN: "border-primary/20 bg-primary-light text-primary",
-  NOT_QUALIFIED: "border-red-200 bg-red-50 text-red-700",
-  REJECTED: "border-red-200 bg-red-50 text-red-700",
-  CLOSED: "border-slate-200 bg-slate-100 text-slate-600",
-  UNAVAILABLE: "border-slate-200 bg-slate-50 text-slate-600",
+  NOT_QUALIFIED: "border-danger/20 bg-danger/10 text-danger",
+  REJECTED: "border-danger/20 bg-danger/10 text-danger",
+  CLOSED: "border-line bg-panel-muted text-muted",
+  UNAVAILABLE: "border-line bg-panel-muted text-muted",
 };
 
 function formatStatus(status: string) {
@@ -27,7 +27,7 @@ function formatStatus(status: string) {
 
 export function WorkflowStatusTag({ status }: { status: string }) {
   return (
-    <StatusTag className={statusStyles[status] ?? "border-slate-200 bg-slate-50 text-slate-600"}>
+    <StatusTag className={statusStyles[status] ?? "border-line bg-panel-muted text-muted"}>
       {formatStatus(status)}
     </StatusTag>
   );

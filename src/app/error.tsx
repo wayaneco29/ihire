@@ -6,7 +6,7 @@ export default function AppError({ retry }: { error: Error; retry: () => void })
   return (
     <section
       aria-labelledby="app-error-title"
-      className="mx-auto mt-8 max-w-xl rounded-2xl border border-red-200 bg-white p-6 text-center sm:p-8"
+      className="mx-auto mt-8 max-w-xl rounded-2xl border border-danger/20 bg-panel p-6 text-center sm:p-8"
       role="alert"
     >
       <h1 className="text-xl font-semibold text-ink" id="app-error-title">

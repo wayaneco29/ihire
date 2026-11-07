@@ -63,14 +63,14 @@ export function MobileDrawer() {
     <div className="fixed inset-0 z-40 lg:hidden">
       <button
         aria-label="Close navigation menu"
-        className="absolute inset-0 bg-slate-950/40"
+        className="absolute inset-0 bg-ink/45"
         onClick={() => setMobileNavOpen(false)}
         type="button"
       />
       <section
         aria-labelledby="mobile-navigation-title"
         aria-modal="true"
-        className="absolute inset-y-0 left-0 flex w-[min(88vw,320px)] flex-col bg-white shadow-2xl"
+        className="mobile-drawer-panel absolute inset-y-0 left-0 flex flex-col border-r border-line bg-panel shadow-modal"
         role="dialog"
         ref={drawerRef}
         tabIndex={-1}
@@ -79,7 +79,7 @@ export function MobileDrawer() {
           <h2 className="sr-only" id="mobile-navigation-title">Navigation</h2>
           <button
             aria-label="Close navigation menu"
-            className="grid size-10 place-items-center rounded-xl text-slate-500 hover:bg-slate-100"
+            className="grid size-11 place-items-center rounded-xl text-muted hover:bg-panel-muted"
             onClick={() => setMobileNavOpen(false)}
             ref={closeButtonRef}
             type="button"

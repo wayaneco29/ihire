@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BellOutlined } from "@ant-design/icons";
-import { Badge, Empty, Popover, Spin } from "antd";
+import { Badge, Empty, Popover } from "antd";
 import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/NotificationContext";
 
@@ -24,17 +24,26 @@ export function NotificationBell() {
   }
 
   const content = (
-    <div className="w-[min(340px,calc(100vw-2rem))]">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <div className="notification-popover-content">
+      <div className="flex items-center justify-between border-b border-line-subtle px-4 py-3">
         <p className="text-sm font-semibold text-ink">Notifications</p>
         <span className="text-xs text-muted">
           {unreadCount} unread
         </span>
       </div>
-      <div className="max-h-[min(65vh,420px)] overflow-y-auto">
+      <div className="notification-list-scroll">
         {loading ? (
-          <div aria-label="Loading notifications" className="grid min-h-24 place-items-center" role="status">
-            <Spin aria-hidden="true" size="small" />
+          <div aria-busy="true" className="min-h-24" role="status">
+            <span className="sr-only">Loading notifications</span>
+            <ul aria-hidden="true" className="divide-y divide-line-subtle">
+              {Array.from({ length: 3 }, (_, index) => (
+                <li className="space-y-2 px-4 py-4" key={index}>
+                  <div className="h-4 w-3/5 animate-pulse rounded bg-panel-muted" />
+                  <div className="h-3 w-full animate-pulse rounded bg-panel-muted" />
+                  <div className="h-3 w-2/5 animate-pulse rounded bg-panel-muted" />
+                </li>
+              ))}
+            </ul>
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-5">
@@ -44,11 +53,11 @@ export function NotificationBell() {
             />
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-line-subtle">
             {notifications.map((notification) => (
               <li key={notification.id}>
                 <button
-                  className={`w-full px-4 py-3 text-left transition hover:bg-slate-50 ${notification.is_read ? "" : "bg-primary-light/40"}`}
+                  className={`min-h-11 w-full px-4 py-3 text-left transition hover:bg-panel-muted ${notification.is_read ? "" : "bg-primary-light/40"}`}
                   onClick={() =>
                     void openNotification(notification.id, notification.link)
                   }
@@ -69,7 +78,7 @@ export function NotificationBell() {
                         {notification.body}
                       </span>
                       <time
-                        className="mt-2 block text-[11px] text-muted"
+                        className="mt-2 block text-xs text-muted"
                         dateTime={notification.created_at}
                       >
                         {new Date(notification.created_at).toLocaleString()}
@@ -96,7 +105,7 @@ export function NotificationBell() {
       <button
         aria-expanded={open}
         aria-label={`Notifications, ${unreadCount} unread`}
-        className="grid size-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100"
+        className="grid size-11 place-items-center rounded-xl text-muted transition hover:bg-panel-muted"
         type="button"
       >
         <Badge count={unreadCount} size="small" overflowCount={99}>
