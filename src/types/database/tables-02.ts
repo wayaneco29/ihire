@@ -1,0 +1,274 @@
+import type { PublicEnums } from '../database-enums';
+
+export type DocumentsTable = {
+    Row: {
+        "applicant_id": string;
+        "document_type_id": string;
+        "file_path": string;
+        "id": string;
+        "status": PublicEnums["document_status"];
+        "uploaded_at": string;
+        "version": number;
+    };
+    ComputedFields: never;
+    Insert: {
+        "applicant_id": string;
+        "document_type_id": string;
+        "file_path"?: string;
+        "id"?: string;
+        "status"?: PublicEnums["document_status"];
+        "uploaded_at"?: string;
+        "version": number;
+    };
+    Update: {
+        "applicant_id"?: string;
+        "document_type_id"?: string;
+        "file_path"?: string;
+        "id"?: string;
+        "status"?: PublicEnums["document_status"];
+        "uploaded_at"?: string;
+        "version"?: number;
+    };
+    Relationships: [
+        {
+            foreignKeyName: "documents_applicant_id_fkey";
+            columns: [
+                "applicant_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "applicants";
+            referencedColumns: [
+                "id"
+            ];
+        },
+        {
+            foreignKeyName: "documents_document_type_id_fkey";
+            columns: [
+                "document_type_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "document_types";
+            referencedColumns: [
+                "id"
+            ];
+        }
+    ];
+};
+
+export type HiringDecisionsTable = {
+    Row: {
+        "application_id": string;
+        "decided_at": string;
+        "decision": string;
+        "hr_id": string;
+        "id": string;
+    };
+    ComputedFields: never;
+    Insert: {
+        "application_id": string;
+        "decided_at"?: string;
+        "decision": string;
+        "hr_id": string;
+        "id"?: string;
+    };
+    Update: {
+        "application_id"?: string;
+        "decided_at"?: string;
+        "decision"?: string;
+        "hr_id"?: string;
+        "id"?: string;
+    };
+    Relationships: [
+        {
+            foreignKeyName: "hiring_decisions_application_id_fkey";
+            columns: [
+                "application_id"
+            ];
+            isOneToOne: true;
+            referencedRelation: "applications";
+            referencedColumns: [
+                "id"
+            ];
+        },
+        {
+            foreignKeyName: "hiring_decisions_application_id_fkey";
+            columns: [
+                "application_id"
+            ];
+            isOneToOne: true;
+            referencedRelation: "v_anonymized_documents";
+            referencedColumns: [
+                "application_id"
+            ];
+        },
+        {
+            foreignKeyName: "hiring_decisions_hr_id_fkey";
+            columns: [
+                "hr_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: [
+                "id"
+            ];
+        }
+    ];
+};
+
+export type InvitationsTable = {
+    Row: {
+        "accepted_at": string | null;
+        "created_at": string;
+        "email": string;
+        "expires_at": string;
+        "id": string;
+        "invited_by": string;
+        "revoked_at": string | null;
+        "role": PublicEnums["user_role"];
+        "token_hash": string;
+    };
+    ComputedFields: never;
+    Insert: {
+        "accepted_at"?: string | null;
+        "created_at"?: string;
+        "email": string;
+        "expires_at": string;
+        "id"?: string;
+        "invited_by": string;
+        "revoked_at"?: string | null;
+        "role": PublicEnums["user_role"];
+        "token_hash": string;
+    };
+    Update: {
+        "accepted_at"?: string | null;
+        "created_at"?: string;
+        "email"?: string;
+        "expires_at"?: string;
+        "id"?: string;
+        "invited_by"?: string;
+        "revoked_at"?: string | null;
+        "role"?: PublicEnums["user_role"];
+        "token_hash"?: string;
+    };
+    Relationships: [
+        {
+            foreignKeyName: "invitations_invited_by_fkey";
+            columns: [
+                "invited_by"
+            ];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: [
+                "id"
+            ];
+        }
+    ];
+};
+
+export type JobPostingsTable = {
+    Row: {
+        "created_at": string;
+        "deadline": string | null;
+        "description": string;
+        "hr_id": string;
+        "id": string;
+        "requirements": string | null;
+        "slots": number;
+        "status": PublicEnums["job_status"];
+        "title": string;
+        "updated_at": string;
+    };
+    ComputedFields: never;
+    Insert: {
+        "created_at"?: string;
+        "deadline"?: string | null;
+        "description": string;
+        "hr_id": string;
+        "id"?: string;
+        "requirements"?: string | null;
+        "slots": number;
+        "status"?: PublicEnums["job_status"];
+        "title": string;
+        "updated_at"?: string;
+    };
+    Update: {
+        "created_at"?: string;
+        "deadline"?: string | null;
+        "description"?: string;
+        "hr_id"?: string;
+        "id"?: string;
+        "requirements"?: string | null;
+        "slots"?: number;
+        "status"?: PublicEnums["job_status"];
+        "title"?: string;
+        "updated_at"?: string;
+    };
+    Relationships: [
+        {
+            foreignKeyName: "job_postings_hr_id_fkey";
+            columns: [
+                "hr_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: [
+                "id"
+            ];
+        }
+    ];
+};
+
+export type NotificationsTable = {
+    Row: {
+        "body": string;
+        "created_at": string;
+        "id": string;
+        "is_read": boolean;
+        "link": string | null;
+        "title": string;
+        "type": string;
+        "user_id": string;
+    };
+    ComputedFields: never;
+    Insert: {
+        "body": string;
+        "created_at"?: string;
+        "id"?: string;
+        "is_read"?: boolean;
+        "link"?: string | null;
+        "title": string;
+        "type": string;
+        "user_id": string;
+    };
+    Update: {
+        "body"?: string;
+        "created_at"?: string;
+        "id"?: string;
+        "is_read"?: boolean;
+        "link"?: string | null;
+        "title"?: string;
+        "type"?: string;
+        "user_id"?: string;
+    };
+    Relationships: [
+        {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: [
+                "user_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: [
+                "id"
+            ];
+        }
+    ];
+};
+
+export type DatabaseTables02 = {
+  "documents": DocumentsTable;
+  "hiring_decisions": HiringDecisionsTable;
+  "invitations": InvitationsTable;
+  "job_postings": JobPostingsTable;
+  "notifications": NotificationsTable;
+};
