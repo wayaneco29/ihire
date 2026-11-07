@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { createClient } from "@/lib/supabase/client";
 import { isUserRole, ROLE_HOME } from "@/lib/auth/role-routing";
 import { loginSchema, type LoginValues } from "../schema";
@@ -60,8 +61,8 @@ export function LoginForm() {
   });
 
   return (
-    <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+    <SurfaceCard as="section" className="p-6 sm:p-8">
+      <p className="text-xs font-semibold uppercase tracking-widest text-primary">
         Recruitment portal
       </p>
       <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
@@ -98,10 +99,10 @@ export function LoginForm() {
 
       <p className="mt-5 text-center text-sm text-muted">
         New applicant?{" "}
-        <Link className="font-medium text-primary hover:text-primary-dark" href="/register">
+        <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark" href="/register">
           Create an account
         </Link>
       </p>
-    </section>
+    </SurfaceCard>
   );
 }

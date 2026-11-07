@@ -34,13 +34,13 @@ export default async function ApplicantJobsPage() {
         title="Browse jobs"
       />
       {error ? (
-        <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800" role="alert">
+        <div className="mt-7 rounded-2xl border border-danger/20 bg-danger/10 p-5 text-sm text-danger" role="alert">
           Job postings could not be loaded right now. Please refresh and try again.
         </div>
       ) : jobs.length ? (
         <JobListClient jobs={jobs} nowMs={CURRENT_TIME_MS} />
       ) : (
-        <div className="mt-7 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+        <div className="mt-7 rounded-2xl border border-dashed border-line-strong bg-panel p-8 text-center">
           <h2 className="font-semibold text-ink">No open postings right now</h2>
           <p className="mt-2 text-sm text-muted">Check back later for new opportunities.</p>
         </div>

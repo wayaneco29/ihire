@@ -41,11 +41,11 @@ export function JobListClient({ jobs, nowMs }: { jobs: JobListItem[]; nowMs: num
 
   return (
     <>
-      <section aria-label="Filter job postings" className="mt-7 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-5">
+      <section aria-label="Filter job postings" className="mt-7 grid gap-3 rounded-2xl border border-line bg-panel p-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-5">
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-muted">Search postings</span>
           <input
-            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="min-h-11 w-full rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink outline-none transition placeholder:text-muted-strong focus:border-primary focus:ring-2 focus:ring-primary/15"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search title or description"
             type="search"
@@ -55,7 +55,7 @@ export function JobListClient({ jobs, nowMs }: { jobs: JobListItem[]; nowMs: num
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-muted">Deadline</span>
           <select
-            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="min-h-11 w-full rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
             onChange={(event) => setDeadlineFilter(event.target.value)}
             value={deadlineFilter}
           >
@@ -72,7 +72,7 @@ export function JobListClient({ jobs, nowMs }: { jobs: JobListItem[]; nowMs: num
         </p>
         {(search || deadlineFilter !== "ALL") && (
           <button
-            className="text-sm font-medium text-primary hover:text-primary-dark"
+            className="min-h-11 rounded-lg px-2 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
             onClick={() => {
               setSearch("");
               setDeadlineFilter("ALL");
@@ -87,13 +87,13 @@ export function JobListClient({ jobs, nowMs }: { jobs: JobListItem[]; nowMs: num
       {filteredJobs.length ? (
         <ul className="mt-3 grid gap-4 lg:grid-cols-2">
           {filteredJobs.map((job) => (
-            <li className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" key={job.id}>
+            <li className="flex flex-col rounded-2xl border border-line bg-panel p-5 sm:p-6" key={job.id}>
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-lg font-semibold text-ink">{job.title}</h2>
                 <WorkflowStatusTag status="OPEN" />
               </div>
               <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm leading-6 text-muted">{job.description}</p>
-              <dl className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-surface p-3">
+              <dl className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-panel-muted p-3">
                 <div>
                   <dt className="text-xs text-muted">Available positions</dt>
                   <dd className="mt-1 text-sm font-medium text-ink">{job.slots}</dd>
@@ -108,7 +108,7 @@ export function JobListClient({ jobs, nowMs }: { jobs: JobListItem[]; nowMs: num
                   <span className="text-sm font-medium text-primary">Application submitted</span>
                 ) : <span className="text-sm text-muted">Applications are open</span>}
                 <Link
-                  className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
                   href={`/applicant/jobs/${job.id}`}
                 >
                   {job.applied ? "View posting" : "View and apply"}
@@ -118,7 +118,7 @@ export function JobListClient({ jobs, nowMs }: { jobs: JobListItem[]; nowMs: num
           ))}
         </ul>
       ) : (
-        <section className="mt-3 grid min-h-48 place-items-center rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center">
+        <section className="mt-3 grid min-h-48 place-items-center rounded-2xl border border-dashed border-line-strong bg-panel p-6 text-center">
           <div>
             <h2 className="font-semibold text-ink">No postings match</h2>
             <p className="mt-2 text-sm text-muted">Try another search or clear the selected filters.</p>

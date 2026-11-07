@@ -31,7 +31,7 @@ export default async function ApplicantProfilePage() {
       {submitted && (
         <div className="mt-5">
           {draft ? (
-            <Link className="inline-flex min-h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark" href="/applicant/pds">
+            <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark" href="/applicant/pds">
               Continue PDS update
             </Link>
           ) : <StartPdsUpdateButton redirectToPds />}
@@ -49,7 +49,7 @@ export default async function ApplicantProfilePage() {
         <div className="mt-7">
           <EmptyState
             action={
-              <Link className="inline-flex min-h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark" href="/applicant/pds">
+              <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark" href="/applicant/pds">
                 Complete your PDS
               </Link>
             }

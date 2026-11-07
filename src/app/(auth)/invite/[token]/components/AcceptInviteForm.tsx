@@ -6,6 +6,7 @@ import { Alert, Button } from "antd";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { acceptInvitation } from "../actions";
 import { acceptInviteSchema, type AcceptInviteValues } from "../schema";
 
@@ -34,8 +35,8 @@ export function AcceptInviteForm({
   });
 
   return (
-    <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+    <SurfaceCard as="section" className="p-6 sm:p-8">
+      <p className="text-xs font-semibold uppercase tracking-widest text-primary">
         {role} invitation
       </p>
       <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
@@ -47,7 +48,7 @@ export function AcceptInviteForm({
         <div className="mt-6 space-y-4">
           <Alert message={success} showIcon type="success" />
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-primary-dark"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-dark"
             href="/login"
           >
             Go to sign in
@@ -77,6 +78,6 @@ export function AcceptInviteForm({
           </Button>
         </form>
       )}
-    </section>
+    </SurfaceCard>
   );
 }

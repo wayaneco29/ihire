@@ -65,7 +65,7 @@ export function PostingForm({ posting }: Readonly<{ posting?: PostingSeed }>) {
     router.push(posting ? `/hr/postings/${posting.id}` : "/hr/postings");
   });
 
-  return <form className="mt-7 max-w-3xl space-y-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7" onSubmit={submit}>
+  return <form className="mt-7 max-w-3xl space-y-5 rounded-2xl border border-line bg-panel p-5 sm:p-7" onSubmit={submit}>
     <FormInput autoComplete="off" control={control} label="Job title" maxLength={160} name="title" required />
     <FormTextArea control={control} label="Description" maxLength={10000} name="description" required rows={6} showCount />
     <FormTextArea control={control} hint="Include qualifications and supporting details for applicants." label="Requirements" maxLength={10000} name="requirements" rows={5} showCount />

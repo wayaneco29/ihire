@@ -36,7 +36,7 @@ export default async function ApplicantApplicationsPage() {
         title="My applications"
       />
       {error ? (
-        <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800" role="alert">
+        <div className="mt-7 rounded-2xl border border-danger/20 bg-danger/10 p-5 text-sm text-danger" role="alert">
           Your applications could not be loaded right now. Please refresh and try again.
         </div>
       ) : <ApplicationList applications={list} />}

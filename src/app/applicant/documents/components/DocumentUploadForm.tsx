@@ -44,7 +44,7 @@ export function DocumentUploadForm({ documentTypeId }: { documentTypeId: string 
   }
 
   return (
-    <form className="mt-4 border-t border-slate-100 pt-4" onSubmit={form.handleSubmit(submit)}>
+    <form className="mt-4 border-t border-line-subtle pt-4" onSubmit={form.handleSubmit(submit)}>
       <FormUpload
         accept={ACCEPTED_FILES}
         control={form.control}
@@ -54,7 +54,7 @@ export function DocumentUploadForm({ documentTypeId }: { documentTypeId: string 
         name="files"
       />
       <button
-        className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
         disabled={pending}
         type="submit"
       >

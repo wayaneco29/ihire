@@ -76,7 +76,7 @@ export function DocumentReviewPanel({
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-ink">Document review</h2>
         <WorkflowStatusTag status={documentStatus} />
@@ -85,7 +85,7 @@ export function DocumentReviewPanel({
         The stored object uses an opaque key. The applicant’s original filename is not shown here.
       </p>
       <button
-        className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
+        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
         disabled={viewing || pending}
         onClick={viewFile}
         type="button"
@@ -95,7 +95,7 @@ export function DocumentReviewPanel({
       {fileError && <p className="mt-2 text-sm text-danger" role="alert">{fileError}</p>}
 
       {previousReview && (
-        <div className="mt-5 rounded-xl bg-surface p-4">
+        <div className="mt-5 rounded-xl bg-panel-muted p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-semibold text-ink">Your latest review</p>
             <WorkflowStatusTag status={previousReview.status} />
@@ -105,7 +105,7 @@ export function DocumentReviewPanel({
       )}
 
       {documentStatus === "FOR_REVIEW" ? (
-        <form className="mt-5 space-y-4 border-t border-slate-100 pt-5" onSubmit={form.handleSubmit(submitReview)}>
+        <form className="mt-5 space-y-4 border-t border-line-subtle pt-5" onSubmit={form.handleSubmit(submitReview)}>
           <FormSelect
             control={form.control}
             label="Review result"
@@ -123,7 +123,7 @@ export function DocumentReviewPanel({
             showCount
           />
           <button
-            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
             disabled={pending}
             type="submit"
           >
@@ -132,7 +132,7 @@ export function DocumentReviewPanel({
           {message && <p className={`text-sm ${message === "Document review saved." ? "text-primary" : "text-danger"}`} role="status">{message}</p>}
         </form>
       ) : (
-        <p className="mt-5 border-t border-slate-100 pt-4 text-sm text-muted">
+        <p className="mt-5 border-t border-line-subtle pt-4 text-sm text-muted">
           This document is not currently waiting for review.
         </p>
       )}

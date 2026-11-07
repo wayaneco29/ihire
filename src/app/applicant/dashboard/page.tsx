@@ -99,7 +99,7 @@ export default async function ApplicantDashboardPage() {
       />
 
       <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+        <article className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-sm text-muted">Personal Data Sheet</p>
           <div className="mt-3"><WorkflowStatusTag status={pdsStatus} /></div>
           <p className="mt-3 text-xs leading-5 text-muted">
@@ -111,7 +111,7 @@ export default async function ApplicantDashboardPage() {
                   ? `Version ${submitted.version_no} submitted ${formatDate(submitted.submitted_at)}`
                   : "Start your PDS to complete your applicant profile."}
           </p>
-          <Link className="mt-4 inline-flex text-sm font-semibold text-primary hover:text-primary-dark" href={pdsResult.error ? "/applicant/dashboard" : draft ? "/applicant/pds" : "/applicant/profile"}>
+          <Link className="mt-4 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href={pdsResult.error ? "/applicant/dashboard" : draft ? "/applicant/pds" : "/applicant/profile"}>
             {pdsResult.error ? "Refresh status" : draft ? "Continue PDS" : submitted ? "View profile" : "Start PDS"}
           </Link>
         </article>
@@ -132,7 +132,7 @@ export default async function ApplicantDashboardPage() {
 
 function MetricCard({ label, value, detail }: { label: string; value: number; detail: string }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5">
+    <article className="rounded-2xl border border-line bg-panel p-5">
       <p className="text-sm text-muted">{label}</p>
       <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">{value}</p>
       <p className="mt-1 text-xs text-muted">{detail}</p>

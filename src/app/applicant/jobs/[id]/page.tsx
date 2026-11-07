@@ -40,13 +40,13 @@ export default async function ApplicantJobDetailPage({
         eyebrow="Open job posting"
         title={job.title}
       />
-      <article className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 sm:p-8">
+      <article className="mt-7 rounded-2xl border border-line bg-panel p-5 sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <WorkflowStatusTag status="OPEN" />
           <span className="text-sm text-muted">Posted {formatDate(job.created_at)}</span>
         </div>
 
-        <dl className="mt-6 grid gap-4 rounded-xl bg-surface p-4 sm:grid-cols-2">
+        <dl className="mt-6 grid gap-4 rounded-xl bg-panel-muted p-4 sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-muted">Available positions</dt>
             <dd className="mt-1 text-sm font-semibold text-ink">{job.slots}</dd>
@@ -59,17 +59,17 @@ export default async function ApplicantJobDetailPage({
 
         <section className="mt-7">
           <h2 className="text-base font-semibold text-ink">Position details</h2>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{job.description}</p>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-ink">{job.description}</p>
         </section>
 
         {job.requirements && (
-          <section className="mt-7 border-t border-slate-100 pt-6">
+          <section className="mt-7 border-t border-line-subtle pt-6">
             <h2 className="text-base font-semibold text-ink">Requirements</h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{job.requirements}</p>
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-ink">{job.requirements}</p>
           </section>
         )}
 
-        <section className="mt-8 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <section className="mt-8 flex flex-col gap-4 border-t border-line-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-sm leading-6 text-muted">
             Your latest submitted PDS will be attached to this application. HR and evaluators see your applicant number and assessment data.
           </p>
@@ -83,13 +83,13 @@ export default async function ApplicantJobDetailPage({
           ) : applicant.profile.has_submitted_pds ? (
             <ApplyButton jobId={job.id} />
           ) : (
-            <Link className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark" href="/applicant/pds">
+            <Link className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark" href="/applicant/pds">
               Complete your PDS first
             </Link>
           )}
         </section>
       </article>
-      <Link className="mt-5 inline-flex text-sm font-semibold text-primary hover:text-primary-dark" href="/applicant/jobs">
+      <Link className="mt-5 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href="/applicant/jobs">
         Back to jobs
       </Link>
     </>

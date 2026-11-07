@@ -55,7 +55,7 @@ export function DocumentTypeCard({
   }
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <article className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold text-ink">{name}</h2>
@@ -65,19 +65,19 @@ export function DocumentTypeCard({
       </div>
 
       {!latest ? (
-        <p className="mt-4 rounded-xl bg-surface p-3 text-sm text-muted">No file uploaded yet.</p>
+        <p className="mt-4 rounded-xl bg-panel-muted p-3 text-sm text-muted">No file uploaded yet.</p>
       ) : (
-        <div className="mt-4 rounded-xl bg-surface p-4">
+        <div className="mt-4 rounded-xl bg-panel-muted p-4">
           <p className="text-sm font-medium text-ink">Version {latest.version}</p>
           <p className="mt-1 text-xs text-muted">Uploaded {formatDate(latest.uploaded_at, "MMM D, YYYY · h:mm A")}</p>
           {latest.remarks && (
-            <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+            <div className="mt-3 rounded-lg border border-line bg-panel p-3">
               <p className="text-xs font-semibold text-ink">Latest evaluator remarks</p>
               <p className="mt-1 whitespace-pre-wrap text-sm leading-5 text-muted">{latest.remarks}</p>
             </div>
           )}
           <button
-            className="mt-3 inline-flex min-h-9 items-center rounded-lg border border-primary px-3 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
+            className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-primary px-3 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
             disabled={pending}
             onClick={() => openDocument(latest)}
             type="button"
@@ -87,7 +87,7 @@ export function DocumentTypeCard({
           {openError && <p className="mt-2 text-sm text-danger" role="alert">{openError}</p>}
           {signedUrl && (
             <a
-              className="mt-3 inline-flex text-sm font-semibold text-primary hover:text-primary-dark"
+              className="mt-3 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
               href={signedUrl}
               rel="noreferrer"
               target="_blank"
@@ -100,8 +100,8 @@ export function DocumentTypeCard({
 
       {versions.length > 1 && (
         <details className="mt-4">
-          <summary className="cursor-pointer text-sm font-medium text-primary">Previous versions ({versions.length - 1})</summary>
-          <ul className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-100 px-3">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary">Previous versions ({versions.length - 1})</summary>
+          <ul className="mt-2 divide-y divide-line-subtle rounded-xl border border-line-subtle px-3">
             {versions.slice(1).map((version) => (
               <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={version.id}>
                 <div>
@@ -111,7 +111,7 @@ export function DocumentTypeCard({
                 </div>
                 <div className="flex items-center gap-2">
                   <WorkflowStatusTag status={version.status} />
-                  <button className="text-sm font-medium text-primary hover:text-primary-dark" disabled={pending} onClick={() => openDocument(version)} type="button">
+                  <button className="min-h-11 rounded-lg px-2 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark" disabled={pending} onClick={() => openDocument(version)} type="button">
                     View
                   </button>
                 </div>

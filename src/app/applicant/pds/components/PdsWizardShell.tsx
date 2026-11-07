@@ -93,7 +93,7 @@ export function PdsWizardShell({
       : [];
 
   return (
-    <section className="mt-7 rounded-2xl border border-primary/15 bg-white p-4 shadow-sm sm:p-6">
+    <section className="mt-7 rounded-2xl border border-primary/15 bg-panel p-4 shadow-sm sm:p-6">
       {previousSubmittedVersion !== null && (
         <p className="mb-5 rounded-xl border border-primary/20 bg-primary-light p-3 text-sm leading-6 text-primary-dark">
           Submitted version {previousSubmittedVersion} remains active for your applications until this update is submitted.
@@ -151,8 +151,8 @@ export function PdsWizardShell({
                     active
                       ? "border-primary bg-primary-light text-primary-dark"
                       : completed
-                        ? "border-primary/20 bg-white text-ink hover:border-primary"
-                        : "cursor-not-allowed border-gray-200 bg-surface text-muted"
+                        ? "border-primary/20 bg-panel text-ink hover:border-primary"
+                        : "cursor-not-allowed border-line bg-panel-muted text-muted"
                   }`}
                   disabled={!canOpen || isPending}
                   onClick={() => openStep(step)}
@@ -161,8 +161,8 @@ export function PdsWizardShell({
                   <span
                     className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                       completed || active
-                        ? "bg-primary text-white"
-                        : "bg-gray-200 text-muted"
+                        ? "bg-primary text-on-primary"
+                        : "bg-line text-muted"
                     }`}
                   >
                     {completed ? "✓" : step}
@@ -175,7 +175,7 @@ export function PdsWizardShell({
         </ol>
       </nav>
 
-      <div aria-live="polite" className="rounded-xl bg-surface p-4 sm:p-5">
+      <div aria-live="polite" className="rounded-xl bg-panel-muted p-4 sm:p-5">
         {message && (
           <p className="mb-3 text-sm text-danger" role="alert">
             {message}

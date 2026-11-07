@@ -52,7 +52,7 @@ export function ReviewQueueList({ items }: { items: ReviewQueueItem[] }) {
         ] as const).map(([value, label]) => (
           <button
             aria-pressed={filter === value}
-            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${filter === value ? "border-primary bg-primary-light text-primary" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"}`}
+            className={`min-h-11 rounded-full border px-4 text-sm font-medium transition ${filter === value ? "border-primary bg-primary-light text-primary" : "border-line-strong bg-panel text-muted hover:bg-panel-muted"}`}
             key={value}
             onClick={() => setFilter(value)}
             type="button"
@@ -70,14 +70,14 @@ export function ReviewQueueList({ items }: { items: ReviewQueueItem[] }) {
         const forReview = statusCounts.FOR_REVIEW ?? 0;
 
         return (
-          <li className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" key={item.application_id}>
+          <li className="rounded-2xl border border-line bg-panel p-5 sm:p-6" key={item.application_id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary">{item.applicant_number}</p>
                 <h2 className="mt-1 text-lg font-semibold text-ink">{item.jobTitle}</h2>
                 <p className="mt-1 text-xs text-muted">Applied {formatDate(item.applied_at)}</p>
                 {item.reviewKind === "REREVIEW" && (
-                  <p className="mt-2 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                  <p className="mt-2 inline-flex rounded-full bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
                     Re-review required
                   </p>
                 )}
@@ -86,19 +86,19 @@ export function ReviewQueueList({ items }: { items: ReviewQueueItem[] }) {
             </div>
 
             <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <div className="rounded-xl bg-surface p-3">
+              <div className="rounded-xl bg-panel-muted p-3">
                 <dt className="text-xs text-muted">Education</dt>
                 <dd className="mt-1 text-sm font-medium text-ink">
                   {item.education_levels?.length ? item.education_levels.join(", ").replaceAll("_", " ") : "Not listed"}
                 </dd>
               </div>
-              <div className="rounded-xl bg-surface p-3">
+              <div className="rounded-xl bg-panel-muted p-3">
                 <dt className="text-xs text-muted">Experience</dt>
                 <dd className="mt-1 text-sm font-medium text-ink">
                   {item.experience_years ? `${item.experience_years} years` : "None listed"}
                 </dd>
               </div>
-              <div className="rounded-xl bg-surface p-3">
+              <div className="rounded-xl bg-panel-muted p-3">
                 <dt className="text-xs text-muted">Training</dt>
                 <dd className="mt-1 text-sm font-medium text-ink">{item.training_hours ?? 0} hours</dd>
               </div>
@@ -109,7 +109,7 @@ export function ReviewQueueList({ items }: { items: ReviewQueueItem[] }) {
               {item.documents.length ? (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {item.documents.map((document) => (
-                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-ink" key={document.document_id}>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs text-ink" key={document.document_id}>
                       <span>{document.document_type}</span>
                       <WorkflowStatusTag status={document.document_status} />
                     </span>
@@ -128,7 +128,7 @@ export function ReviewQueueList({ items }: { items: ReviewQueueItem[] }) {
             ) : null}
 
             <Link
-              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark"
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
               href={`/evaluator/applications/${item.application_id}`}
             >
               Review applicant

@@ -49,7 +49,7 @@ export function ApplicationEvaluationPanel({
   const isFinal = applicationStatus === "HIRED" || applicationStatus === "REJECTED";
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold text-ink">Application evaluation</h2>
@@ -59,16 +59,16 @@ export function ApplicationEvaluationPanel({
       </div>
 
       {previousEvaluation && (
-        <div className="mt-4 rounded-xl bg-surface p-4">
+        <div className="mt-4 rounded-xl bg-panel-muted p-4">
           <p className="text-xs text-muted">Your latest evaluation · {formatDate(previousEvaluation.evaluated_at, "MMM D, YYYY · h:mm A")}</p>
-          {previousEvaluation.remarks && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{previousEvaluation.remarks}</p>}
+          {previousEvaluation.remarks && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-ink">{previousEvaluation.remarks}</p>}
         </div>
       )}
 
       {isFinal ? (
         <p className="mt-4 text-sm text-muted">The application has a final hiring decision and can no longer be evaluated.</p>
       ) : (
-        <form className="mt-5 space-y-4 border-t border-slate-100 pt-5" onSubmit={form.handleSubmit(submit)}>
+        <form className="mt-5 space-y-4 border-t border-line-subtle pt-5" onSubmit={form.handleSubmit(submit)}>
           <FormSelect
             control={form.control}
             label="Assessment result"
@@ -87,7 +87,7 @@ export function ApplicationEvaluationPanel({
             showCount
           />
           <button
-            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
             disabled={pending}
             type="submit"
           >

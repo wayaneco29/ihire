@@ -47,7 +47,7 @@ export function DynamicRows<
     <section aria-label={label} className="space-y-4">
       {fields.map((field, index) => (
         <div
-          className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5"
+          className="rounded-xl border border-line bg-panel p-4 sm:p-5"
           key={field.id}
         >
           <div className="mb-4 flex items-center justify-between gap-3">

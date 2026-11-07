@@ -49,12 +49,12 @@ export default async function ApplicantNotificationsPage({
           {totalCount > pageSize && (
             <nav aria-label="Notification pages" className="mt-5 flex justify-between">
               {page > 1 ? (
-                <Link className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-slate-50" href={`/applicant/notifications?page=${page - 1}`}>
+                <Link className="inline-flex min-h-11 items-center rounded-lg border border-line-strong bg-panel px-4 text-sm font-medium text-ink hover:bg-panel-muted" href={`/applicant/notifications?page=${page - 1}`}>
                   Newer notifications
                 </Link>
               ) : <span />}
               {page * pageSize < totalCount && (
-                <Link className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-slate-50" href={`/applicant/notifications?page=${page + 1}`}>
+                <Link className="inline-flex min-h-11 items-center rounded-lg border border-line-strong bg-panel px-4 text-sm font-medium text-ink hover:bg-panel-muted" href={`/applicant/notifications?page=${page + 1}`}>
                   Older notifications
                 </Link>
               )}

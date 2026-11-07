@@ -16,7 +16,7 @@ export default async function InvitePage({
 
   if (!invitation) {
     return (
-      <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+      <section className="rounded-3xl border border-line bg-panel p-6 shadow-sm sm:p-8">
         <Alert
           message="Invitation unavailable"
           description="This link may have expired, been revoked, or already been used. Ask the Admin to resend it."

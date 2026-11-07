@@ -83,7 +83,7 @@ function SummaryValue({ value }: { value: Json | undefined }) {
     return (
       <div className="space-y-3">
         {value.map((entry, index) => (
-          <div className="rounded-lg border border-gray-200 bg-white p-3" key={index}>
+          <div className="rounded-lg border border-line bg-panel p-3" key={index}>
             {entry && typeof entry === "object" && !Array.isArray(entry) ? (
               <>
                 {typeof entry.question_code === "string" && (
@@ -165,7 +165,7 @@ export function ReviewSubmitStep({ draftData, onSubmitted, pdsVersionId }: Props
         const step = asRecord(steps[String(index + 1)] ?? null);
         return (
           <section
-            className="rounded-xl border border-gray-200 bg-surface p-4 sm:p-5"
+            className="rounded-xl border border-line bg-panel-muted p-4 sm:p-5"
             key={title}
           >
             <h4 className="mb-4 text-sm font-semibold text-ink">
@@ -183,7 +183,7 @@ export function ReviewSubmitStep({ draftData, onSubmitted, pdsVersionId }: Props
         required
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 pt-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
         {message ? (
           <p aria-live="polite" className="text-sm text-danger" role="alert">
             {message}

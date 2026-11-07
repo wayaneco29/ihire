@@ -40,7 +40,7 @@ export function NotificationList({
 
   if (notifications.length === 0) {
     return (
-      <div className="mt-7 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+      <div className="mt-7 rounded-2xl border border-dashed border-line-strong bg-panel p-8 text-center">
         <h2 className="font-semibold text-ink">You’re all caught up</h2>
         <p className="mt-2 text-sm text-muted">New updates about your applications will appear here.</p>
       </div>
@@ -51,18 +51,18 @@ export function NotificationList({
     <>
       <p className="mt-6 text-sm text-muted">{totalCount} notifications</p>
       {error && <p className="mt-3 text-sm text-danger" role="alert">{error}</p>}
-      <ul className="mt-3 divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-4 sm:px-6">
+      <ul className="mt-3 divide-y divide-line-subtle rounded-2xl border border-line bg-panel px-4 sm:px-6">
         {notifications.map((notification) => {
           const internalLink = notification.link?.startsWith("/") && !notification.link.startsWith("//")
             ? notification.link
             : null;
           return (
             <li className="flex items-start gap-3 py-5" key={notification.id}>
-              <span className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.is_read ? "bg-slate-200" : "bg-primary"}`} />
+              <span className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.is_read ? "bg-line" : "bg-primary"}`} />
               <div className="min-w-0 flex-1">
                 {internalLink ? (
                   <Link
-                    className="font-medium text-ink hover:text-primary"
+                    className="inline-flex min-h-11 items-center rounded-lg font-medium text-ink hover:text-primary"
                     href={internalLink}
                     onClick={(event) => {
                       if (!notification.is_read) {
@@ -83,7 +83,7 @@ export function NotificationList({
               </div>
               {!notification.is_read && (
                 <button
-                  className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-primary-light disabled:opacity-60"
+                  className="min-h-11 shrink-0 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-primary-light disabled:opacity-60"
                   disabled={busyId === notification.id}
                   onClick={() => void markRead(notification.id)}
                   type="button"

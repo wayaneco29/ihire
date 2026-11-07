@@ -89,7 +89,7 @@ export default async function EvaluatorApplicationReviewPage({
           previousEvaluation={evaluationResult.data ?? null}
         />
       </div>
-      <Link className="mt-5 inline-flex text-sm font-semibold text-primary hover:text-primary-dark" href="/evaluator/reviews">
+      <Link className="mt-5 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href="/evaluator/reviews">
         Back to review queue
       </Link>
     </>

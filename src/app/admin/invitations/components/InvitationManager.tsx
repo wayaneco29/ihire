@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Alert, Button, Tag } from "antd";
 import { useForm } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import type { Tables } from "@/types/database";
 import {
   createInvitation,
@@ -92,7 +93,7 @@ export function InvitationManager({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)]">
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
+      <SurfaceCard as="section" className="p-5 sm:p-6">
         <h2 className="text-base font-semibold text-ink">Create invitation</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           Each link can be used once and expires after seven days.
@@ -137,14 +138,14 @@ export function InvitationManager({
             </Button>
           </div>
         )}
-      </section>
+      </SurfaceCard>
 
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
+      <SurfaceCard as="section" className="p-5 sm:p-6">
         <h2 className="text-base font-semibold text-ink">Invitation history</h2>
         {invitations.length === 0 ? (
           <p className="mt-4 text-sm text-muted">No invitations yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-slate-100">
+          <ul className="mt-4 divide-y divide-line-subtle">
             {invitations.map((invitation) => {
               const status = inviteStatus(invitation);
               const canManage = status === "Pending" || status === "Expired";
@@ -190,7 +191,7 @@ export function InvitationManager({
             })}
           </ul>
         )}
-      </section>
+      </SurfaceCard>
     </div>
   );
 }

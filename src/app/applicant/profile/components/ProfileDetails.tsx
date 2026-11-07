@@ -20,7 +20,7 @@ function InfoValue({ label, value }: { label: string; value: string | number | n
 
 function ProfileSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
       <h2 className="font-semibold text-ink">{title}</h2>
       {children}
     </section>
@@ -53,10 +53,10 @@ export function ProfileDetails({
   return (
     <div className="mt-7 space-y-5">
       {hasDraft && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
           <div>
-            <p className="text-sm font-semibold text-amber-900">PDS update in progress</p>
-            <p className="mt-1 text-sm text-amber-800">
+            <p className="text-sm font-semibold text-warning">PDS update in progress</p>
+            <p className="mt-1 text-sm text-warning">
               Your submitted version {versionNumber} remains active until you submit the update.
             </p>
           </div>
@@ -80,7 +80,7 @@ export function ProfileDetails({
 
       <ProfileSection title="Educational background">
         {education.length ? (
-          <ul className="mt-4 divide-y divide-slate-100">
+          <ul className="mt-4 divide-y divide-line-subtle">
             {education.map((item) => (
               <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -101,7 +101,7 @@ export function ProfileDetails({
 
       <ProfileSection title="Work experience">
         {experience.length ? (
-          <ul className="mt-4 divide-y divide-slate-100">
+          <ul className="mt-4 divide-y divide-line-subtle">
             {experience.map((item) => (
               <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -122,7 +122,7 @@ export function ProfileDetails({
 
       <ProfileSection title="Learning and development">
         {trainings.length ? (
-          <ul className="mt-4 divide-y divide-slate-100">
+          <ul className="mt-4 divide-y divide-line-subtle">
             {trainings.map((item) => (
               <li className="flex flex-wrap justify-between gap-2 py-3 first:pt-0 last:pb-0" key={item.id}>
                 <div>

@@ -88,7 +88,7 @@ export function QuestionnaireStep({
         return (
           <section
             aria-labelledby={`pds-question-${item.code}`}
-            className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5"
+            className="rounded-xl border border-line bg-panel p-4 sm:p-5"
             key={item.code}
           >
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem] md:items-start">
@@ -166,7 +166,7 @@ export function QuestionnaireStep({
         );
       })}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 pt-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
         <p aria-live="polite" className="text-sm text-muted">
           {autosave.status === "saving"
             ? "Saving draft…"

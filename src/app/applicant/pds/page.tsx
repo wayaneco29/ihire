@@ -88,13 +88,13 @@ export default async function ApplicantPdsPage() {
           versionNumber={draft.version_no}
         />
       ) : (
-        <section className="mt-7 rounded-2xl border border-primary/15 bg-white p-5 sm:p-6">
+        <section className="mt-7 rounded-2xl border border-primary/15 bg-panel p-5 sm:p-6">
           <p className="text-sm leading-6 text-muted">
             PDS version {submitted?.version_no} is submitted. It remains the active version for your applications until you submit an update.
           </p>
           <StartPdsUpdateButton />
           <Link
-            className="mt-4 inline-flex text-sm font-semibold text-primary hover:text-primary-dark"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
             href="/applicant/dashboard"
           >
             Go to dashboard

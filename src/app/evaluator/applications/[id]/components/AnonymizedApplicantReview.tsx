@@ -44,29 +44,29 @@ export function AnonymizedApplicantReview({
   return (
     <>
       <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Applicant number</p>
           <p className="mt-2 text-lg font-semibold text-primary">{applicantNumber}</p>
         </section>
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Education level</p>
           <p className="mt-2 text-sm font-semibold text-ink">
             {educationLevels?.length ? educationLevels.join(", ").replaceAll("_", " ") : "Not listed"}
           </p>
         </section>
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Work experience</p>
           <p className="mt-2 text-sm font-semibold text-ink">
             {experienceYears ? `${experienceYears} years` : "None listed"}
           </p>
         </section>
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Training hours</p>
           <p className="mt-2 text-sm font-semibold text-ink">{trainingHours ?? 0}</p>
         </section>
       </div>
 
-      <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Skills</h2>
@@ -83,20 +83,20 @@ export function AnonymizedApplicantReview({
         ) : <p className="mt-4 text-sm text-muted">No skills listed.</p>}
       </section>
 
-      <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
         <h2 className="font-semibold text-ink">Questionnaire answers</h2>
         <p className="mt-1 text-sm text-muted">PDS items 34–40</p>
         {questionnaire.length ? (
-          <ol className="mt-4 divide-y divide-slate-100">
+          <ol className="mt-4 divide-y divide-line-subtle">
             {questionnaire.map((answer) => {
               const questionCode = answer.question_code as (typeof PDS_QUESTIONNAIRE_ITEMS)[number]["code"];
               return (
                 <li className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between" key={questionCode}>
-                  <p className="max-w-4xl text-sm leading-6 text-slate-700">
+                  <p className="max-w-4xl text-sm leading-6 text-ink">
                     <span className="mr-2 font-semibold text-ink">{questionCode}.</span>
                     {questionLabels.get(questionCode) ?? "Question"}
                   </p>
-                  <span className={`shrink-0 text-sm font-semibold ${answer.answer ? "text-amber-800" : "text-primary"}`}>
+                  <span className={`shrink-0 text-sm font-semibold ${answer.answer ? "text-warning" : "text-primary"}`}>
                     {answer.answer ? "Yes" : "No"}
                   </span>
                 </li>
@@ -108,7 +108,7 @@ export function AnonymizedApplicantReview({
         )}
       </section>
 
-      <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Supporting documents</h2>
@@ -117,7 +117,7 @@ export function AnonymizedApplicantReview({
           <span className="text-sm text-muted">{documents.length} document types</span>
         </div>
         {documents.length ? (
-          <ul className="mt-4 divide-y divide-slate-100">
+          <ul className="mt-4 divide-y divide-line-subtle">
             {documents.map((document) => (
               <li className="flex flex-wrap items-center justify-between gap-3 py-4" key={document.document_id}>
                 <div className="min-w-0">
@@ -126,7 +126,7 @@ export function AnonymizedApplicantReview({
                 </div>
                 <div className="flex items-center gap-3">
                   <WorkflowStatusTag status={document.document_status} />
-                  <Link className="text-sm font-semibold text-primary hover:text-primary-dark" href={`/evaluator/documents/${document.document_id}`}>
+                  <Link className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href={`/evaluator/documents/${document.document_id}`}>
                     Review
                   </Link>
                 </div>

@@ -94,7 +94,7 @@ export default async function ApplicantApplicationDetailPage({
       />
 
       <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.8fr)]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-semibold text-ink">Status timeline</h2>
             <WorkflowStatusTag status={application.status} />
@@ -103,13 +103,13 @@ export default async function ApplicantApplicationDetailPage({
         </section>
 
         <aside className="space-y-5">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
             <h2 className="font-semibold text-ink">Job information</h2>
             {job ? (
               <>
                 <h3 className="mt-4 text-lg font-semibold text-ink">{job.title}</h3>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">{job.description}</p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-surface p-3">
+                <dl className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-panel-muted p-3">
                   <div>
                     <dt className="text-xs text-muted">Positions</dt>
                     <dd className="mt-1 text-sm font-medium text-ink">{job.slots}</dd>
@@ -120,20 +120,20 @@ export default async function ApplicantApplicationDetailPage({
                   </div>
                 </dl>
                 {job.requirements && (
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-line-subtle pt-4">
                     <h4 className="text-sm font-semibold text-ink">Requirements</h4>
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{job.requirements}</p>
                   </div>
                 )}
               </>
             ) : <p className="mt-3 text-sm text-muted">This posting is no longer available.</p>}
-            <p className="mt-5 border-t border-slate-100 pt-4 text-xs text-muted">
+            <p className="mt-5 border-t border-line-subtle pt-4 text-xs text-muted">
               Submitted {formatDate(application.applied_at)}
             </p>
           </section>
           <section className="rounded-2xl border border-primary/15 bg-primary-light/60 p-5">
             <h2 className="font-semibold text-primary">Evaluator remarks</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-700">
+            <p className="mt-2 text-sm leading-6 text-ink">
               Remarks from each evaluation are shown in the timeline when available.
             </p>
           </section>

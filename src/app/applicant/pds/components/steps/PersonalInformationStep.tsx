@@ -269,7 +269,7 @@ export function PersonalInformationStep({
         />
       </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 pt-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
         <p aria-live="polite" className="text-sm text-muted">
           {autosave.status === "saving"
             ? "Saving draft…"
