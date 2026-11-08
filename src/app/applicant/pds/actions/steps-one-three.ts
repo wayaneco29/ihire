@@ -6,7 +6,11 @@ import dayjs from "dayjs";
 import { revalidatePath } from "next/cache";
 import { ValidationError } from "yup";
 import { completeAndAdvanceStep, type NavigationResult } from "../action-utils";
-import { pdsStepOneSchema, pdsStepTwoSchema, pdsStepThreeSchema } from "../schema";
+import {
+  pdsStepOneSchema,
+  pdsStepTwoSchema,
+  pdsStepThreeSchema,
+} from "../schema";
 
 export async function savePdsPersonalStep(
   pdsVersionId: string,
@@ -32,7 +36,7 @@ export async function savePdsPersonalStep(
       success: false,
       message:
         error instanceof ValidationError
-          ? error.errors[0] ?? "Check the required personal information."
+          ? (error.errors[0] ?? "Check the required personal information.")
           : "Check the required personal information.",
     };
   }
@@ -85,10 +89,13 @@ export async function savePdsPersonalStep(
       },
       { onConflict: "pds_version_id" },
     );
+
+  console.log(personalError);
   if (personalError) {
     return {
       success: false,
-      message: "Your personal information could not be saved. Please try again.",
+      message:
+        "Your personal information could not be saved. Please try again.",
     };
   }
 
@@ -161,7 +168,7 @@ export async function savePdsFamilyStep(
       success: false,
       message:
         error instanceof ValidationError
-          ? error.errors[0] ?? "Check the family information."
+          ? (error.errors[0] ?? "Check the family information.")
           : "Check the family information.",
     };
   }
@@ -275,7 +282,7 @@ export async function savePdsEducationStep(
       success: false,
       message:
         error instanceof ValidationError
-          ? error.errors[0] ?? "Check your education details."
+          ? (error.errors[0] ?? "Check your education details.")
           : "Check your education details.",
     };
   }

@@ -1,13 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
-import { PDS_QUESTIONNAIRE_ITEMS } from "@/constants/pds-questionnaire";
 import { formatDate } from "@/utils/format-date";
-
-type QuestionnaireAnswer = {
-  question_code: string;
-  answer: boolean;
-};
+import { createDocumentPreviewUrl, submitDocumentReview } from "../../../documents/actions";
 
 type AnonymizedDocument = {
   document_id: string;
@@ -16,49 +16,119 @@ type AnonymizedDocument = {
   uploaded_at: string;
 };
 
+type EducationRecord = {
+  education_id: string;
+  level: string;
+  school_name: string | null;
+  degree_course: string | null;
+  period_from: number | null;
+  period_to: number | null;
+  highest_level_units_earned: string | null;
+  year_graduated: number | null;
+  honors_received: string | null;
+};
+
+type WorkExperienceRecord = {
+  experience_id: string;
+  date_from: string;
+  date_to: string | null;
+  position_title: string;
+  agency_company: string;
+  appointment_status: string | null;
+  is_gov_service: boolean;
+  duties_description: string | null;
+};
+
 export function AnonymizedApplicantReview({
+  applicationId,
   applicantNumber,
   applicationStatus,
-  jobTitle,
-  educationLevels,
   experienceYears,
   trainingHours,
   skills,
-  questionnaire,
+  education,
+  workExperience,
+  educationUnavailable,
+  workExperienceUnavailable,
+  documentsUnavailable,
   documents,
 }: {
+  applicationId: string;
   applicantNumber: string;
   applicationStatus: string;
-  jobTitle: string;
-  educationLevels: string[] | null;
   experienceYears: number | null;
   trainingHours: number | null;
   skills: string[] | null;
-  questionnaire: QuestionnaireAnswer[];
+  education: EducationRecord[];
+  workExperience: WorkExperienceRecord[];
+  educationUnavailable: boolean;
+  workExperienceUnavailable: boolean;
+  documentsUnavailable: boolean;
   documents: AnonymizedDocument[];
 }) {
-  const questionLabels = new Map(
-    PDS_QUESTIONNAIRE_ITEMS.map((item) => [item.code, item.question] as const),
-  );
+  const router = useRouter();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [selectedDocument, setSelectedDocument] = useState<AnonymizedDocument | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewContentType, setPreviewContentType] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"preview" | "verify" | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (selectedDocument && !dialog.open) dialog.showModal();
+    if (!selectedDocument && dialog.open) dialog.close();
+  }, [selectedDocument]);
+
+  function viewDocument(document: AnonymizedDocument) {
+    setSelectedDocument(document);
+    setPreviewUrl(null);
+    setPreviewContentType(null);
+    setFeedback(null);
+    setPendingAction("preview");
+    startTransition(async () => {
+      const result = await createDocumentPreviewUrl({
+        applicationId,
+        documentId: document.document_id,
+      });
+      setPendingAction(null);
+      if (!result.success || !result.signedUrl) {
+        setFeedback(result.message);
+        return;
+      }
+      setPreviewUrl(result.signedUrl);
+      setPreviewContentType(result.contentType ?? null);
+    });
+  }
+
+  function verifyDocument() {
+    if (!selectedDocument) return;
+    setFeedback(null);
+    setPendingAction("verify");
+    startTransition(async () => {
+      const result = await submitDocumentReview({
+        applicationId,
+        documentId: selectedDocument.document_id,
+        status: "VERIFIED",
+        remarks: "",
+      });
+      setPendingAction(null);
+      setFeedback(result.message);
+      if (result.success) {
+        setSelectedDocument({ ...selectedDocument, document_status: "VERIFIED" });
+        router.refresh();
+      }
+    });
+  }
 
   return (
     <>
-      <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-7 grid gap-4 sm:grid-cols-2">
         <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Applicant number</p>
           <p className="mt-2 text-lg font-semibold text-primary">{applicantNumber}</p>
-        </section>
-        <section className="rounded-2xl border border-line bg-panel p-5">
-          <p className="text-xs text-muted">Education level</p>
-          <p className="mt-2 text-sm font-semibold text-ink">
-            {educationLevels?.length ? educationLevels.join(", ").replaceAll("_", " ") : "Not listed"}
-          </p>
-        </section>
-        <section className="rounded-2xl border border-line bg-panel p-5">
-          <p className="text-xs text-muted">Work experience</p>
-          <p className="mt-2 text-sm font-semibold text-ink">
-            {experienceYears ? `${experienceYears} years` : "None listed"}
-          </p>
         </section>
         <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Training hours</p>
@@ -83,30 +153,104 @@ export function AnonymizedApplicantReview({
         ) : <p className="mt-4 text-sm text-muted">No skills listed.</p>}
       </section>
 
-      <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
-        <h2 className="font-semibold text-ink">Questionnaire answers</h2>
-        <p className="mt-1 text-sm text-muted">PDS items 34–40</p>
-        {questionnaire.length ? (
-          <ol className="mt-4 divide-y divide-line-subtle">
-            {questionnaire.map((answer) => {
-              const questionCode = answer.question_code as (typeof PDS_QUESTIONNAIRE_ITEMS)[number]["code"];
-              return (
-                <li className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between" key={questionCode}>
-                  <p className="max-w-4xl text-sm leading-6 text-ink">
-                    <span className="mr-2 font-semibold text-ink">{questionCode}.</span>
-                    {questionLabels.get(questionCode) ?? "Question"}
-                  </p>
-                  <span className={`shrink-0 text-sm font-semibold ${answer.answer ? "text-warning" : "text-primary"}`}>
-                    {answer.answer ? "Yes" : "No"}
-                  </span>
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-ink">Education</h2>
+              <p className="mt-1 text-sm text-muted">Schools, programs, attendance, and graduation details</p>
+            </div>
+            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
+              {education.length} record{education.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          {educationUnavailable ? (
+            <p className="mt-5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+              Education details could not be loaded. Apply the latest Supabase migrations, then refresh this page.
+            </p>
+          ) : education.length ? (
+            <ul className="mt-5 space-y-3">
+              {education.map((item) => (
+                <li className="rounded-xl border border-line-subtle bg-panel-muted p-4" key={item.education_id}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink">{item.school_name || item.level.replaceAll("_", " ")}</p>
+                      <p className="mt-1 text-sm text-muted">
+                        {item.degree_course || item.highest_level_units_earned || `${item.level.replaceAll("_", " ")} studies`}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-line bg-panel px-2.5 py-1 text-xs font-medium capitalize text-muted">
+                      {item.level.replaceAll("_", " ").toLowerCase()}
+                    </span>
+                  </div>
+                  <dl className="mt-4 grid gap-3 border-t border-line-subtle pt-3 sm:grid-cols-2">
+                    <DetailValue label="Attendance" value={`${item.period_from ?? "—"} – ${item.period_to ?? "Present"}`} />
+                    <DetailValue label="Year graduated" value={item.year_graduated?.toString()} />
+                    {item.highest_level_units_earned && (
+                      <DetailValue label="Units earned" value={item.highest_level_units_earned} />
+                    )}
+                    {item.honors_received && (
+                      <DetailValue label="Honors" value={item.honors_received} />
+                    )}
+                  </dl>
                 </li>
-              );
-            })}
-          </ol>
-        ) : (
-          <p className="mt-4 text-sm text-muted">No questionnaire answers are available.</p>
-        )}
-      </section>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-5 rounded-xl bg-panel-muted px-4 py-3 text-sm text-muted">No education records listed.</p>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-ink">Work experience</h2>
+              <p className="mt-1 text-sm text-muted">Employment history and responsibilities</p>
+            </div>
+            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
+              {Number(experienceYears ?? 0).toFixed(1)} years total
+            </span>
+          </div>
+          {workExperienceUnavailable ? (
+            <p className="mt-5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+              Work experience details could not be loaded. Apply the latest Supabase migrations, then refresh this page.
+            </p>
+          ) : workExperience.length ? (
+            <ul className="mt-5 space-y-3">
+              {workExperience.map((item) => (
+                <li className="rounded-xl border border-line-subtle bg-panel-muted p-4" key={item.experience_id}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink">{item.position_title}</p>
+                      <p className="mt-1 text-sm text-muted">{item.agency_company}</p>
+                    </div>
+                    <span className="whitespace-nowrap text-xs font-medium text-muted">
+                      {formatDate(item.date_from, "MMM YYYY")} – {item.date_to ? formatDate(item.date_to, "MMM YYYY") : "Present"}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-line bg-panel px-2.5 py-1 text-xs text-muted">
+                      {item.is_gov_service ? "Government service" : "Non-government"}
+                    </span>
+                    {item.appointment_status && (
+                      <span className="rounded-full border border-line bg-panel px-2.5 py-1 text-xs text-muted">
+                        {item.appointment_status}
+                      </span>
+                    )}
+                  </div>
+                  {item.duties_description && (
+                    <p className="mt-3 whitespace-pre-wrap border-t border-line-subtle pt-3 text-sm leading-6 text-muted">
+                      {item.duties_description}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-5 rounded-xl bg-panel-muted px-4 py-3 text-sm text-muted">No work experience records listed.</p>
+          )}
+        </section>
+      </div>
 
       <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -116,7 +260,11 @@ export function AnonymizedApplicantReview({
           </div>
           <span className="text-sm text-muted">{documents.length} document types</span>
         </div>
-        {documents.length ? (
+        {documentsUnavailable ? (
+          <p className="mt-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            Supporting documents could not be loaded. Refresh the page to try again.
+          </p>
+        ) : documents.length ? (
           <ul className="mt-4 divide-y divide-line-subtle">
             {documents.map((document) => (
               <li className="flex flex-wrap items-center justify-between gap-3 py-4" key={document.document_id}>
@@ -126,9 +274,14 @@ export function AnonymizedApplicantReview({
                 </div>
                 <div className="flex items-center gap-3">
                   <WorkflowStatusTag status={document.document_status} />
-                  <Link className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href={`/evaluator/documents/${document.document_id}`}>
-                    Review
-                  </Link>
+                  <button
+                    className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark disabled:opacity-60"
+                    disabled={isPending}
+                    onClick={() => viewDocument(document)}
+                    type="button"
+                  >
+                    View
+                  </button>
                 </div>
               </li>
             ))}
@@ -142,6 +295,129 @@ export function AnonymizedApplicantReview({
           </div>
         )}
       </section>
+
+      <dialog
+        aria-labelledby="document-preview-title"
+        className="m-auto max-h-[92dvh] w-[min(96vw,72rem)] overflow-hidden rounded-2xl border border-line bg-panel p-0 text-ink shadow-modal backdrop:bg-ink/60"
+        onClose={() => setSelectedDocument(null)}
+        onClick={(event) => {
+          if (event.target === dialogRef.current) setSelectedDocument(null);
+        }}
+        ref={dialogRef}
+      >
+        {selectedDocument && (
+          <div className="flex max-h-[92dvh] flex-col">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line-subtle px-5 py-4">
+              <div>
+                <h2 className="font-semibold text-ink" id="document-preview-title">{selectedDocument.document_type}</h2>
+                <p className="mt-1 text-xs text-muted">
+                  Applicant {applicantNumber} · Uploaded {formatDate(selectedDocument.uploaded_at, "MMM D, YYYY · h:mm A")}
+                </p>
+              </div>
+              <button
+                aria-label="Close document preview"
+                className="inline-flex min-h-10 items-center rounded-lg border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                onClick={() => setSelectedDocument(null)}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto bg-panel-muted p-3 sm:p-5">
+              {previewUrl ? (
+                <div className="grid min-h-64 min-w-0 place-items-center">
+                  {previewContentType?.startsWith("image/") ? (
+                    <Image
+                      alt={`${selectedDocument.document_type} for applicant ${applicantNumber}`}
+                      className="h-auto max-h-[min(65dvh,calc(100dvh-15rem))] w-auto max-w-full rounded-lg object-contain"
+                      height={1600}
+                      unoptimized
+                      src={previewUrl}
+                      width={1600}
+                    />
+                  ) : previewContentType === "application/pdf" ? (
+                    <iframe
+                      className="h-[min(65dvh,calc(100dvh-15rem))] min-h-64 w-full rounded-lg border border-line bg-panel"
+                      referrerPolicy="no-referrer"
+                      src={previewUrl}
+                      title={`${selectedDocument.document_type} document preview`}
+                    />
+                  ) : (
+                    <div className="max-w-md rounded-xl border border-line bg-panel p-5 text-center">
+                      <p className="font-medium text-ink">Preview not available for this file type</p>
+                      <p className="mt-2 text-sm text-muted">
+                        Download the file to review it. You can still verify it after checking the document.
+                      </p>
+                    </div>
+                  )}
+                  {previewContentType?.startsWith("image/") && (
+                    <p className="mt-2 text-xs text-muted">
+                      Image scaled to fit the preview. Download to view at full resolution.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="grid min-h-64 place-items-center rounded-lg border border-dashed border-line-strong bg-panel px-5 text-center">
+                  <p className="text-sm text-muted">
+                    {pendingAction === "preview" ? "Loading secure document preview…" : feedback ?? "The preview is not available."}
+                  </p>
+                </div>
+              )}
+              {previewUrl && (
+                <a
+                  className="mt-3 inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                  download
+                  href={previewUrl}
+                >
+                  Download document
+                </a>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line-subtle px-5 py-4">
+              <div aria-live="polite" className="text-sm">
+                {feedback && (
+                  <p className={feedback === "Document review saved." ? "text-primary" : "text-danger"} role="status">
+                    {feedback}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedDocument.document_status === "FOR_REVIEW" ? (
+                  <>
+                    <Link
+                      className="inline-flex min-h-11 items-center rounded-lg border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                      href={`/evaluator/documents/${selectedDocument.document_id}`}
+                    >
+                      Other review actions
+                    </Link>
+                    <button
+                      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={!previewUrl || isPending}
+                      onClick={verifyDocument}
+                      type="button"
+                    >
+                      {pendingAction === "verify" ? "Verifying…" : "Mark as verified"}
+                    </button>
+                  </>
+                ) : (
+                  <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">
+                    Current status <WorkflowStatusTag status={selectedDocument.document_status} />
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </dialog>
     </>
+  );
+}
+
+function DetailValue({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium text-muted">{label}</dt>
+      <dd className="mt-1 break-words text-sm text-ink">{value || "—"}</dd>
+    </div>
   );
 }

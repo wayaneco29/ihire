@@ -46,6 +46,24 @@ export type PublicViews = {
         Relationships: [
         ];
     };
+    "v_anonymized_education": {
+        Row: {
+            "application_id": string;
+            "degree_course": string | null;
+            "education_id": string;
+            "highest_level_units_earned": string | null;
+            "honors_received": string | null;
+            "level": string;
+            "period_from": number | null;
+            "period_to": number | null;
+            "school_name": string | null;
+            "sort_order": number;
+            "year_graduated": number | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+        ];
+    };
     "v_anonymized_questionnaire": {
         Row: {
             "answer": boolean;
@@ -53,6 +71,23 @@ export type PublicViews = {
             "application_id": string;
             "job_id": string;
             "question_code": PublicEnums["question_code"];
+        };
+        ComputedFields: never;
+        Relationships: [
+        ];
+    };
+    "v_anonymized_work_experience": {
+        Row: {
+            "agency_company": string;
+            "application_id": string;
+            "appointment_status": string | null;
+            "date_from": string;
+            "date_to": string | null;
+            "duties_description": string | null;
+            "experience_id": string;
+            "is_gov_service": boolean;
+            "position_title": string;
+            "sort_order": number;
         };
         ComputedFields: never;
         Relationships: [

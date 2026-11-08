@@ -1,17 +1,24 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEvaluatorContext } from "@/lib/auth/server";
-import { ReviewQueueList, type ReviewQueueItem } from "./components/ReviewQueueList";
+import { ReviewQueueList } from "./components/ReviewQueueList";
+import { buildReviewQueueItems } from "./queue";
 
-export default async function EvaluatorReviewsPage() {
+export default async function EvaluatorReviewsPage({
+  searchParams,
+}: Readonly<{ searchParams: Promise<{ jobId?: string | string[] }> }>) {
   const evaluator = await getEvaluatorContext();
   if (!evaluator) redirect("/login");
+
+  const { jobId: requestedJobId } = await searchParams;
+  const selectedJobId = typeof requestedJobId === "string" ? requestedJobId : undefined;
 
   const [applicantsResult, documentsResult] = await Promise.all([
     evaluator.supabase
       .from("v_anonymized_applicants")
-      .select("application_id, applicant_number, application_status, applied_at, job_id, education_levels, experience_years, training_hours, skills")
+      .select("application_id, applicant_number, application_status, applied_at, job_id")
       .order("applied_at", { ascending: false }),
     evaluator.supabase
       .from("v_anonymized_documents")
@@ -37,54 +44,55 @@ export default async function EvaluatorReviewsPage() {
     );
   }
 
-  const documentsByApplication = new Map<string, Map<string, ReviewQueueItem["documents"][number]>>();
-  for (const document of documentsResult.data ?? []) {
-    const applicationDocuments = documentsByApplication.get(document.application_id) ?? new Map();
-    if (!applicationDocuments.has(document.document_type)) {
-      applicationDocuments.set(document.document_type, document);
-    }
-    documentsByApplication.set(document.application_id, applicationDocuments);
-  }
-
   const applicants = applicantsResult.data ?? [];
   const jobIds = [...new Set(applicants.map((applicant) => applicant.job_id))];
   const jobsResult = jobIds.length
     ? await evaluator.supabase.from("job_postings").select("id, title").in("id", jobIds)
     : { data: [], error: null };
-  const jobTitles = new Map((jobsResult.data ?? []).map((job) => [job.id, job.title] as const));
+  if (jobsResult.error) {
+    return (
+      <>
+        <PageHeader
+          description="Choose a job posting to review its pending applicants."
+          eyebrow="Evaluator workspace"
+          title="Review queue"
+        />
+        <div className="mt-7">
+          <EmptyState
+            description="Refresh this page to try loading job postings again."
+            title="Job postings unavailable"
+          />
+        </div>
+      </>
+    );
+  }
 
-  const queueItems: ReviewQueueItem[] = applicants.flatMap((applicant) => {
-    const latestDocuments = [...(documentsByApplication.get(applicant.application_id)?.values() ?? [])];
-    const needsDocumentReview = latestDocuments.some((document) => document.document_status === "FOR_REVIEW");
-    const isTerminal = ["HIRED", "REJECTED"].includes(applicant.application_status);
-    const isReReview =
-      applicant.application_status === "UNDER_EVALUATION" ||
-      (needsDocumentReview && ["QUALIFIED", "NOT_QUALIFIED"].includes(applicant.application_status));
-    const pendingApplication = ["SUBMITTED", "UNDER_EVALUATION"].includes(applicant.application_status);
-    if (isTerminal || !(needsDocumentReview || pendingApplication)) return [];
-    return [{
-        application_id: applicant.application_id,
-        applicant_number: applicant.applicant_number,
-        application_status: applicant.application_status,
-        applied_at: applicant.applied_at,
-        jobTitle: jobTitles.get(applicant.job_id) ?? "Job posting",
-        education_levels: applicant.education_levels,
-        experience_years: applicant.experience_years,
-        training_hours: applicant.training_hours,
-        skills: applicant.skills,
-        documents: latestDocuments,
-        reviewKind: isReReview ? "REREVIEW" as const : "INITIAL" as const,
-      }];
-  });
+  const jobTitles = new Map((jobsResult.data ?? []).map((job) => [job.id, job.title] as const));
+  const queueItems = buildReviewQueueItems(
+    applicants,
+    documentsResult.data ?? [],
+    jobTitles,
+  );
+  const selectedJob = queueItems.find((item) => item.job_id === selectedJobId);
 
   return (
     <>
       <PageHeader
-        description="Review applicant documents and assessments using applicant numbers and credibility data."
-        eyebrow="Evaluator workspace"
-        title="Review queue"
+        actions={selectedJob ? (
+          <Link
+            className="inline-flex min-h-11 items-center rounded-lg border border-line-strong px-4 text-sm font-semibold text-ink transition hover:bg-panel-muted"
+            href="/evaluator/reviews"
+          >
+            All job postings
+          </Link>
+        ) : undefined}
+        description={selectedJob
+          ? "Review applicants in order. Use the previous and next controls to move through this posting."
+          : "Choose a job posting to see its pending applicants and start reviewing."}
+        eyebrow={selectedJob ? "Applicants waiting for review" : "Evaluator workspace"}
+        title={selectedJob?.jobTitle ?? "Review queue"}
       />
-      <ReviewQueueList items={queueItems} />
+      <ReviewQueueList items={queueItems} selectedJobId={selectedJobId} />
     </>
   );
 }
