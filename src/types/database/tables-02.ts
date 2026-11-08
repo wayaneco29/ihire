@@ -6,7 +6,9 @@ export type DocumentsTable = {
         "document_type_id": string;
         "file_path": string;
         "id": string;
+        "pds_learning_development_id": string | null;
         "status": PublicEnums["document_status"];
+        "training_hours": number | null;
         "uploaded_at": string;
         "version": number;
     };
@@ -16,7 +18,9 @@ export type DocumentsTable = {
         "document_type_id": string;
         "file_path"?: string;
         "id"?: string;
+        "pds_learning_development_id"?: string | null;
         "status"?: PublicEnums["document_status"];
+        "training_hours"?: number | null;
         "uploaded_at"?: string;
         "version": number;
     };
@@ -25,7 +29,9 @@ export type DocumentsTable = {
         "document_type_id"?: string;
         "file_path"?: string;
         "id"?: string;
+        "pds_learning_development_id"?: string | null;
         "status"?: PublicEnums["document_status"];
+        "training_hours"?: number | null;
         "uploaded_at"?: string;
         "version"?: number;
     };
@@ -48,6 +54,17 @@ export type DocumentsTable = {
             ];
             isOneToOne: false;
             referencedRelation: "document_types";
+            referencedColumns: [
+                "id"
+            ];
+        },
+        {
+            foreignKeyName: "documents_pds_learning_development_id_fkey";
+            columns: [
+                "pds_learning_development_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "pds_learning_development";
             referencedColumns: [
                 "id"
             ];

@@ -13,6 +13,7 @@ export type DocumentVersion = {
   status: string;
   uploaded_at: string;
   remarks: string | null;
+  training_hours: number | null;
 };
 
 export function DocumentTypeCard({
@@ -20,11 +21,17 @@ export function DocumentTypeCard({
   name,
   required,
   versions,
+  isTrainingCertificate,
+  trainingEntries,
+  trainingEntriesUnavailable,
 }: {
   id: string;
   name: string;
   required: boolean;
   versions: DocumentVersion[];
+  isTrainingCertificate: boolean;
+  trainingEntries: { id: string; title: string; hours: number | null }[];
+  trainingEntriesUnavailable: boolean;
 }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [openError, setOpenError] = useState<string | null>(null);
@@ -68,8 +75,13 @@ export function DocumentTypeCard({
         <p className="mt-4 rounded-xl bg-panel-muted p-3 text-sm text-muted">No file uploaded yet.</p>
       ) : (
         <div className="mt-4 rounded-xl bg-panel-muted p-4">
-          <p className="text-sm font-medium text-ink">Version {latest.version}</p>
+          <p className="text-sm font-medium text-ink">
+            {isTrainingCertificate ? `Certificate #${latest.version}` : `Version ${latest.version}`}
+          </p>
           <p className="mt-1 text-xs text-muted">Uploaded {formatDate(latest.uploaded_at, "MMM D, YYYY · h:mm A")}</p>
+          {isTrainingCertificate && latest.training_hours !== null && (
+            <p className="mt-1 text-xs text-muted">{latest.training_hours} hours rendered</p>
+          )}
           {latest.remarks && (
             <div className="mt-3 rounded-lg border border-line bg-panel p-3">
               <p className="text-xs font-semibold text-ink">Latest evaluator remarks</p>
@@ -100,13 +112,20 @@ export function DocumentTypeCard({
 
       {versions.length > 1 && (
         <details className="mt-4">
-          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary">Previous versions ({versions.length - 1})</summary>
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary">
+            {isTrainingCertificate ? "Other certificates" : "Previous versions"} ({versions.length - 1})
+          </summary>
           <ul className="mt-2 divide-y divide-line-subtle rounded-xl border border-line-subtle px-3">
             {versions.slice(1).map((version) => (
               <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={version.id}>
                 <div>
-                  <p className="text-sm font-medium text-ink">Version {version.version}</p>
+                  <p className="text-sm font-medium text-ink">
+                    {isTrainingCertificate ? `Certificate #${version.version}` : `Version ${version.version}`}
+                  </p>
                   <p className="mt-1 text-xs text-muted">{formatDate(version.uploaded_at)}</p>
+                  {isTrainingCertificate && version.training_hours !== null && (
+                    <p className="mt-1 text-xs text-muted">{version.training_hours} hours rendered</p>
+                  )}
                   {version.remarks && <p className="mt-1 text-xs text-muted">Remark: {version.remarks}</p>}
                 </div>
                 <div className="flex items-center gap-2">
@@ -121,7 +140,12 @@ export function DocumentTypeCard({
         </details>
       )}
 
-      <DocumentUploadForm documentTypeId={id} />
+      <DocumentUploadForm
+        documentTypeId={id}
+        isTrainingCertificate={isTrainingCertificate}
+        trainingEntries={trainingEntries}
+        trainingEntriesUnavailable={trainingEntriesUnavailable}
+      />
     </article>
   );
 }

@@ -7,6 +7,19 @@ export const documentUploadSchema = yup.object({
     .of(yup.mixed<UploadFile>().required())
     .min(1, "Choose a document file.")
     .required("Choose a document file."),
+  trainingHours: yup
+    .number()
+    .transform((value, originalValue) => originalValue === "" ? null : value)
+    .nullable()
+    .optional()
+    .min(0, "Hours cannot be negative.")
+    .max(999999.99, "Enter no more than 999,999.99 hours.")
+    .test(
+      "two-decimal-places",
+      "Enter up to two decimal places.",
+      (value) => value == null || Math.abs(value * 100 - Math.round(value * 100)) < 1e-8,
+    ),
+  pdsLearningDevelopmentId: yup.string().optional(),
 });
 
 export type DocumentUploadValues = yup.InferType<typeof documentUploadSchema>;
