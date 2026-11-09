@@ -90,7 +90,7 @@ export function MobileDrawer() {
           </h2>
           <button
             aria-label="Close navigation menu"
-            className="grid size-11 place-items-center rounded-md text-muted hover:bg-panel-muted"
+            className="grid size-11 place-items-center rounded-sm text-muted hover:bg-panel-muted"
             onClick={() => setMobileNavOpen(false)}
             ref={closeButtonRef}
             type="button"

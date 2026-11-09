@@ -7,8 +7,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
-import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { createClient } from "@/lib/supabase/client";
+import { AuthPageFrame } from "../../components/AuthPageFrame";
 import { registerSchema, type RegisterValues } from "../schema";
 
 export function RegisterForm() {
@@ -35,7 +35,9 @@ export function RegisterForm() {
     });
 
     if (error) {
-      setFormError("We could not create the account. Check the details and try again.");
+      setFormError(
+        "We could not create the account. Check the details and try again.",
+      );
       return;
     }
 
@@ -50,64 +52,73 @@ export function RegisterForm() {
   });
 
   return (
-    <SurfaceCard as="section" className="p-6 sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-        Applicant account
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
-        Create your account
-      </h1>
-      <p className="mt-2 text-sm leading-6 text-muted">
-        Registration is open to applicants. HR and Evaluator accounts require an invitation.
-      </p>
+    <AuthPageFrame>
+      <section>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
+          Create your account
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          Registration is open to applicants. HR and Evaluator accounts require
+          an invitation.
+        </p>
 
-      <form className="mt-6" onSubmit={onSubmit}>
-        {formError && (
-          <Alert className="mb-4" message={formError} showIcon type="error" />
-        )}
-        {confirmationMessage && (
-          <Alert
-            className="mb-4"
-            message={confirmationMessage}
-            showIcon
-            type="success"
+        <form className="mt-7" onSubmit={onSubmit}>
+          {formError && (
+            <Alert className="mb-4" message={formError} showIcon type="error" />
+          )}
+          {confirmationMessage && (
+            <Alert
+              className="mb-4"
+              message={confirmationMessage}
+              showIcon
+              type="success"
+            />
+          )}
+          <FormInput
+            autoComplete="email"
+            control={control}
+            label="Email address"
+            name="email"
+            required
+            type="email"
           />
-        )}
-        <FormInput
-          autoComplete="email"
-          control={control}
-          label="Email address"
-          name="email"
-          required
-          type="email"
-        />
-        <FormInput
-          autoComplete="new-password"
-          control={control}
-          label="Password"
-          name="password"
-          required
-          type="password"
-        />
-        <FormInput
-          autoComplete="new-password"
-          control={control}
-          label="Confirm password"
-          name="confirmPassword"
-          required
-          type="password"
-        />
-        <Button block htmlType="submit" loading={isSubmitting} type="primary">
-          Create applicant account
-        </Button>
-      </form>
+          <FormInput
+            autoComplete="new-password"
+            control={control}
+            label="Password"
+            name="password"
+            required
+            type="password"
+          />
+          <FormInput
+            autoComplete="new-password"
+            control={control}
+            label="Confirm password"
+            name="confirmPassword"
+            required
+            type="password"
+          />
+          <Button
+            block
+            className="mt-2"
+            htmlType="submit"
+            loading={isSubmitting}
+            type="primary"
+          >
+            Create applicant account
+          </Button>
+        </form>
 
-      <p className="mt-5 text-center text-sm text-muted">
-        Already registered?{" "}
-        <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark" href="/login">
-          Sign in
-        </Link>
-      </p>
-    </SurfaceCard>
+        <p className="mt-5 text-center text-sm text-muted">
+          Already registered?{" "}
+          <Link
+            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
+            href="/login"
+          >
+            Sign in
+          </Link>
+        </p>
+      </section>
+    </AuthPageFrame>
   );
 }

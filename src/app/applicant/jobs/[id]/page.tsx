@@ -43,7 +43,7 @@ export default async function ApplicantJobDetailPage({
         eyebrow="Open job posting"
         title={job.title}
       />
-      <article className="mt-7 rounded-2xl border border-line bg-panel p-5 sm:p-8">
+      <article className="mt-7 rounded-sm border border-line bg-panel p-5 sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <WorkflowStatusTag status="OPEN" />
           <span className="text-sm text-muted">
@@ -51,7 +51,7 @@ export default async function ApplicantJobDetailPage({
           </span>
         </div>
 
-        <dl className="mt-6 grid gap-4 rounded-md bg-panel-muted p-4 sm:grid-cols-2">
+        <dl className="mt-6 grid gap-4 rounded-sm bg-panel-muted p-4 sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-muted">
               Available positions
@@ -93,7 +93,7 @@ export default async function ApplicantJobDetailPage({
             <div className="flex flex-wrap items-center gap-3">
               <WorkflowStatusTag status={application.status} />
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light"
+                className="inline-flex min-h-11 items-center justify-center rounded-sm border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light"
                 href={`/applicant/applications/${application.id}`}
               >
                 View your application
@@ -103,7 +103,7 @@ export default async function ApplicantJobDetailPage({
             <ApplyButton jobId={job.id} />
           ) : (
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+              className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
               href="/applicant/pds"
             >
               Complete your PDS first
@@ -112,7 +112,7 @@ export default async function ApplicantJobDetailPage({
         </section>
       </article>
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
         href="/applicant/jobs"
       >
         Back to jobs

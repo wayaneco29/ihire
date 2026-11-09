@@ -112,7 +112,7 @@ export function DocumentTypeCard({
 
     return (
       <section
-        className="overflow-hidden rounded-md shadow bg-panel"
+        className="overflow-hidden rounded-sm shadow bg-panel"
         aria-label={name}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-4 py-3 bg-primary">
@@ -309,13 +309,13 @@ export function DocumentTypeCard({
     <div
       className={
         featured
-          ? "rounded-lg border border-line bg-panel p-3"
+          ? "rounded-sm border border-line bg-panel p-3"
           : "border-b border-line-subtle py-2.5 last:border-b-0"
       }
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary-light text-primary">
             <FileTextOutlined aria-hidden="true" />
           </span>
           <div className="min-w-0">

@@ -57,7 +57,7 @@ export function ApplicationEvaluationPanel({
     applicationStatus === "HIRED" || applicationStatus === "REJECTED";
 
   return (
-    <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+    <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold text-ink">Application evaluation</h2>
@@ -72,7 +72,7 @@ export function ApplicationEvaluationPanel({
       </div>
 
       {previousEvaluation && (
-        <div className="mt-4 rounded-md bg-panel-muted p-4">
+        <div className="mt-4 rounded-sm bg-panel-muted p-4">
           <p className="text-xs text-muted">
             Your latest evaluation ·{" "}
             {formatDate(
@@ -116,7 +116,7 @@ export function ApplicationEvaluationPanel({
             showCount
           />
           <button
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
             disabled={pending}
             type="submit"
           >

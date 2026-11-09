@@ -47,22 +47,26 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
               <Upload.Dragger
                 {...uploadProps}
                 beforeUpload={() => false}
-                className="rounded-lg"
+                className="rounded-sm"
                 fileList={(field.value ?? []) as UploadFile[]}
                 onChange={({ fileList }) => field.onChange(fileList)}
                 showUploadList
               >
                 <div className="flex min-h-14 items-center justify-between gap-3 px-2 text-left">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary-light text-primary">
                       <InboxOutlined />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-medium text-ink">Drop a file or browse</span>
-                      <span className="mt-0.5 block text-xs text-muted">PDF, JPG, PNG, DOC or DOCX · up to 50 MB</span>
+                      <span className="block text-sm font-medium text-ink">
+                        Drop a file or browse
+                      </span>
+                      <span className="mt-0.5 block text-xs text-muted">
+                        PDF, JPG, PNG, DOC or DOCX · up to 50 MB
+                      </span>
                     </span>
                   </div>
-                  <span className="inline-flex min-h-9 shrink-0 items-center rounded-lg border border-line px-3 text-xs font-medium text-ink">
+                  <span className="inline-flex min-h-9 shrink-0 items-center rounded-sm border border-line px-3 text-xs font-medium text-ink">
                     Choose file
                   </span>
                 </div>
@@ -75,9 +79,15 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                 onChange={({ fileList }) => field.onChange(fileList)}
               >
                 <button
-                  aria-describedby={fieldState.error ? `${uploadId}-error` : hint ? `${uploadId}-hint` : undefined}
+                  aria-describedby={
+                    fieldState.error
+                      ? `${uploadId}-error`
+                      : hint
+                        ? `${uploadId}-hint`
+                        : undefined
+                  }
                   aria-label={`${label}${required ? ", required" : ""}`}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line-strong bg-panel px-3 text-sm font-medium text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line-strong bg-panel px-3 text-sm font-medium text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={uploadProps.disabled}
                   type="button"
                 >

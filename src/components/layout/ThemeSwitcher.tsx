@@ -1,17 +1,17 @@
 "use client";
 
-import {
-  DesktopOutlined,
-  MoonOutlined,
-  SunOutlined,
-} from "@ant-design/icons";
+import { DesktopOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import type { ReactNode } from "react";
 import type { ThemePreference } from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 
-const THEME_OPTIONS: { key: ThemePreference; label: string; icon: ReactNode }[] = [
+const THEME_OPTIONS: {
+  key: ThemePreference;
+  label: string;
+  icon: ReactNode;
+}[] = [
   { key: "system", label: "System", icon: <DesktopOutlined /> },
   { key: "light", label: "Light", icon: <SunOutlined /> },
   { key: "dark", label: "Dark", icon: <MoonOutlined /> },
@@ -31,7 +31,7 @@ export function ThemeSwitcher() {
     <Dropdown menu={menu} placement="bottomRight" trigger={["click"]}>
       <Button
         aria-label={`Color theme: ${activeOption.label}`}
-        className="!grid !size-11 !place-items-center !p-0"
+        className="!grid !size-11 !place-items-center !p-0 border-0! hover:bg-panel-muted!"
         icon={activeOption.icon}
         title={`Color theme: ${activeOption.label}`}
       />

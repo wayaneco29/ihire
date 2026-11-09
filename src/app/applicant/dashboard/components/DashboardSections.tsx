@@ -26,125 +26,190 @@ type NotificationItem = {
   is_read: boolean;
 };
 
+const APPLICATION_STAGES = [
+  "Submitted",
+  "Under evaluation",
+  "Qualified",
+  "Hired",
+];
+
+function getApplicationStage(status: string) {
+  switch (status) {
+    case "UNDER_EVALUATION":
+      return 1;
+    case "QUALIFIED":
+      return 2;
+    case "HIRED":
+      return 3;
+    case "NOT_QUALIFIED":
+    case "REJECTED":
+      return 2;
+    default:
+      return 0;
+  }
+}
+
+function ApplicationProgress({ status }: { status: string }) {
+  const activeStage = getApplicationStage(status);
+  const isUnsuccessful = ["NOT_QUALIFIED", "REJECTED"].includes(status);
+  const stages = APPLICATION_STAGES.map((stage, index) =>
+    isUnsuccessful && index === activeStage
+      ? status === "REJECTED"
+        ? "Not selected"
+        : "Not qualified"
+      : stage,
+  );
+
+  return (
+    <div
+      aria-label={`Application progress: ${status.toLowerCase().replaceAll("_", " ")}`}
+      className="mt-3"
+      role="group"
+    >
+      <div className="grid grid-cols-4 gap-1">
+        {stages.map((stage, index) => {
+          const isCurrent = index === activeStage;
+          const isComplete = index < activeStage || status === "HIRED";
+          return (
+            <span
+              aria-hidden="true"
+              className={`h-1.5 rounded-full ${
+                isUnsuccessful && isCurrent
+                  ? "bg-danger"
+                  : isCurrent || isComplete
+                    ? "bg-primary"
+                    : "bg-line"
+              }`}
+              key={stage}
+            />
+          );
+        })}
+      </div>
+      <div className="mt-1.5 grid grid-cols-4 gap-1">
+        {stages.map((stage, index) => (
+          <span
+            className={`text-[10px] leading-4 ${
+              index === activeStage ? "font-medium text-ink" : "text-muted"
+            }`}
+            key={stage}
+          >
+            {stage}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardSections({
   applications,
   documents,
   notifications,
+  unreadCount,
 }: {
   applications: ApplicationItem[];
   documents: DocumentItem[];
   notifications: NotificationItem[];
+  unreadCount: number;
 }) {
-  const applicationStatuses = [
-    "SUBMITTED",
-    "UNDER_EVALUATION",
-    "QUALIFIED",
-    "NOT_QUALIFIED",
-    "HIRED",
-    "REJECTED",
-  ];
+  const pendingDocuments = documents.filter((document) =>
+    ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(document.status),
+  ).length;
+  const verifiedDocuments = documents.filter(
+    (document) => document.status === "VERIFIED",
+  ).length;
 
   return (
-    <div className="mt-7 grid gap-5 xl:grid-cols-2">
-      <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+    <div className="mt-4 grid items-start gap-4 xl:grid-cols-[1.15fr_1fr]">
+      <section className="rounded-sm border border-line-subtle bg-panel p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold text-ink">My applications</h2>
-            <p className="mt-1 text-sm text-muted">
-              Current status of each application.
-            </p>
-          </div>
+          <h2 className="font-semibold text-ink">
+            Where your applications stand
+          </h2>
           <Link
-            className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+            className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light"
             href="/applicant/applications"
           >
             View all
           </Link>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {applicationStatuses.map((status) => (
-            <div className="rounded-md bg-panel-muted px-3 py-3" key={status}>
-              <p className="text-xs text-muted">
-                {status.replaceAll("_", " ")}
-              </p>
-              <p className="mt-1 text-xl font-semibold text-ink">
-                {
-                  applications.filter(
-                    (application) => application.status === status,
-                  ).length
-                }
-              </p>
-            </div>
-          ))}
-        </div>
         {applications.length === 0 ? (
-          <div className="mt-4">
+          <div className="mt-3">
             <EmptyState
-              description="When you apply to an open posting, its progress will appear here."
+              action={
+                <Link
+                  className="inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                  href="/applicant/jobs"
+                >
+                  Browse open jobs
+                </Link>
+              }
+              description="Your application progress will appear here after you apply."
               title="No applications yet"
             />
           </div>
         ) : (
-          <ul className="mt-4 divide-y divide-line-subtle">
-            {applications.slice(0, 4).map((application) => (
-              <li
-                className="flex flex-wrap items-center justify-between gap-3 py-3"
-                key={application.id}
-              >
-                <div className="min-w-0">
-                  <Link
-                    className="flex min-h-11 items-center truncate rounded-lg text-sm font-medium text-ink hover:text-primary"
-                    href={`/applicant/applications/${application.id}`}
-                  >
-                    {application.jobTitle}
-                  </Link>
-                  <p className="mt-1 text-xs text-muted">
-                    Applied {formatDate(application.applied_at)}
-                  </p>
+          <ul className="mt-1 divide-y divide-line-subtle">
+            {applications.slice(0, 3).map((application) => (
+              <li className="py-3" key={application.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      className="truncate text-sm font-semibold text-ink hover:text-primary"
+                      href={`/applicant/applications/${application.id}`}
+                    >
+                      {application.jobTitle}
+                    </Link>
+                    <p className="mt-0.5 text-[11px] text-muted">
+                      Applied {formatDate(application.applied_at)}
+                    </p>
+                  </div>
+                  <WorkflowStatusTag status={application.status} />
                 </div>
-                <WorkflowStatusTag status={application.status} />
+                <ApplicationProgress status={application.status} />
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+      <section className="rounded-sm border border-line-subtle bg-panel p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Documents</h2>
-            <p className="mt-1 text-sm text-muted">
-              Latest status for your uploaded files.
+            <p className="mt-1 text-[11px] text-muted">
+              {pendingDocuments} waiting for review, {verifiedDocuments}{" "}
+              verified.
             </p>
           </div>
           <Link
-            className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+            className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light"
             href="/applicant/documents"
           >
             Manage
           </Link>
         </div>
         {documents.length === 0 ? (
-          <div className="mt-4">
+          <div className="mt-3">
             <EmptyState
-              description="Upload the required documents so evaluators can review them."
+              description="Upload required records so they are ready for review."
               title="No documents uploaded"
             />
           </div>
         ) : (
-          <ul className="mt-4 divide-y divide-line-subtle">
+          <ul className="mt-2 divide-y divide-line-subtle">
             {documents.slice(0, 5).map((document) => (
               <li
-                className="flex flex-wrap items-center justify-between gap-3 py-3"
+                className="flex items-center justify-between gap-3 py-2.5"
                 key={document.id}
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">
+                  <p className="truncate text-xs font-medium text-ink">
                     {document.typeName}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-0.5 text-[10px] text-muted">
                     Version {document.version} ·{" "}
-                    {formatDate(document.uploaded_at)}
+                    {formatDate(document.uploaded_at, "MMM D")}
                   </p>
                 </div>
                 <WorkflowStatusTag status={document.status} />
@@ -154,49 +219,47 @@ export function DashboardSections({
         )}
       </section>
 
-      <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6 xl:col-span-2">
+      <section className="rounded-sm border border-line-subtle bg-panel p-4 sm:p-5 xl:col-span-2">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold text-ink">Recent notifications</h2>
-            <p className="mt-1 text-sm text-muted">
-              Updates about your account and applications.
-            </p>
-          </div>
+          <h2 className="font-semibold text-ink">Latest updates</h2>
           <Link
-            className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+            className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light"
             href="/applicant/notifications"
           >
-            View all
+            {unreadCount > 0 ? `Read all ${unreadCount} unread` : "View all"}
           </Link>
         </div>
         {notifications.length === 0 ? (
-          <p className="mt-5 rounded-md bg-panel-muted p-4 text-sm text-muted">
-            You’re all caught up.
-          </p>
+          <p className="mt-2 text-sm text-muted">You’re all caught up.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-line-subtle">
-            {notifications.map((notification) => (
-              <li className="flex gap-3 py-3" key={notification.id}>
-                <span
-                  className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.is_read ? "bg-line" : "bg-primary"}`}
-                />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-ink">
-                    {notification.title}
-                  </p>
-                  <p className="mt-1 text-sm leading-5 text-muted">
-                    {notification.body}
-                  </p>
-                  <time
-                    className="mt-1 block text-xs text-muted"
-                    dateTime={notification.created_at}
-                  >
-                    {formatDate(
-                      notification.created_at,
-                      "MMM D, YYYY · h:mm A",
-                    )}
-                  </time>
+          <ul className="mt-1 divide-y divide-line-subtle">
+            {notifications.slice(0, 3).map((notification) => (
+              <li
+                className="flex items-start justify-between gap-4 py-2.5"
+                key={notification.id}
+              >
+                <div className="flex min-w-0 items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1.5 size-1.5 shrink-0 rounded-full ${
+                      notification.is_read ? "bg-line-strong" : "bg-primary"
+                    }`}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-ink">
+                      {notification.title}
+                    </p>
+                    <p className="mt-0.5 truncate text-[11px] text-muted">
+                      {notification.body}
+                    </p>
+                  </div>
                 </div>
+                <time
+                  className="shrink-0 pt-0.5 text-[10px] text-muted"
+                  dateTime={notification.created_at}
+                >
+                  {formatDate(notification.created_at, "MMM D, h:mm A")}
+                </time>
               </li>
             ))}
           </ul>

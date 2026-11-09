@@ -1,15 +1,17 @@
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getApplicantContext } from "@/lib/auth/server";
 import { JobListClient } from "./components/JobListClient";
 
-const CURRENT_TIME_MS = Date.now();
-
 export default async function ApplicantJobsPage() {
+  await connection();
+
   const applicant = await getApplicantContext();
   if (!applicant) redirect("/login");
 
-  const [{ data: postings, error }, { data: applications }] = await Promise.all([
+  const [postingsResult, applicationsResult] = await Promise.all([
     applicant.supabase
       .from("job_postings")
       .select("id, title, description, requirements, slots, deadline")
@@ -21,9 +23,16 @@ export default async function ApplicantJobsPage() {
       .eq("applicant_id", applicant.applicant.id),
   ]);
 
-  const appliedJobIds = new Set((applications ?? []).map((application) => application.job_id));
-  const jobs = (postings ?? [])
-    .filter((posting) => !posting.deadline || new Date(posting.deadline).getTime() > CURRENT_TIME_MS)
+  // This is request-time data, after connection() opts out of prerendering.
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const appliedJobIds = new Set(
+    (applicationsResult.data ?? []).map((application) => application.job_id),
+  );
+  const jobs = (postingsResult.data ?? [])
+    .filter(
+      (posting) => !posting.deadline || Date.parse(posting.deadline) > nowMs,
+    )
     .map((posting) => ({ ...posting, applied: appliedJobIds.has(posting.id) }));
 
   return (
@@ -33,16 +42,30 @@ export default async function ApplicantJobsPage() {
         eyebrow="Applicant workspace"
         title="Browse jobs"
       />
-      {error ? (
-        <div className="mt-7 rounded-2xl border border-danger/20 bg-danger/10 p-5 text-sm text-danger" role="alert">
-          Job postings could not be loaded right now. Please refresh and try again.
+      {postingsResult.error ? (
+        <div
+          className="mt-7 rounded-sm border border-danger/20 bg-danger/10 p-5 text-sm text-danger"
+          role="alert"
+        >
+          Job postings could not be loaded right now. Please refresh and try
+          again.
+        </div>
+      ) : applicationsResult.error ? (
+        <div
+          className="mt-7 rounded-sm border border-danger/20 bg-danger/10 p-5 text-sm text-danger"
+          role="alert"
+        >
+          Your application status could not be checked, so jobs cannot be shown
+          safely right now. Please refresh and try again.
         </div>
       ) : jobs.length ? (
-        <JobListClient jobs={jobs} nowMs={CURRENT_TIME_MS} />
+        <JobListClient jobs={jobs} nowMs={nowMs} />
       ) : (
-        <div className="mt-7 rounded-2xl border border-dashed border-line-strong bg-panel p-8 text-center">
-          <h2 className="font-semibold text-ink">No open postings right now</h2>
-          <p className="mt-2 text-sm text-muted">Check back later for new opportunities.</p>
+        <div className="mt-7">
+          <EmptyState
+            description="Check back later for new opportunities."
+            title="No open postings right now"
+          />
         </div>
       )}
     </>

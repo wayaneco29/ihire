@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
@@ -17,54 +16,68 @@ export default async function ApplicantDashboardPage() {
     typesResult,
     notificationsResult,
     unreadNotificationsResult,
-  ] =
-    await Promise.all([
-      applicant.supabase
-        .from("pds_versions")
-        .select("id, status, version_no, submitted_at, updated_at")
-        .eq("applicant_id", applicant.applicant.id)
-        .order("version_no", { ascending: false })
-        .limit(3),
-      applicant.supabase
-        .from("applications")
-        .select("id, job_id, status, applied_at")
-        .eq("applicant_id", applicant.applicant.id)
-        .order("applied_at", { ascending: false }),
-      applicant.supabase
-        .from("documents")
-        .select("id, document_type_id, status, uploaded_at, version")
-        .eq("applicant_id", applicant.applicant.id)
-        .order("uploaded_at", { ascending: false })
-        .limit(100),
-      applicant.supabase.from("document_types").select("id, name"),
-      applicant.supabase
-        .from("notifications")
-        .select("id, title, body, created_at, is_read")
-        .eq("user_id", applicant.user.id)
-        .order("created_at", { ascending: false })
-        .limit(5),
-      applicant.supabase
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", applicant.user.id)
-        .eq("is_read", false),
-    ]);
+  ] = await Promise.all([
+    applicant.supabase
+      .from("pds_versions")
+      .select("id, status, version_no, submitted_at, updated_at")
+      .eq("applicant_id", applicant.applicant.id)
+      .order("version_no", { ascending: false })
+      .limit(3),
+    applicant.supabase
+      .from("applications")
+      .select("id, job_id, status, applied_at")
+      .eq("applicant_id", applicant.applicant.id)
+      .order("applied_at", { ascending: false }),
+    applicant.supabase
+      .from("documents")
+      .select("id, document_type_id, status, uploaded_at, version")
+      .eq("applicant_id", applicant.applicant.id)
+      .order("uploaded_at", { ascending: false })
+      .limit(100),
+    applicant.supabase.from("document_types").select("id, name"),
+    applicant.supabase
+      .from("notifications")
+      .select("id, title, body, created_at, is_read")
+      .eq("user_id", applicant.user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    applicant.supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", applicant.user.id)
+      .eq("is_read", false),
+  ]);
 
   const applications = applicationsResult.data ?? [];
-  const jobIds = [...new Set(applications.map((application) => application.job_id))];
+  const jobIds = [
+    ...new Set(applications.map((application) => application.job_id)),
+  ];
   const jobsResult = jobIds.length
-    ? await applicant.supabase.from("job_postings").select("id, title").in("id", jobIds)
+    ? await applicant.supabase
+        .from("job_postings")
+        .select("id, title")
+        .in("id", jobIds)
     : { data: [], error: null };
-  const jobTitles = new Map((jobsResult.data ?? []).map((job) => [job.id, job.title] as const));
+  const jobTitles = new Map(
+    (jobsResult.data ?? []).map((job) => [job.id, job.title] as const),
+  );
   const dashboardApplications = applications.map((application) => ({
     ...application,
     jobTitle: jobTitles.get(application.job_id) ?? "Job posting",
   }));
 
-  const documentTypes = new Map((typesResult.data ?? []).map((type) => [type.id, type.name] as const));
+  const documentTypes = new Map(
+    (typesResult.data ?? []).map((type) => [type.id, type.name] as const),
+  );
   const latestDocuments = new Map<
     string,
-    { id: string; status: string; uploaded_at: string; version: number; typeName: string }
+    {
+      id: string;
+      status: string;
+      uploaded_at: string;
+      version: number;
+      typeName: string;
+    }
   >();
   for (const document of documentsResult.data ?? []) {
     if (!latestDocuments.has(document.document_type_id)) {
@@ -89,53 +102,123 @@ export default async function ApplicantDashboardPage() {
         ? "SUBMITTED"
         : "NOT_STARTED";
   const unreadCount = unreadNotificationsResult.count ?? 0;
+  const latestApplication = dashboardApplications[0] ?? null;
+  const secondaryApplications = dashboardApplications.slice(1);
+  const applicationResult =
+    latestApplication &&
+    ["HIRED", "QUALIFIED", "NOT_QUALIFIED", "REJECTED"].includes(
+      latestApplication.status,
+    );
+  const applicationHeadline = !latestApplication
+    ? "Your next opportunity starts here."
+    : latestApplication.status === "HIRED"
+      ? `You’re hired for ${latestApplication.jobTitle}.`
+      : latestApplication.status === "QUALIFIED"
+        ? `You’re qualified for ${latestApplication.jobTitle}.`
+        : latestApplication.status === "NOT_QUALIFIED"
+          ? `Your application for ${latestApplication.jobTitle} was not qualified.`
+          : latestApplication.status === "REJECTED"
+            ? `Your application for ${latestApplication.jobTitle} was not selected.`
+            : `Your application for ${latestApplication.jobTitle} is in progress.`;
+  const secondaryApplication = secondaryApplications[0];
+  const secondaryStatusLabel = secondaryApplication
+    ? ({
+        HIRED: "Hired",
+        QUALIFIED: "Qualified",
+        NOT_QUALIFIED: "Not qualified",
+        REJECTED: "Not selected",
+        UNDER_EVALUATION: "Under evaluation",
+        SUBMITTED: "Submitted",
+      }[secondaryApplication.status] ?? "In progress")
+    : null;
+  const applicationSummary =
+    secondaryApplication && secondaryApplications.length === 1
+      ? `Your other application, ${secondaryApplication.jobTitle}, is ${secondaryStatusLabel}.`
+      : secondaryApplications.length > 1
+        ? `You have ${secondaryApplications.length} other applications to track.`
+        : latestApplication
+          ? `Applied ${formatDate(latestApplication.applied_at)}.`
+          : "Browse open positions and take the next step in your career.";
 
   return (
     <>
-      <PageHeader
-        description="Track your PDS, applications, documents, and account updates."
-        eyebrow="Applicant workspace"
-        title="Dashboard"
-      />
+      <p className="mb-5 text-xs text-muted">
+        Division of Southern Leyte <span aria-hidden="true">·</span>{" "}
+        <span className="font-medium text-ink">Applicant dashboard</span>
+      </p>
 
-      <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-line bg-panel p-5">
-          <p className="text-sm text-muted">Personal Data Sheet</p>
-          <div className="mt-3"><WorkflowStatusTag status={pdsStatus} /></div>
-          <p className="mt-3 text-xs leading-5 text-muted">
-            {pdsResult.error
-              ? "Refresh the dashboard to check your saved PDS status."
-              : draft
-                ? `Draft version ${draft.version_no} · last saved ${formatDate(draft.updated_at)}`
-                : submitted
-                  ? `Version ${submitted.version_no} submitted ${formatDate(submitted.submitted_at)}`
-                  : "Start your PDS to complete your applicant profile."}
-          </p>
-          <Link className="mt-4 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href={pdsResult.error ? "/applicant/dashboard" : draft ? "/applicant/pds" : "/applicant/profile"}>
-            {pdsResult.error ? "Refresh status" : draft ? "Continue PDS" : submitted ? "View profile" : "Start PDS"}
+      <section
+        aria-label="Application result"
+        className="rounded-sm bg-[#10432f] px-5 py-6 text-white shadow-sm sm:px-7 sm:py-8"
+      >
+        <p className="text-xs font-medium text-emerald-100">
+          {applicationResult ? "Application result" : "Your applications"}
+        </p>
+        <div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-3xl">
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+              {applicationHeadline}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-emerald-50/90">
+              {applicationSummary}
+            </p>
+          </div>
+          <Link
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-[#10432f] transition hover:bg-emerald-50"
+            href={
+              latestApplication ? "/applicant/applications" : "/applicant/jobs"
+            }
+          >
+            {latestApplication ? "View my applications" : "Browse jobs"}
           </Link>
-        </article>
+        </div>
+      </section>
 
-        <MetricCard label="Applications" value={applications.length} detail="Submitted to job postings" />
-        <MetricCard label="Documents uploaded" value={latestDocuments.size} detail="Latest version per document type" />
-        <MetricCard label="Unread notifications" value={unreadCount} detail="All unread updates" />
-      </div>
+      <section
+        aria-label="Personal data sheet status"
+        className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line-subtle bg-panel px-4 py-3"
+      >
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <p className="text-sm font-medium text-ink">Personal data sheet</p>
+          <WorkflowStatusTag status={pdsStatus} />
+          <p className="text-xs text-muted">
+            {pdsResult.error
+              ? "Status unavailable"
+              : draft
+                ? `Draft version ${draft.version_no} · Last saved ${formatDate(draft.updated_at)}`
+                : submitted
+                  ? `Version ${submitted.version_no} · Submitted ${formatDate(submitted.submitted_at)}`
+                  : "Complete your applicant profile"}
+          </p>
+        </div>
+        <Link
+          className="inline-flex min-h-9 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light"
+          href={
+            pdsResult.error
+              ? "/applicant/dashboard"
+              : draft
+                ? "/applicant/pds"
+                : submitted
+                  ? "/applicant/profile"
+                  : "/applicant/pds"
+          }
+        >
+          {pdsResult.error
+            ? "Refresh"
+            : draft
+              ? "Continue PDS"
+              : submitted
+                ? "View profile"
+                : "Start PDS"}
+        </Link>
+      </section>
 
       <DashboardSections
         applications={dashboardApplications}
         documents={[...latestDocuments.values()]}
         notifications={notificationsResult.data ?? []}
+        unreadCount={unreadCount}
       />
     </>
-  );
-}
-
-function MetricCard({ label, value, detail }: { label: string; value: number; detail: string }) {
-  return (
-    <article className="rounded-2xl border border-line bg-panel p-5">
-      <p className="text-sm text-muted">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">{value}</p>
-      <p className="mt-1 text-xs text-muted">{detail}</p>
-    </article>
   );
 }

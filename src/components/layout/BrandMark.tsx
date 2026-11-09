@@ -20,7 +20,7 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
         ) : (
           <Image
             alt="Division of Southern Leyte seal"
-            className="size-11 object-contain"
+            className="h-auto w-11 object-contain"
             height={44}
             onError={() => setSealUnavailable(true)}
             src="/logo.png"

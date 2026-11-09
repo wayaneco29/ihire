@@ -10,42 +10,117 @@ export type ApplicantApplication = {
   jobTitle: string;
 };
 
-export function ApplicationList({ applications }: { applications: ApplicantApplication[] }) {
+function ApplicationSummary({
+  applications,
+}: {
+  applications: ApplicantApplication[];
+}) {
+  const summaries = [
+    { label: "Total applications", value: applications.length },
+    {
+      label: "In review",
+      value: applications.filter((application) =>
+        ["SUBMITTED", "UNDER_EVALUATION"].includes(application.status),
+      ).length,
+    },
+    {
+      label: "Qualified",
+      value: applications.filter(
+        (application) => application.status === "QUALIFIED",
+      ).length,
+    },
+    {
+      label: "Final outcomes",
+      value: applications.filter((application) =>
+        ["HIRED", "NOT_QUALIFIED", "REJECTED"].includes(application.status),
+      ).length,
+    },
+  ];
+
+  return (
+    <dl className="mt-7 grid grid-cols-2 overflow-hidden rounded-sm border border-line-subtle bg-panel sm:grid-cols-4">
+      {summaries.map((summary, index) => (
+        <div
+          className={`px-4 py-4 sm:px-5 ${
+            index > 0 ? "border-l border-line-subtle" : ""
+          } ${index === 2 ? "border-t border-line-subtle sm:border-t-0" : ""} ${
+            index === 3 ? "border-t border-line-subtle sm:border-t-0" : ""
+          }`}
+          key={summary.label}
+        >
+          <dt className="mt-1 text-xs text-muted">{summary.label}</dt>
+          <dd className="mt-1 text-2xl font-semibold tracking-tight text-ink">
+            {summary.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export function ApplicationList({
+  applications,
+}: {
+  applications: ApplicantApplication[];
+}) {
   if (!applications.length) {
     return (
-      <div className="mt-7">
-        <EmptyState
-          action={
-            <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark" href="/applicant/jobs">
-              Browse open jobs
-            </Link>
-          }
-          description="Your applications will appear here after you apply to a posting."
-          title="No applications yet"
-        />
-      </div>
+      <>
+        <ApplicationSummary applications={applications} />
+        <div className="mt-5">
+          <EmptyState
+            description="When you apply to an open position, its progress and latest status will appear here."
+            title="No applications yet"
+          />
+        </div>
+      </>
     );
   }
 
   return (
-    <ul className="mt-7 grid gap-4 lg:grid-cols-2">
-      {applications.map((application) => (
-        <li className="rounded-2xl border border-line bg-panel p-5 sm:p-6" key={application.id}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-ink">{application.jobTitle}</h2>
-              <p className="mt-2 text-sm text-muted">Applied {formatDate(application.applied_at)}</p>
-            </div>
-            <WorkflowStatusTag status={application.status} />
-          </div>
-          <Link
-            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light"
-            href={`/applicant/applications/${application.id}`}
-          >
-            View application
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ApplicationSummary applications={applications} />
+      <section
+        aria-label="Submitted applications"
+        className="mt-5 overflow-hidden rounded-sm border border-line-subtle bg-panel"
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-subtle px-4 py-4 sm:px-5">
+          <h2 className="font-semibold text-ink">Application register</h2>
+          <p className="text-xs text-muted">
+            {applications.length}{" "}
+            {applications.length === 1 ? "position" : "positions"}, newest first
+          </p>
+        </div>
+        <ul className="divide-y divide-line-subtle">
+          {applications.map((application) => (
+            <li
+              className="grid gap-3 px-4 py-4 transition-colors hover:bg-panel-muted/60 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:gap-6 sm:px-5"
+              key={application.id}
+            >
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold text-ink">
+                  {application.jobTitle}
+                </h3>
+                <p className="mt-1 text-xs text-muted">
+                  Submitted{" "}
+                  <time dateTime={application.applied_at}>
+                    {formatDate(application.applied_at, "MMM D, YYYY")}
+                  </time>
+                </p>
+              </div>
+              <div>
+                <WorkflowStatusTag status={application.status} />
+              </div>
+              <Link
+                className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary transition hover:bg-primary-light sm:justify-self-end"
+                href={`/applicant/applications/${application.id}`}
+              >
+                View details
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
   );
 }

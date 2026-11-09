@@ -88,7 +88,7 @@ function SummaryValue({ value }: { value: Json | undefined }) {
       <div className="space-y-3">
         {value.map((entry, index) => (
           <div
-            className="rounded-lg border border-line bg-panel p-3"
+            className="rounded-sm border border-line bg-panel p-3"
             key={index}
           >
             {entry && typeof entry === "object" && !Array.isArray(entry) ? (
@@ -186,7 +186,7 @@ export function ReviewSubmitStep({
         const step = asRecord(steps[String(index + 1)] ?? null);
         return (
           <section
-            className="rounded-md border border-line bg-panel-muted p-4 sm:p-5"
+            className="rounded-sm border border-line bg-panel-muted p-4 sm:p-5"
             key={title}
           >
             <h4 className="mb-4 text-sm font-semibold text-ink">

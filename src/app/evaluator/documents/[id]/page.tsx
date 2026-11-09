@@ -16,7 +16,9 @@ export default async function EvaluatorDocumentPage({
 
   const { data: documents, error } = await evaluator.supabase
     .from("v_anonymized_documents")
-    .select("application_id, applicant_number, document_id, storage_key, document_type, document_status, uploaded_at")
+    .select(
+      "application_id, applicant_number, document_id, storage_key, document_type, document_status, uploaded_at",
+    )
     .eq("document_id", id)
     .order("uploaded_at", { ascending: false })
     .limit(1);
@@ -63,7 +65,9 @@ export default async function EvaluatorDocumentPage({
         eyebrow={`Anonymous applicant · ${document.applicant_number}`}
         title={document.document_type}
       />
-      <p className="mt-3 text-sm text-muted">Uploaded {formatDate(document.uploaded_at, "MMM D, YYYY · h:mm A")}</p>
+      <p className="mt-3 text-sm text-muted">
+        Uploaded {formatDate(document.uploaded_at, "MMM D, YYYY · h:mm A")}
+      </p>
       <div className="mt-6">
         <DocumentReviewPanel
           applicationId={document.application_id}
@@ -73,7 +77,10 @@ export default async function EvaluatorDocumentPage({
           storageKey={document.storage_key}
         />
       </div>
-      <Link className="mt-5 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark" href={`/evaluator/applications/${document.application_id}`}>
+      <Link
+        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+        href={`/evaluator/applications/${document.application_id}`}
+      >
         Back to applicant review
       </Link>
     </>

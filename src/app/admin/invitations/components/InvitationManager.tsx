@@ -141,7 +141,7 @@ export function InvitationManager({
           <Alert className="mt-4" message={message} showIcon type="success" />
         )}
         {inviteUrl && (
-          <div className="mt-4 rounded-md border border-primary/15 bg-primary-light/50 p-3">
+          <div className="mt-4 rounded-sm border border-primary/15 bg-primary-light/50 p-3">
             <p className="break-all text-xs leading-5 text-ink">{inviteUrl}</p>
             <Button className="mt-3" onClick={copyInvite} size="small">
               Copy link

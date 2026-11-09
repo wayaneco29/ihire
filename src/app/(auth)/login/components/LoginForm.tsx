@@ -7,9 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
-import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { createClient } from "@/lib/supabase/client";
 import { isUserRole, ROLE_HOME } from "@/lib/auth/role-routing";
+import { AuthPageFrame } from "../../components/AuthPageFrame";
 import { loginSchema, type LoginValues } from "../schema";
 
 export function LoginForm() {
@@ -40,7 +40,10 @@ export function LoginForm() {
     let role: unknown = data.user.app_metadata?.role;
     if (!isUserRole(role)) {
       const profileAbortController = new AbortController();
-      const profileTimeout = setTimeout(() => profileAbortController.abort(), 8_000);
+      const profileTimeout = setTimeout(
+        () => profileAbortController.abort(),
+        8_000,
+      );
       try {
         const { data: profile } = await client
           .from("profiles")
@@ -61,48 +64,56 @@ export function LoginForm() {
   });
 
   return (
-    <SurfaceCard as="section" className="p-6 sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-        Recruitment portal
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
-        Sign in
-      </h1>
-      <p className="mt-2 text-sm leading-6 text-muted">
-        Use your applicant account or the account provided in your staff invitation.
-      </p>
+    <AuthPageFrame>
+      <section>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
+          Welcome back
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          Sign in to access your dashboard, staff tools, and school services.
+        </p>
 
-      <form className="mt-6" onSubmit={onSubmit}>
-        {formError && (
-          <Alert className="mb-4" message={formError} showIcon type="error" />
-        )}
-        <FormInput
-          autoComplete="email"
-          control={control}
-          label="Email address"
-          name="email"
-          required
-          type="email"
-        />
-        <FormInput
-          autoComplete="current-password"
-          control={control}
-          label="Password"
-          name="password"
-          required
-          type="password"
-        />
-        <Button block htmlType="submit" loading={isSubmitting} type="primary">
-          Sign in
-        </Button>
-      </form>
+        <form className="mt-7" onSubmit={onSubmit}>
+          {formError && (
+            <Alert className="mb-4" message={formError} showIcon type="error" />
+          )}
+          <FormInput
+            autoComplete="email"
+            control={control}
+            label="Email address"
+            name="email"
+            required
+            type="email"
+          />
+          <FormInput
+            autoComplete="current-password"
+            control={control}
+            label="Password"
+            name="password"
+            required
+            type="password"
+          />
+          <Button
+            block
+            className="mt-2"
+            htmlType="submit"
+            loading={isSubmitting}
+            type="primary"
+          >
+            Sign in
+          </Button>
+        </form>
 
-      <p className="mt-5 text-center text-sm text-muted">
-        New applicant?{" "}
-        <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark" href="/register">
-          Create an account
-        </Link>
-      </p>
-    </SurfaceCard>
+        <p className="mt-5 text-center text-sm text-muted">
+          New applicant?{" "}
+          <Link
+            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
+            href="/register"
+          >
+            Create an account
+          </Link>
+        </p>
+      </section>
+    </AuthPageFrame>
   );
 }

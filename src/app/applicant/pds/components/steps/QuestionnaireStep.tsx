@@ -88,7 +88,7 @@ export function QuestionnaireStep({
         return (
           <section
             aria-labelledby={`pds-question-${item.code}`}
-            className="rounded-md border border-line bg-panel p-4 sm:p-5"
+            className="rounded-sm border border-line bg-panel p-4 sm:p-5"
             key={item.code}
           >
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem] md:items-start">

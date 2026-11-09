@@ -12,8 +12,11 @@ export default async function ApplicantNotificationsPage({
   if (!applicant) redirect("/login");
 
   const { page: rawPage } = await searchParams;
-  const requestedPage = Number(Array.isArray(rawPage) ? rawPage[0] ?? "1" : rawPage ?? "1");
-  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const requestedPage = Number(
+    Array.isArray(rawPage) ? (rawPage[0] ?? "1") : (rawPage ?? "1"),
+  );
+  const page =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const pageSize = 50;
   const [notificationsResult, countResult] = await Promise.all([
     applicant.supabase
@@ -45,16 +48,35 @@ export default async function ApplicantNotificationsPage({
         </div>
       ) : (
         <>
-          <NotificationList notifications={notificationsResult.data ?? []} totalCount={totalCount} />
+          <NotificationList
+            key={(notificationsResult.data ?? [])
+              .map(
+                (notification) => `${notification.id}:${notification.is_read}`,
+              )
+              .join("|")}
+            notifications={notificationsResult.data ?? []}
+            totalCount={totalCount}
+          />
           {totalCount > pageSize && (
-            <nav aria-label="Notification pages" className="mt-5 flex justify-between">
+            <nav
+              aria-label="Notification pages"
+              className="mt-3 flex justify-between"
+            >
               {page > 1 ? (
-                <Link className="inline-flex min-h-11 items-center rounded-lg border border-line-strong bg-panel px-4 text-sm font-medium text-ink hover:bg-panel-muted" href={`/applicant/notifications?page=${page - 1}`}>
+                <Link
+                  className="inline-flex min-h-10 items-center rounded-sm border border-line-strong bg-panel px-3 text-sm font-medium text-ink hover:bg-panel-muted"
+                  href={`/applicant/notifications?page=${page - 1}`}
+                >
                   Newer notifications
                 </Link>
-              ) : <span />}
+              ) : (
+                <span />
+              )}
               {page * pageSize < totalCount && (
-                <Link className="inline-flex min-h-11 items-center rounded-lg border border-line-strong bg-panel px-4 text-sm font-medium text-ink hover:bg-panel-muted" href={`/applicant/notifications?page=${page + 1}`}>
+                <Link
+                  className="inline-flex min-h-10 items-center rounded-sm border border-line-strong bg-panel px-3 text-sm font-medium text-ink hover:bg-panel-muted"
+                  href={`/applicant/notifications?page=${page + 1}`}
+                >
                   Older notifications
                 </Link>
               )}

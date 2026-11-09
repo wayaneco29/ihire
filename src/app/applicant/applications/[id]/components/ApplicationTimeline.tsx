@@ -43,7 +43,7 @@ export function ApplicationTimeline({
               </time>
             )}
             {event.remarks && (
-              <p className="mt-3 whitespace-pre-wrap rounded-md bg-panel-muted p-3 text-sm leading-6 text-ink">
+              <p className="mt-3 whitespace-pre-wrap rounded-sm bg-panel-muted p-3 text-sm leading-6 text-ink">
                 {event.remarks}
               </p>
             )}

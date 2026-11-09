@@ -103,7 +103,7 @@ export default async function ApplicantApplicationDetailPage({
       />
 
       <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.8fr)]">
-        <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+        <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-semibold text-ink">Status timeline</h2>
             <WorkflowStatusTag status={application.status} />
@@ -115,7 +115,7 @@ export default async function ApplicantApplicationDetailPage({
         </section>
 
         <aside className="space-y-5">
-          <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+          <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
             <h2 className="font-semibold text-ink">Job information</h2>
             {job ? (
               <>
@@ -125,7 +125,7 @@ export default async function ApplicantApplicationDetailPage({
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">
                   {job.description}
                 </p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 rounded-md bg-panel-muted p-3">
+                <dl className="mt-4 grid grid-cols-2 gap-3 rounded-sm bg-panel-muted p-3">
                   <div>
                     <dt className="text-xs text-muted">Positions</dt>
                     <dd className="mt-1 text-sm font-medium text-ink">
@@ -161,7 +161,7 @@ export default async function ApplicantApplicationDetailPage({
               Submitted {formatDate(application.applied_at)}
             </p>
           </section>
-          <section className="rounded-2xl border border-primary/15 bg-primary-light/60 p-5">
+          <section className="rounded-sm border border-primary/15 bg-primary-light/60 p-5">
             <h2 className="font-semibold text-primary">Evaluator remarks</h2>
             <p className="mt-2 text-sm leading-6 text-ink">
               Remarks from each evaluation are shown in the timeline when

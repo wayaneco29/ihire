@@ -17,17 +17,17 @@ export function SkeletonLoader({
       <span className="sr-only">{label}</span>
       <div
         aria-hidden="true"
-        className="h-7 w-2/5 animate-pulse rounded-md bg-panel-muted"
+        className="h-7 w-2/5 animate-pulse rounded-sm bg-panel-muted"
       />
       <div
         aria-hidden="true"
-        className="h-4 w-3/5 animate-pulse rounded-md bg-panel-muted"
+        className="h-4 w-3/5 animate-pulse rounded-sm bg-panel-muted"
       />
       <div className="grid gap-3 pt-3 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: rows }, (_, index) => (
           <div
             aria-hidden="true"
-            className="space-y-4 rounded-md border border-line bg-panel p-5 shadow-card"
+            className="space-y-4 rounded-sm border border-line bg-panel p-5 shadow-card"
             key={index}
           >
             <div className="h-4 w-2/5 animate-pulse rounded bg-panel-muted" />

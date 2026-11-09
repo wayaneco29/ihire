@@ -28,20 +28,20 @@ export default function Home() {
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-md bg-panel px-4 text-sm font-semibold text-primary hover:bg-panel-muted"
+                className="inline-flex min-h-11 items-center justify-center rounded-sm bg-panel px-4 text-sm font-semibold text-primary hover:bg-panel-muted"
                 href="/login"
               >
                 Sign in
               </Link>
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-md border border-hero-line px-4 text-sm font-semibold text-hero-text hover:bg-hero-surface"
+                className="inline-flex min-h-11 items-center justify-center rounded-sm border border-hero-line px-4 text-sm font-semibold text-hero-text hover:bg-hero-surface"
                 href="/register"
               >
                 Applicant registration
               </Link>
             </div>
           </div>
-          <div className="w-full rounded-2xl border border-hero-line bg-hero-surface p-4 md:max-w-64">
+          <div className="w-full rounded-sm border border-hero-line bg-hero-surface p-4 md:max-w-64">
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-medium">Workspace</span>
               <StatusTag className="border-hero-line bg-hero-surface text-hero-text">
@@ -73,7 +73,7 @@ export default function Home() {
         <RoadmapCards />
       </section>
 
-      <p className="mt-8 rounded-md border border-line bg-panel px-4 py-3 text-xs leading-5 text-muted">
+      <p className="mt-8 rounded-sm border border-line bg-panel px-4 py-3 text-xs leading-5 text-muted">
         Applicant information stays private while staff review applications
         using role-specific access.
       </p>

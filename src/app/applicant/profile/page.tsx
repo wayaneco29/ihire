@@ -21,27 +21,26 @@ export default async function ApplicantProfilePage() {
   const draft = versions?.find((version) => version.status === "DRAFT");
 
   return (
-    <>
+    <div className="-mx-4 -my-6 min-h-[calc(100vh-4.5rem)] bg-profile-canvas px-4 py-6 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 lg:-mx-10 lg:px-10">
       <PageHeader
+        actions={
+          submitted ? (
+            draft ? (
+              <Link
+                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                href="/applicant/pds"
+              >
+                Continue PDS update
+              </Link>
+            ) : (
+              <StartPdsUpdateButton redirectToPds />
+            )
+          ) : undefined
+        }
         description="This profile reflects your latest submitted Personal Data Sheet."
         eyebrow="Applicant workspace"
         title="My profile"
       />
-
-      {submitted && (
-        <div className="mt-5">
-          {draft ? (
-            <Link
-              className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
-              href="/applicant/pds"
-            >
-              Continue PDS update
-            </Link>
-          ) : (
-            <StartPdsUpdateButton redirectToPds />
-          )}
-        </div>
-      )}
 
       {versionsError ? (
         <div className="mt-7">
@@ -55,7 +54,7 @@ export default async function ApplicantProfilePage() {
           <EmptyState
             action={
               <Link
-                className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
                 href="/applicant/pds"
               >
                 Complete your PDS
@@ -73,7 +72,7 @@ export default async function ApplicantProfilePage() {
           versionNumber={submitted.version_no}
         />
       )}
-    </>
+    </div>
   );
 }
 
@@ -143,9 +142,15 @@ async function ProfileContent({
 
   return (
     <>
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-profile-line py-3">
         <WorkflowStatusTag status="SUBMITTED" />
-        <span className="text-sm text-muted">PDS version {versionNumber}</span>
+        <p className="text-sm text-profile-muted">
+          Submitted Personal Data Sheet
+          <span className="mx-2 text-profile-muted" aria-hidden="true">
+            /
+          </span>
+          Version {versionNumber}
+        </p>
       </div>
       <ProfileDetails
         education={educationResult.data ?? []}

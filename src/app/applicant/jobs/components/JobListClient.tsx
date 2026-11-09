@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Input, Select } from "antd";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
+
+type DeadlineFilter = "ALL" | "SOON" | "NONE";
 
 export type JobListItem = {
   id: string;
@@ -23,7 +27,7 @@ export function JobListClient({
   nowMs: number;
 }) {
   const [search, setSearch] = useState("");
-  const [deadlineFilter, setDeadlineFilter] = useState("ALL");
+  const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>("ALL");
 
   const filteredJobs = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
@@ -51,14 +55,14 @@ export function JobListClient({
     <>
       <section
         aria-label="Filter job postings"
-        className="mt-7 grid gap-3 rounded-2xl border border-line bg-panel p-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-5"
+        className="mt-7 grid gap-3 rounded-sm border border-line bg-panel p-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-5"
       >
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-muted">
             Search postings
           </span>
-          <input
-            className="min-h-11 w-full rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink outline-none transition placeholder:text-muted-strong focus:border-primary focus:ring-2 focus:ring-primary/15"
+          <Input
+            className="min-h-11"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search title or description"
             type="search"
@@ -69,15 +73,20 @@ export function JobListClient({
           <span className="mb-1.5 block text-xs font-medium text-muted">
             Deadline
           </span>
-          <select
-            className="min-h-11 w-full rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-            onChange={(event) => setDeadlineFilter(event.target.value)}
+          <Select
+            className="w-full"
+            options={[
+              { label: "Any deadline", value: "ALL" },
+              { label: "Closing within 30 days", value: "SOON" },
+              { label: "No deadline listed", value: "NONE" },
+            ]}
+            onChange={(value: string) => {
+              if (value === "ALL" || value === "SOON" || value === "NONE") {
+                setDeadlineFilter(value);
+              }
+            }}
             value={deadlineFilter}
-          >
-            <option value="ALL">Any deadline</option>
-            <option value="SOON">Closing within 30 days</option>
-            <option value="NONE">No deadline listed</option>
-          </select>
+          />
         </label>
       </section>
 
@@ -86,9 +95,9 @@ export function JobListClient({
           {filteredJobs.length}{" "}
           {filteredJobs.length === 1 ? "posting" : "postings"} found
         </p>
-        {(search || deadlineFilter !== "ALL") && (
+        {filteredJobs.length > 0 && (search || deadlineFilter !== "ALL") && (
           <button
-            className="min-h-11 rounded-lg px-2 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
+            className="min-h-11 rounded-sm px-2 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
             onClick={() => {
               setSearch("");
               setDeadlineFilter("ALL");
@@ -104,7 +113,7 @@ export function JobListClient({
         <ul className="mt-3 grid gap-4 lg:grid-cols-2">
           {filteredJobs.map((job) => (
             <li
-              className="flex flex-col rounded-2xl border border-line bg-panel p-5 sm:p-6"
+              className="flex flex-col rounded-sm border border-line bg-panel p-5 sm:p-6"
               key={job.id}
             >
               <div className="flex items-start justify-between gap-3">
@@ -114,9 +123,9 @@ export function JobListClient({
               <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm leading-6 text-muted">
                 {job.description}
               </p>
-              <dl className="mt-4 grid grid-cols-2 gap-3 rounded-md bg-panel-muted p-3">
+              <dl className="mt-4 grid grid-cols-2 gap-3 rounded-sm bg-panel-muted p-3">
                 <div>
-                  <dt className="text-xs text-muted">Available positions</dt>
+                  <dt className="text-xs text-muted">Hiring slots</dt>
                   <dd className="mt-1 text-sm font-medium text-ink">
                     {job.slots}
                   </dd>
@@ -139,7 +148,7 @@ export function JobListClient({
                   </span>
                 )}
                 <Link
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                  className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
                   href={`/applicant/jobs/${job.id}`}
                 >
                   {job.applied ? "View posting" : "View and apply"}
@@ -149,14 +158,24 @@ export function JobListClient({
           ))}
         </ul>
       ) : (
-        <section className="mt-3 grid min-h-48 place-items-center rounded-2xl border border-dashed border-line-strong bg-panel p-6 text-center">
-          <div>
-            <h2 className="font-semibold text-ink">No postings match</h2>
-            <p className="mt-2 text-sm text-muted">
-              Try another search or clear the selected filters.
-            </p>
-          </div>
-        </section>
+        <div className="mt-3">
+          <EmptyState
+            action={
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-sm border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:bg-panel-muted"
+                onClick={() => {
+                  setSearch("");
+                  setDeadlineFilter("ALL");
+                }}
+                type="button"
+              >
+                Clear filters
+              </button>
+            }
+            description="Try another search or clear the selected filters."
+            title="No postings match"
+          />
+        </div>
       )}
     </>
   );

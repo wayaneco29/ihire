@@ -14,7 +14,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 flex h-header items-center justify-between border-b border-line bg-panel/95 px-4 backdrop-blur sm:px-6 lg:px-8">
       <a
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-panel focus:px-4 focus:py-3 focus:text-ink focus:shadow-dropdown"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-sm focus:bg-panel focus:px-4 focus:py-3 focus:text-ink focus:shadow-dropdown"
         href="#main-content"
       >
         Skip to content
@@ -22,7 +22,7 @@ export function Header() {
       <div className="flex min-w-0 items-center gap-3">
         <button
           aria-label="Open navigation menu"
-          className="grid size-11 shrink-0 place-items-center rounded-md text-muted transition hover:bg-panel-muted lg:hidden"
+          className="grid size-11 shrink-0 place-items-center rounded-sm text-muted transition hover:bg-panel-muted lg:hidden"
           onClick={() => setMobileNavOpen(true)}
           type="button"
         >
@@ -43,11 +43,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        {role && (
-          <span className="hidden min-h-11 items-center rounded-full border border-primary/15 bg-primary-light px-3 text-xs font-medium text-primary sm:inline-flex">
-            {role}
-          </span>
-        )}
         <ThemeSwitcher />
         {user && <NotificationBell />}
       </div>

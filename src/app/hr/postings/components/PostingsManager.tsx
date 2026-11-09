@@ -48,7 +48,7 @@ export function PostingsManager({
         <label>
           <span className="sr-only">Filter by posting status</span>
           <select
-            className="min-h-11 w-full rounded-lg border border-line-strong bg-panel px-3 text-sm"
+            className="min-h-11 w-full rounded-sm border border-line-strong bg-panel px-3 text-sm"
             onChange={(event) => setStatus(event.target.value)}
             value={status}
           >
@@ -63,7 +63,7 @@ export function PostingsManager({
         <ul className="grid gap-4 lg:grid-cols-2">
           {filtered.map((posting) => (
             <li
-              className="rounded-2xl border border-line bg-panel p-5 sm:p-6"
+              className="rounded-sm border border-line bg-panel p-5 sm:p-6"
               key={posting.id}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -96,13 +96,13 @@ export function PostingsManager({
               </dl>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
-                  className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                  className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                   href={`/hr/postings/${posting.id}`}
                 >
                   View applicants
                 </Link>
                 <Link
-                  className="inline-flex min-h-11 items-center rounded-lg border border-line-strong px-4 text-sm font-semibold text-ink hover:bg-panel-muted"
+                  className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink hover:bg-panel-muted"
                   href={`/hr/postings/${posting.id}/edit`}
                 >
                   Edit posting
@@ -112,7 +112,7 @@ export function PostingsManager({
           ))}
         </ul>
       ) : (
-        <div className="rounded-2xl border border-dashed border-line-strong bg-panel p-8 text-center text-sm text-muted">
+        <div className="rounded-sm border border-dashed border-line-strong bg-panel p-8 text-center text-sm text-muted">
           No postings match these filters.
         </div>
       )}
@@ -125,7 +125,7 @@ function Metric({
   value,
 }: Readonly<{ label: string; value: string | number }>) {
   return (
-    <div className="rounded-md bg-panel-muted p-3">
+    <div className="rounded-sm bg-panel-muted p-3">
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-1 font-semibold text-ink">{value}</dd>
     </div>

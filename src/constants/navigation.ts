@@ -1,20 +1,22 @@
 import {
-  AppstoreOutlined,
-  AuditOutlined,
-  BellOutlined,
-  FileTextOutlined,
-  FolderOpenOutlined,
-  MailOutlined,
-  SearchOutlined,
-  SafetyCertificateOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+  BellIcon,
+  ClipboardDocumentCheckIcon,
+  DocumentTextIcon,
+  EnvelopeIcon,
+  FolderOpenIcon,
+  MagnifyingGlassIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
 import type { UserRole } from "./roles";
+
+type NavigationIcon = typeof Squares2X2Icon;
 
 type NavigationItem = {
   label: string;
   href: string;
-  icon: typeof AppstoreOutlined;
+  icon: NavigationIcon;
   available: boolean;
 };
 
@@ -27,12 +29,12 @@ const publicNavigation: NavigationSection[] = [
   {
     title: "Welcome",
     items: [
-      { label: "Overview", href: "/", icon: AppstoreOutlined, available: true },
-      { label: "Sign in", href: "/login", icon: UserOutlined, available: true },
+      { label: "Overview", href: "/", icon: Squares2X2Icon, available: true },
+      { label: "Sign in", href: "/login", icon: UserIcon, available: true },
       {
         label: "Applicant registration",
         href: "/register",
-        icon: FileTextOutlined,
+        icon: DocumentTextIcon,
         available: true,
       },
     ],
@@ -44,18 +46,18 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "Workspace",
       items: [
-        { label: "Overview", href: "/applicant", icon: AppstoreOutlined, available: true },
-        { label: "Browse jobs", href: "/applicant/jobs", icon: SearchOutlined, available: true },
+        { label: "Overview", href: "/applicant", icon: Squares2X2Icon, available: true },
+        { label: "Browse jobs", href: "/applicant/jobs", icon: MagnifyingGlassIcon, available: true },
         {
           label: "My applications",
           href: "/applicant/applications",
-          icon: FileTextOutlined,
+          icon: DocumentTextIcon,
           available: true,
         },
         {
           label: "Notifications",
           href: "/applicant/notifications",
-          icon: BellOutlined,
+          icon: BellIcon,
           available: true,
         },
       ],
@@ -63,17 +65,17 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "My profile",
       items: [
-        { label: "Personal data sheet", href: "/applicant/pds", icon: UserOutlined, available: true },
+        { label: "Personal data sheet", href: "/applicant/pds", icon: ClipboardDocumentCheckIcon, available: true },
         {
           label: "Profile",
           href: "/applicant/profile",
-          icon: UserOutlined,
+          icon: UserIcon,
           available: true,
         },
         {
           label: "Documents",
           href: "/applicant/documents",
-          icon: FolderOpenOutlined,
+          icon: FolderOpenIcon,
           available: true,
         },
       ],
@@ -83,7 +85,7 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "Reviews",
       items: [
-        { label: "Review queue", href: "/evaluator/reviews", icon: AuditOutlined, available: true },
+        { label: "Review queue", href: "/evaluator/reviews", icon: ClipboardDocumentCheckIcon, available: true },
       ],
     },
   ],
@@ -94,13 +96,13 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
         {
           label: "Dashboard",
           href: "/hr/dashboard",
-          icon: AppstoreOutlined,
+          icon: Squares2X2Icon,
           available: true,
         },
         {
           label: "Job postings",
           href: "/hr/postings",
-          icon: SafetyCertificateOutlined,
+          icon: ShieldCheckIcon,
           available: true,
         },
       ],
@@ -113,7 +115,7 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
         {
           label: "Invitations",
           href: "/admin/invitations",
-          icon: MailOutlined,
+          icon: EnvelopeIcon,
           available: true,
         },
       ],

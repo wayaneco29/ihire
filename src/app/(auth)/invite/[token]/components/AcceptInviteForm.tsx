@@ -48,7 +48,7 @@ export function AcceptInviteForm({
         <div className="mt-6 space-y-4">
           <Alert message={success} showIcon type="success" />
           <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-dark"
+            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-dark"
             href="/login"
           >
             Go to sign in
@@ -56,7 +56,9 @@ export function AcceptInviteForm({
         </div>
       ) : (
         <form className="mt-6" onSubmit={onSubmit}>
-          {error && <Alert className="mb-4" message={error} showIcon type="error" />}
+          {error && (
+            <Alert className="mb-4" message={error} showIcon type="error" />
+          )}
           <FormInput
             autoComplete="new-password"
             control={control}

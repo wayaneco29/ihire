@@ -137,13 +137,13 @@ export function AnonymizedApplicantReview({
   return (
     <>
       <div className="mt-7 grid gap-4 sm:grid-cols-2">
-        <section className="rounded-2xl border border-line bg-panel p-5">
+        <section className="rounded-sm border border-line bg-panel p-5">
           <p className="text-xs text-muted">Applicant number</p>
           <p className="mt-2 text-lg font-semibold text-primary">
             {applicantNumber}
           </p>
         </section>
-        <section className="rounded-2xl border border-line bg-panel p-5">
+        <section className="rounded-sm border border-line bg-panel p-5">
           <p className="text-xs text-muted">Training hours</p>
           <p className="mt-2 text-sm font-semibold text-ink">
             {trainingHours ?? 0}
@@ -151,7 +151,7 @@ export function AnonymizedApplicantReview({
         </section>
       </div>
 
-      <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
+      <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Skills</h2>
@@ -178,7 +178,7 @@ export function AnonymizedApplicantReview({
       </section>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+        <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-ink">Education</h2>
@@ -191,7 +191,7 @@ export function AnonymizedApplicantReview({
             </span>
           </div>
           {educationUnavailable ? (
-            <p className="mt-5 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            <p className="mt-5 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
               Education details could not be loaded. Apply the latest Supabase
               migrations, then refresh this page.
             </p>
@@ -199,7 +199,7 @@ export function AnonymizedApplicantReview({
             <ul className="mt-5 space-y-3">
               {education.map((item) => (
                 <li
-                  className="rounded-md border border-line-subtle bg-panel-muted p-4"
+                  className="rounded-sm border border-line-subtle bg-panel-muted p-4"
                   key={item.education_id}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
@@ -243,13 +243,13 @@ export function AnonymizedApplicantReview({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-md bg-panel-muted px-4 py-3 text-sm text-muted">
+            <p className="mt-5 rounded-sm bg-panel-muted px-4 py-3 text-sm text-muted">
               No education records listed.
             </p>
           )}
         </section>
 
-        <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+        <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-ink">Work experience</h2>
@@ -262,7 +262,7 @@ export function AnonymizedApplicantReview({
             </span>
           </div>
           {workExperienceUnavailable ? (
-            <p className="mt-5 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            <p className="mt-5 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
               Work experience details could not be loaded. Apply the latest
               Supabase migrations, then refresh this page.
             </p>
@@ -270,7 +270,7 @@ export function AnonymizedApplicantReview({
             <ul className="mt-5 space-y-3">
               {workExperience.map((item) => (
                 <li
-                  className="rounded-md border border-line-subtle bg-panel-muted p-4"
+                  className="rounded-sm border border-line-subtle bg-panel-muted p-4"
                   key={item.experience_id}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
@@ -310,14 +310,14 @@ export function AnonymizedApplicantReview({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-md bg-panel-muted px-4 py-3 text-sm text-muted">
+            <p className="mt-5 rounded-sm bg-panel-muted px-4 py-3 text-sm text-muted">
               No work experience records listed.
             </p>
           )}
         </section>
       </div>
 
-      <section className="mt-5 rounded-2xl border border-line bg-panel p-5 sm:p-6">
+      <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Supporting documents</h2>
@@ -331,7 +331,7 @@ export function AnonymizedApplicantReview({
           </span>
         </div>
         {documentsUnavailable ? (
-          <p className="mt-4 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+          <p className="mt-4 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
             Supporting documents could not be loaded. Refresh the page to try
             again.
           </p>
@@ -354,7 +354,7 @@ export function AnonymizedApplicantReview({
                 <div className="flex items-center gap-3">
                   <WorkflowStatusTag status={document.document_status} />
                   <button
-                    className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark disabled:opacity-60"
                     disabled={isPending}
                     onClick={() => viewDocument(document)}
                     type="button"
@@ -377,7 +377,7 @@ export function AnonymizedApplicantReview({
 
       <dialog
         aria-labelledby="document-preview-title"
-        className="m-auto max-h-[92dvh] w-[min(96vw,72rem)] overflow-hidden rounded-2xl border border-line bg-panel p-0 text-ink shadow-modal backdrop:bg-ink/60"
+        className="m-auto max-h-[92dvh] w-[min(96vw,72rem)] overflow-hidden rounded-sm border border-line bg-panel p-0 text-ink shadow-modal backdrop:bg-ink/60"
         onClose={() => setSelectedDocument(null)}
         onClick={(event) => {
           if (event.target === dialogRef.current) setSelectedDocument(null);
@@ -404,7 +404,7 @@ export function AnonymizedApplicantReview({
               </div>
               <button
                 aria-label="Close document preview"
-                className="inline-flex min-h-10 items-center rounded-lg border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                 onClick={() => setSelectedDocument(null)}
                 type="button"
               >
@@ -417,7 +417,7 @@ export function AnonymizedApplicantReview({
                   {previewContentType?.startsWith("image/") ? (
                     <Image
                       alt={`${selectedDocument.document_type} for applicant ${applicantNumber}`}
-                      className="h-auto max-h-[min(65dvh,calc(100dvh-15rem))] w-auto max-w-full rounded-lg object-contain"
+                      className="h-auto max-h-[min(65dvh,calc(100dvh-15rem))] w-auto max-w-full rounded-sm object-contain"
                       height={1600}
                       unoptimized
                       src={previewUrl}
@@ -425,13 +425,13 @@ export function AnonymizedApplicantReview({
                     />
                   ) : previewContentType === "application/pdf" ? (
                     <iframe
-                      className="h-[min(65dvh,calc(100dvh-15rem))] min-h-64 w-full rounded-lg border border-line bg-panel"
+                      className="h-[min(65dvh,calc(100dvh-15rem))] min-h-64 w-full rounded-sm border border-line bg-panel"
                       referrerPolicy="no-referrer"
                       src={previewUrl}
                       title={`${selectedDocument.document_type} document preview`}
                     />
                   ) : (
-                    <div className="max-w-md rounded-md border border-line bg-panel p-5 text-center">
+                    <div className="max-w-md rounded-sm border border-line bg-panel p-5 text-center">
                       <p className="font-medium text-ink">
                         Preview not available for this file type
                       </p>
@@ -449,7 +449,7 @@ export function AnonymizedApplicantReview({
                   )}
                 </div>
               ) : (
-                <div className="grid min-h-64 place-items-center rounded-lg border border-dashed border-line-strong bg-panel px-5 text-center">
+                <div className="grid min-h-64 place-items-center rounded-sm border border-dashed border-line-strong bg-panel px-5 text-center">
                   <p className="text-sm text-muted">
                     {pendingAction === "preview"
                       ? "Loading secure document preview…"
@@ -459,7 +459,7 @@ export function AnonymizedApplicantReview({
               )}
               {previewUrl && (
                 <a
-                  className="mt-3 inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                  className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                   download
                   href={previewUrl}
                 >
@@ -486,13 +486,13 @@ export function AnonymizedApplicantReview({
                 {selectedDocument.document_status === "FOR_REVIEW" ? (
                   <>
                     <Link
-                      className="inline-flex min-h-11 items-center rounded-lg border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                      className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                       href={`/evaluator/documents/${selectedDocument.document_id}`}
                     >
                       Other review actions
                     </Link>
                     <button
-                      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={!previewUrl || isPending}
                       onClick={verifyDocument}
                       type="button"

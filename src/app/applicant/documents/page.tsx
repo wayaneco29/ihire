@@ -112,7 +112,7 @@ export default async function ApplicantDocumentsPage() {
           {requiredTypes.length > 0 && (
             <section
               aria-label="Required documents"
-              className="rounded-md shadow bg-white p-3 sm:p-4"
+              className="rounded-sm shadow bg-white p-3 sm:p-4"
             >
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export default async function ApplicantDocumentsPage() {
               <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
                 Other optional documents
               </h2>
-              <div className="overflow-hidden rounded-md shadow bg-panel p-4">
+              <div className="overflow-hidden rounded-sm shadow bg-panel p-4">
                 {optionalTypes.map((type) => (
                   <DocumentTypeCard
                     documents={documentsByType.get(type.id) ?? []}

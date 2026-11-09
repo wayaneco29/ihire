@@ -72,7 +72,7 @@ export function PostingApplicants({
         <label className="text-sm font-medium text-ink">
           Filter applicants
           <select
-            className="mt-1 min-h-11 w-full rounded-lg border border-line-strong bg-panel px-3 sm:w-56"
+            className="mt-1 min-h-11 w-full rounded-sm border border-line-strong bg-panel px-3 sm:w-56"
             onChange={(event) => setFilter(event.target.value)}
             value={filter}
           >
@@ -87,7 +87,7 @@ export function PostingApplicants({
         </label>
       </div>
       {slotsFull && (
-        <p className="mb-4 rounded-md border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
+        <p className="mb-4 rounded-sm border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
           All {slots} slots are filled. This posting has been closed
           automatically.
         </p>
@@ -104,7 +104,7 @@ export function PostingApplicants({
             const pending = isWorking && workingId === applicant.application_id;
             return (
               <li
-                className="rounded-2xl border border-line bg-panel p-5 sm:p-6"
+                className="rounded-sm border border-line bg-panel p-5 sm:p-6"
                 key={applicant.application_id}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -141,7 +141,7 @@ export function PostingApplicants({
                 <div className="mt-5 flex flex-wrap items-center gap-2">
                   {applicant.application_status === "HIRED" && (
                     <Link
-                      className="inline-flex min-h-11 items-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light"
+                      className="inline-flex min-h-11 items-center rounded-sm border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light"
                       href={`/hr/applications/${applicant.application_id}/pds`}
                     >
                       Printable PDS
@@ -183,7 +183,7 @@ export function PostingApplicants({
           })}
         </ul>
       ) : (
-        <div className="rounded-2xl border border-dashed border-line-strong bg-panel p-8 text-center text-sm text-muted">
+        <div className="rounded-sm border border-dashed border-line-strong bg-panel p-8 text-center text-sm text-muted">
           No applicants match this filter.
         </div>
       )}
@@ -200,7 +200,7 @@ function Credibility({
   value,
 }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className="rounded-md bg-panel-muted p-3">
+    <div className="rounded-sm bg-panel-muted p-3">
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-1 break-words text-sm font-medium text-ink">{value}</dd>
     </div>

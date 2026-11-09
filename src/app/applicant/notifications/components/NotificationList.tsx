@@ -26,12 +26,16 @@ export function NotificationList({
     const success = await markAsRead(id);
     setBusyId(null);
     if (!success) {
-      setError("This notification could not be marked as read. Please try again.");
+      setError(
+        "This notification could not be marked as read. Please try again.",
+      );
       return false;
     }
     setNotifications((current) =>
       current.map((notification) =>
-        notification.id === id ? { ...notification, is_read: true } : notification,
+        notification.id === id
+          ? { ...notification, is_read: true }
+          : notification,
       ),
     );
     await refreshNotifications();
@@ -40,29 +44,39 @@ export function NotificationList({
 
   if (notifications.length === 0) {
     return (
-      <div className="mt-7 rounded-2xl border border-dashed border-line-strong bg-panel p-8 text-center">
+      <div className="mt-5 rounded-sm border border-dashed border-line-strong bg-panel p-6 text-center">
         <h2 className="font-semibold text-ink">You’re all caught up</h2>
-        <p className="mt-2 text-sm text-muted">New updates about your applications will appear here.</p>
+        <p className="mt-2 text-sm text-muted">
+          New updates about your applications will appear here.
+        </p>
       </div>
     );
   }
 
   return (
     <>
-      <p className="mt-6 text-sm text-muted">{totalCount} notifications</p>
-      {error && <p className="mt-3 text-sm text-danger" role="alert">{error}</p>}
-      <ul className="mt-3 divide-y divide-line-subtle rounded-2xl border border-line bg-panel px-4 sm:px-6">
+      <p className="mt-4 text-sm text-muted">{totalCount} notifications</p>
+      {error && (
+        <p className="mt-2 text-sm text-danger" role="alert">
+          {error}
+        </p>
+      )}
+      <ul className="mt-2 divide-y divide-line-subtle rounded-sm border border-line bg-panel px-3 sm:px-4">
         {notifications.map((notification) => {
-          const internalLink = notification.link?.startsWith("/") && !notification.link.startsWith("//")
-            ? notification.link
-            : null;
+          const internalLink =
+            notification.link?.startsWith("/") &&
+            !notification.link.startsWith("//")
+              ? notification.link
+              : null;
           return (
-            <li className="flex items-start gap-3 py-5" key={notification.id}>
-              <span className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.is_read ? "bg-line" : "bg-primary"}`} />
+            <li className="flex items-start gap-2.5 py-3" key={notification.id}>
+              <span
+                className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.is_read ? "bg-line" : "bg-primary"}`}
+              />
               <div className="min-w-0 flex-1">
                 {internalLink ? (
                   <Link
-                    className="inline-flex min-h-11 items-center rounded-lg font-medium text-ink hover:text-primary"
+                    className="inline-flex min-h-9 items-center rounded-sm font-medium text-ink hover:text-primary"
                     href={internalLink}
                     onClick={(event) => {
                       if (!notification.is_read) {
@@ -75,15 +89,22 @@ export function NotificationList({
                   >
                     {notification.title}
                   </Link>
-                ) : <h2 className="font-medium text-ink">{notification.title}</h2>}
-                <p className="mt-1 text-sm leading-6 text-muted">{notification.body}</p>
-                <time className="mt-2 block text-xs text-muted" dateTime={notification.created_at}>
+                ) : (
+                  <h2 className="font-medium text-ink">{notification.title}</h2>
+                )}
+                <p className="mt-0.5 text-sm leading-5 text-muted">
+                  {notification.body}
+                </p>
+                <time
+                  className="mt-1.5 block text-xs text-muted"
+                  dateTime={notification.created_at}
+                >
                   {formatDate(notification.created_at, "MMM D, YYYY · h:mm A")}
                 </time>
               </div>
               {!notification.is_read && (
                 <button
-                  className="min-h-11 shrink-0 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-primary-light disabled:opacity-60"
+                  className="min-h-9 shrink-0 rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light disabled:opacity-60"
                   disabled={busyId === notification.id}
                   onClick={() => void markRead(notification.id)}
                   type="button"

@@ -155,10 +155,10 @@ export default async function EvaluatorApplicationReviewPage({
       {jobId === application.job_id && (
         <nav
           aria-label="Applicant review sequence"
-          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-panel p-4"
+          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-panel p-4"
         >
           <Link
-            className="inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+            className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
             href={`/evaluator/reviews?jobId=${jobId}`}
           >
             Back to applicants
@@ -177,7 +177,7 @@ export default async function EvaluatorApplicationReviewPage({
               <div className="flex items-center gap-2">
                 {previousApplicant ? (
                   <Link
-                    className="inline-flex min-h-10 items-center rounded-lg border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                    className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                     href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}`}
                   >
                     Previous
@@ -185,7 +185,7 @@ export default async function EvaluatorApplicationReviewPage({
                 ) : null}
                 {nextApplicant ? (
                   <Link
-                    className="inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                    className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                     href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}`}
                   >
                     Next applicant
@@ -218,7 +218,7 @@ export default async function EvaluatorApplicationReviewPage({
         />
       </div>
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
         href={
           jobId === application.job_id
             ? `/evaluator/reviews?jobId=${jobId}`

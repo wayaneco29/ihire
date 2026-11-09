@@ -51,7 +51,7 @@ export function ReviewQueueList({
     }
 
     return (
-      <div className="mt-7 overflow-hidden rounded-2xl border border-line bg-panel">
+      <div className="mt-7 overflow-hidden rounded-sm border border-line bg-panel">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-5 py-4">
           <div>
             <h2 className="font-semibold text-ink">Applicants</h2>
@@ -110,7 +110,7 @@ export function ReviewQueueList({
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link
-                      className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                      className="inline-flex min-h-10 items-center justify-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
                       href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}`}
                     >
                       Review applicant
@@ -137,7 +137,7 @@ export function ReviewQueueList({
           return (
             <li key={jobId}>
               <Link
-                className="group flex h-full flex-col rounded-2xl border border-line bg-panel p-5 transition hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-6"
+                className="group flex h-full flex-col rounded-sm border border-line bg-panel p-5 transition hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-6"
                 href={`/evaluator/reviews?jobId=${jobId}`}
               >
                 <div className="flex w-full items-start justify-between gap-4">
@@ -149,7 +149,7 @@ export function ReviewQueueList({
                       {title}
                     </h2>
                   </div>
-                  <span className="shrink-0 rounded-md bg-primary-light px-3 py-2 text-center text-primary">
+                  <span className="shrink-0 rounded-sm bg-primary-light px-3 py-2 text-center text-primary">
                     <span className="block text-xl font-bold leading-none">
                       {applicants.length}
                     </span>

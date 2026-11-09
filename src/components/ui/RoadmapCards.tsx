@@ -43,7 +43,7 @@ export function RoadmapCards() {
           tone="interactive"
         >
           <div className="flex items-start justify-between gap-3">
-            <span className="grid size-11 place-items-center rounded-md bg-primary-light text-lg text-primary">
+            <span className="grid size-11 place-items-center rounded-sm bg-primary-light text-lg text-primary">
               <Icon />
             </span>
             <StatusTag className="border-line bg-panel-muted text-muted">

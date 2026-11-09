@@ -3,6 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "antd";
+import {
+  ArrowRightStartOnRectangleIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
 import { BrandMark } from "./BrandMark";
 import { useAppShell } from "@/context/AppShellContext";
@@ -30,25 +34,27 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-full w-full flex-col bg-panel px-4 py-5 text-ink">
+    <aside className="flex h-full w-full flex-col bg-panel px-3 py-4 text-ink sm:px-4 sm:py-5">
       <div className="border-b border-line-subtle px-2 pb-5">
         <BrandMark />
       </div>
 
-      <nav aria-label="Main navigation" className="flex-1 space-y-7 py-6">
+      <nav
+        aria-label="Main navigation"
+        className="flex-1 space-y-6 overflow-y-auto py-6"
+      >
         {sections.map((section) => (
           <div key={section.title}>
-            <p className="px-3 text-xs font-semibold uppercase tracking-widest text-muted">
+            <p className="px-3 text-xs font-semibold text-muted">
               {section.title}
             </p>
             <ul className="mt-2 space-y-1">
               {section.items.map(({ label, href, icon: Icon, available }) => {
                 const itemClasses =
-                  "flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition";
-                const icon = <Icon className="text-base" />;
+                  "flex min-h-11 w-full items-center gap-3 rounded-xs border-l-2 px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
                 const isApplicantOverview = href === "/applicant";
                 const isActive = isApplicantOverview
-                  ? pathname === href
+                  ? pathname === href || pathname === "/applicant/dashboard"
                   : pathname === href || pathname.startsWith(`${href}/`);
 
                 return (
@@ -56,20 +62,20 @@ export function Sidebar() {
                     {available ? (
                       <Link
                         aria-current={isActive ? "page" : undefined}
-                        className={`${itemClasses} ${isActive ? "bg-primary-light font-medium text-primary" : "text-muted hover:bg-panel-muted hover:text-ink"}`}
+                        className={`${itemClasses} ${isActive ? "border-primary bg-primary-light font-semibold text-primary" : "border-transparent text-muted hover:bg-panel-muted hover:text-ink"}`}
                         href={href}
                         onClick={() => setMobileNavOpen(false)}
                       >
-                        {icon}
+                        <Icon aria-hidden="true" className="size-5 shrink-0" />
                         <span>{label}</span>
                       </Link>
                     ) : (
                       <span
                         aria-disabled="true"
-                        className={`${itemClasses} cursor-not-allowed text-disabled`}
+                        className={`${itemClasses} cursor-not-allowed border-transparent text-disabled`}
                         title="This section will be available in a later build phase"
                       >
-                        {icon}
+                        <Icon aria-hidden="true" className="size-5 shrink-0" />
                         <span className="flex-1">{label}</span>
                         <span className="rounded-full bg-panel-muted px-2 py-0.5 text-xs font-medium text-muted-strong">
                           Soon
@@ -84,30 +90,48 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="rounded-2xl border border-primary/10 bg-primary-light p-4">
-        <p className="text-xs font-semibold text-primary">
-          {role ?? "Recruitment portal"}
-        </p>
-        <p className="mt-1 text-xs leading-5 text-muted">
-          {user?.email ??
-            (loading
-              ? "Loading your account…"
-              : "Southern Leyte recruitment workspace.")}
-        </p>
-      </div>
-
-      {user && (
-        <div className="pt-4">
-          {signOutError && (
-            <p className="mb-2 text-xs text-danger" role="alert">
-              Sign out failed. Please try again.
+      <div className="border-t border-line-subtle pt-4">
+        <div className="flex min-w-0 items-center gap-3 rounded-sm bg-panel-muted p-3">
+          <span
+            aria-hidden="true"
+            className="grid size-9 shrink-0 place-items-center rounded-sm bg-primary-light text-sm font-semibold text-primary"
+          >
+            {user?.email?.slice(0, 1).toUpperCase() ?? (
+              <UserIcon className="size-4" />
+            )}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-ink">
+              {role ?? "Recruitment portal"}
             </p>
-          )}
-          <Button block disabled={loading} onClick={handleSignOut}>
-            Sign out
-          </Button>
+            <p className="truncate text-xs text-muted">
+              {user?.email ??
+                (loading
+                  ? "Loading your account…"
+                  : "Southern Leyte recruitment workspace.")}
+            </p>
+          </div>
         </div>
-      )}
+
+        {user && (
+          <div className="pt-2">
+            {signOutError && (
+              <p className="mb-2 px-3 text-xs text-danger" role="alert">
+                Sign out failed. Please try again.
+              </p>
+            )}
+            <Button
+              block
+              className="!flex !h-11 !items-center !justify-start !rounded-sm !border-0 !bg-transparent !px-3 !text-muted !shadow-none hover:!bg-panel-muted hover:!text-ink"
+              disabled={loading}
+              icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
+              onClick={handleSignOut}
+            >
+              Sign out
+            </Button>
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

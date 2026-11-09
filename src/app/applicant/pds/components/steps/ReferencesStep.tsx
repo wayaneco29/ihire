@@ -66,7 +66,7 @@ export function ReferencesStep({
       {values.references.map((_, index) => (
         <section
           aria-labelledby={`reference-heading-${index + 1}`}
-          className="rounded-md border border-line bg-panel p-4 sm:p-5"
+          className="rounded-sm border border-line bg-panel p-4 sm:p-5"
           key={index}
         >
           <h4

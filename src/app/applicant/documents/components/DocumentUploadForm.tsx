@@ -36,7 +36,11 @@ export function DocumentUploadForm({
   const [uploadSucceeded, setUploadSucceeded] = useState(false);
   const form = useForm<DocumentUploadValues>({
     resolver: yupResolver(documentUploadSchema),
-    defaultValues: { files: [], trainingHours: null, pdsLearningDevelopmentId: "" },
+    defaultValues: {
+      files: [],
+      trainingHours: null,
+      pdsLearningDevelopmentId: "",
+    },
   });
 
   function submit(values: DocumentUploadValues) {
@@ -48,7 +52,9 @@ export function DocumentUploadForm({
       return;
     }
     if (isTrainingCertificate && values.trainingHours == null) {
-      form.setError("trainingHours", { message: "Enter the hours rendered on the certificate." });
+      form.setError("trainingHours", {
+        message: "Enter the hours rendered on the certificate.",
+      });
       return;
     }
 
@@ -57,7 +63,10 @@ export function DocumentUploadForm({
     formData.set("file", uploadFile);
     if (isTrainingCertificate) {
       formData.set("training_hours", String(values.trainingHours));
-      formData.set("pds_learning_development_id", values.pdsLearningDevelopmentId ?? "");
+      formData.set(
+        "pds_learning_development_id",
+        values.pdsLearningDevelopmentId ?? "",
+      );
     }
     startTransition(async () => {
       const result = await uploadApplicantDocument(formData);
@@ -66,11 +75,14 @@ export function DocumentUploadForm({
         return;
       }
       setUploadSucceeded(true);
-      form.reset({ files: [] as UploadFile[], trainingHours: null, pdsLearningDevelopmentId: "" });
-      const successMessage =
-        isTrainingCertificate
-          ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
-          : `Version ${result.version} uploaded and sent for review.`;
+      form.reset({
+        files: [] as UploadFile[],
+        trainingHours: null,
+        pdsLearningDevelopmentId: "",
+      });
+      const successMessage = isTrainingCertificate
+        ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
+        : `Version ${result.version} uploaded and sent for review.`;
       if (onSuccess) onSuccess(successMessage);
       else setMessage(successMessage);
       router.refresh();
@@ -94,7 +106,11 @@ export function DocumentUploadForm({
         accept={ACCEPTED_FILES}
         control={form.control}
         drag
-        hint={isTrainingCertificate ? "Select one certificate per upload so each entry has its own hours." : "PDF, JPG, PNG, DOC, or DOCX · up to 50 MB"}
+        hint={
+          isTrainingCertificate
+            ? "Select one certificate per upload so each entry has its own hours."
+            : "PDF, JPG, PNG, DOC, or DOCX · up to 50 MB"
+        }
         label={isTrainingCertificate ? "Certificate file" : "Document file"}
         maxCount={1}
         name="files"
@@ -121,7 +137,10 @@ export function DocumentUploadForm({
               label="Matching PDS training (optional)"
               name="pdsLearningDevelopmentId"
               options={[
-                { label: "Not listed in my PDS; count as separate training", value: "" },
+                {
+                  label: "Not listed in my PDS; count as separate training",
+                  value: "",
+                },
                 ...trainingEntries.map((entry) => ({
                   label: `${entry.title} (${entry.hours ?? 0} PDS hours)`,
                   value: entry.id,
@@ -133,19 +152,26 @@ export function DocumentUploadForm({
       )}
       {trainingEntriesUnavailable && isTrainingCertificate && (
         <p className="mb-3 text-sm text-danger" role="alert">
-          Your PDS training entries could not be loaded. Refresh before uploading this certificate.
+          Your PDS training entries could not be loaded. Refresh before
+          uploading this certificate.
         </p>
       )}
       <div className="mt-1 flex flex-wrap items-center gap-2">
         <button
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={pending || (isTrainingCertificate && trainingEntriesUnavailable)}
+          className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={
+            pending || (isTrainingCertificate && trainingEntriesUnavailable)
+          }
           type="submit"
         >
-          {pending ? "Uploading…" : isTrainingCertificate ? "Upload certificate" : "Upload document"}
+          {pending
+            ? "Uploading…"
+            : isTrainingCertificate
+              ? "Upload certificate"
+              : "Upload document"}
         </button>
         <button
-          className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-muted hover:bg-panel"
+          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-medium text-muted hover:bg-panel"
           onClick={onCancel}
           type="button"
         >

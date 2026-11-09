@@ -83,7 +83,7 @@ export function DocumentReviewPanel({
   }
 
   return (
-    <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+    <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-ink">Document review</h2>
         <WorkflowStatusTag status={documentStatus} />
@@ -93,7 +93,7 @@ export function DocumentReviewPanel({
         is not shown here.
       </p>
       <button
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
+        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-sm border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
         disabled={viewing || pending}
         onClick={viewFile}
         type="button"
@@ -107,7 +107,7 @@ export function DocumentReviewPanel({
       )}
 
       {previousReview && (
-        <div className="mt-5 rounded-md bg-panel-muted p-4">
+        <div className="mt-5 rounded-sm bg-panel-muted p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-semibold text-ink">Your latest review</p>
             <WorkflowStatusTag status={previousReview.status} />
@@ -142,7 +142,7 @@ export function DocumentReviewPanel({
             showCount
           />
           <button
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
             disabled={pending}
             type="submit"
           >

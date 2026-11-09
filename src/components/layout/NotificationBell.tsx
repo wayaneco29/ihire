@@ -12,10 +12,13 @@ export function NotificationBell() {
     notifications,
     unreadCount,
     loading,
+    markingAllAsRead,
     markAsRead,
+    markAllAsRead,
     refreshNotifications,
   } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function openNotifications(nextOpen: boolean) {
     setOpen(nextOpen);
@@ -23,17 +26,56 @@ export function NotificationBell() {
   }
 
   async function openNotification(id: string, link: string | null) {
-    await markAsRead(id);
+    const notification = notifications.find((item) => item.id === id);
+    if (notification && !notification.is_read) {
+      const success = await markAsRead(id);
+      if (!success) {
+        setActionError(
+          "This notification could not be marked as read. Please try again.",
+        );
+        return;
+      }
+    }
+    setActionError(null);
     setOpen(false);
     if (link?.startsWith("/") && !link.startsWith("//")) router.push(link);
+  }
+
+  async function markAllNotificationsAsRead() {
+    setActionError(null);
+    const success = await markAllAsRead();
+    if (!success) {
+      setActionError(
+        "Notifications could not all be marked as read. Please try again.",
+      );
+      return;
+    }
+    router.refresh();
   }
 
   const content = (
     <div className="notification-popover-content">
       <div className="flex items-center justify-between border-b border-line-subtle px-4 py-3">
         <p className="text-sm font-semibold text-ink">Notifications</p>
-        <span className="text-xs text-muted">{unreadCount} unread</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted">{unreadCount} unread</span>
+          {unreadCount > 0 && (
+            <button
+              className="text-xs font-semibold text-primary hover:text-primary-dark disabled:opacity-60"
+              disabled={markingAllAsRead}
+              onClick={() => void markAllNotificationsAsRead()}
+              type="button"
+            >
+              {markingAllAsRead ? "Marking…" : "Mark all as read"}
+            </button>
+          )}
+        </div>
       </div>
+      {actionError && (
+        <p className="px-4 pt-3 text-xs text-danger" role="alert">
+          {actionError}
+        </p>
+      )}
       <div className="notification-list-scroll">
         {loading ? (
           <div aria-busy="true" className="min-h-24" role="status">
@@ -111,11 +153,16 @@ export function NotificationBell() {
       <button
         aria-expanded={open}
         aria-label={`Notifications, ${unreadCount} unread`}
-        className="grid size-11 place-items-center rounded-md text-muted transition hover:bg-panel-muted"
+        className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-panel-muted"
         type="button"
       >
-        <Badge count={unreadCount} size="small" overflowCount={99}>
-          <BellOutlined className="text-lg" />
+        <Badge
+          count={unreadCount}
+          className="group-hover:text-primary!"
+          size="small"
+          overflowCount={99}
+        >
+          <BellOutlined className="text-md" />
         </Badge>
       </button>
     </Popover>
