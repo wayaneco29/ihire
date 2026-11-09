@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Input, Select } from "antd";
+import {
+  CalendarDaysIcon,
+  CheckIcon,
+  MagnifyingGlassIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
+import { StatusTag } from "@/components/ui/StatusTag";
 import { formatDate } from "@/utils/format-date";
 
 type DeadlineFilter = "ALL" | "SOON" | "NONE";
@@ -18,6 +24,16 @@ export type JobListItem = {
   deadline: string | null;
   applied: boolean;
 };
+
+function getDeadlineMessage(deadline: string | null, nowMs: number) {
+  if (!deadline) return "No application deadline has been announced.";
+
+  const daysRemaining = Math.ceil(
+    (new Date(deadline).getTime() - nowMs) / (24 * 60 * 60 * 1000),
+  );
+  if (daysRemaining <= 0) return "Applications close today.";
+  return `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"} left before applications close.`;
+}
 
 export function JobListClient({
   jobs,
@@ -55,26 +71,35 @@ export function JobListClient({
     <>
       <section
         aria-label="Filter job postings"
-        className="mt-7 grid gap-3 rounded-sm border border-line bg-panel p-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-5"
+        className="mt-7 grid gap-2 rounded-2xl border border-line-subtle bg-panel p-2 shadow-card sm:grid-cols-[minmax(0,1fr)_17rem] sm:gap-3 sm:p-3"
       >
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">
-            Search postings
-          </span>
+        <label className="block min-w-0 rounded-xl focus-within:ring-2 focus-within:ring-primary/40">
+          <span className="sr-only">Search job postings</span>
           <Input
-            className="min-h-11"
+            className="!min-h-[3.75rem] !rounded-xl !border-0 !bg-panel-muted !px-4 !text-base !shadow-none placeholder:!text-muted [&.ant-input-affix-wrapper]:!border-0 [&.ant-input-affix-wrapper]:!bg-panel-muted [&.ant-input-affix-wrapper]:!shadow-none"
+            prefix={
+              <MagnifyingGlassIcon
+                aria-hidden="true"
+                className="mr-2 size-5 text-muted"
+              />
+            }
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search title or description"
+            placeholder="Search by title or description"
             type="search"
             value={search}
           />
         </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">
-            Deadline
-          </span>
+        <label className="block min-w-0 rounded-xl focus-within:ring-2 focus-within:ring-primary/40">
+          <span className="sr-only">Filter by application deadline</span>
           <Select
-            className="w-full"
+            className="!h-[3.75rem] w-full [&_.ant-select-selector]:!h-[3.75rem] [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-panel-muted [&_.ant-select-selector]:!px-4 [&_.ant-select-selector]:!shadow-none"
+            prefix={
+              <CalendarDaysIcon
+                aria-hidden="true"
+                className="mr-2 size-5 text-muted"
+              />
+            }
+            aria-label="Filter by application deadline"
             options={[
               { label: "Any deadline", value: "ALL" },
               { label: "Closing within 30 days", value: "SOON" },
@@ -97,7 +122,7 @@ export function JobListClient({
         </p>
         {filteredJobs.length > 0 && (search || deadlineFilter !== "ALL") && (
           <button
-            className="min-h-11 rounded-sm px-2 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
+            className="min-h-10 rounded-lg px-3 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={() => {
               setSearch("");
               setDeadlineFilter("ALL");
@@ -110,59 +135,98 @@ export function JobListClient({
       </div>
 
       {filteredJobs.length ? (
-        <ul className="mt-3 grid gap-4 lg:grid-cols-2">
-          {filteredJobs.map((job) => (
-            <li
-              className="flex flex-col rounded-sm border border-line bg-panel p-5 sm:p-6"
-              key={job.id}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold text-ink">{job.title}</h2>
-                <WorkflowStatusTag status="OPEN" />
-              </div>
-              <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm leading-6 text-muted">
-                {job.description}
-              </p>
-              <dl className="mt-4 grid grid-cols-2 gap-3 rounded-sm bg-panel-muted p-3">
-                <div>
-                  <dt className="text-xs text-muted">Hiring slots</dt>
-                  <dd className="mt-1 text-sm font-medium text-ink">
-                    {job.slots}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-muted">Application deadline</dt>
-                  <dd className="mt-1 text-sm font-medium text-ink">
-                    {job.deadline ? formatDate(job.deadline) : "Not specified"}
-                  </dd>
-                </div>
-              </dl>
-              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
-                {job.applied ? (
-                  <span className="text-sm font-medium text-primary">
-                    Application submitted
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted">
-                    Applications are open
-                  </span>
-                )}
-                <Link
-                  className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
-                  href={`/applicant/jobs/${job.id}`}
-                >
-                  {job.applied ? "View posting" : "View and apply"}
-                </Link>
-              </div>
-            </li>
-          ))}
+        <ul className="mt-4 grid gap-4">
+          {filteredJobs.map((job) => {
+            const deadlineMessage = getDeadlineMessage(job.deadline, nowMs);
+            return (
+              <li
+                className="grid overflow-hidden rounded-2xl border border-line bg-panel shadow-card lg:grid-cols-[minmax(0,1fr)_19rem]"
+                key={job.id}
+              >
+                <article className="min-w-0 p-5 sm:p-7 lg:p-8">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h2 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+                      {job.title}
+                    </h2>
+                    <StatusTag className="gap-2 border-primary/10 bg-primary-light px-3 text-primary">
+                      <span
+                        aria-hidden="true"
+                        className="size-2 rounded-full bg-primary"
+                      />
+                      Open
+                    </StatusTag>
+                  </div>
+                  <p className="mt-4 line-clamp-3 whitespace-pre-line text-sm leading-6 text-muted sm:text-base">
+                    {job.description}
+                  </p>
+                  <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-light text-primary"
+                      >
+                        <UserGroupIcon className="size-6" />
+                      </span>
+                      <div>
+                        <dt className="text-sm text-muted">Hiring slots</dt>
+                        <dd className="mt-0.5 text-lg font-semibold leading-tight text-ink">
+                          {job.slots}
+                        </dd>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-light text-primary"
+                      >
+                        <CalendarDaysIcon className="size-6" />
+                      </span>
+                      <div>
+                        <dt className="text-sm text-muted">
+                          Application deadline
+                        </dt>
+                        <dd className="mt-0.5 text-lg font-semibold leading-tight text-ink">
+                          {job.deadline
+                            ? formatDate(job.deadline)
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                    </div>
+                  </dl>
+                </article>
+                <aside className="flex flex-col justify-center gap-4 bg-primary-light p-5 sm:p-7 lg:p-8">
+                  <StatusTag
+                    className={
+                      job.applied
+                        ? "w-fit gap-2 border-primary bg-primary px-3 text-on-primary"
+                        : "w-fit gap-2 border-primary/15 bg-panel/70 px-3 text-primary"
+                    }
+                  >
+                    {job.applied && (
+                      <CheckIcon aria-hidden="true" className="size-4" />
+                    )}
+                    {job.applied ? "Application submitted" : "Ready to apply"}
+                  </StatusTag>
+                  <p className="max-w-xs text-sm leading-6 text-ink">
+                    {deadlineMessage}
+                  </p>
+                  <Link
+                    className="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    href={`/applicant/jobs/${job.id}`}
+                  >
+                    {job.applied ? "View posting" : "View and apply"}
+                  </Link>
+                </aside>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <div className="mt-3">
           <EmptyState
             action={
               <button
-                className="inline-flex min-h-11 items-center justify-center rounded-sm border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:bg-panel-muted"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 onClick={() => {
                   setSearch("");
                   setDeadlineFilter("ALL");
