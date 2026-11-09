@@ -72,7 +72,7 @@ Applicants are **anonymized to HR and Evaluators to prevent cheating/bias**. The
 | 9 | PDS item **40a** = indigenous group membership (RA 8371), "please specify" |
 | 10 | Questionnaire (items 34-40) is **displayed** to HR/Evaluators |
 | 11 | **No digital oath/signature/photo/thumbmark.** HR prints the PDS and the applicant signs physically. Wizard step 11 is "Review & Submit". Build a **print-ready PDS view** (CS Form 212, 4 pages) for HR |
-| 12 | Each upload of **Training and Seminar Certificates** captures rendered hours. Applicants can link an upload to a PDS training entry; linked hours replace that entry's PDS hours in the total, while unlinked uploads count separately. Uploaded hours count immediately. OCR is deferred. |
+| 12 | Each uploaded **Training and Seminar Certificate** is an independent entry with its own rendered hours. Applicants can link entries to PDS training records; linked PDS hours are excluded to avoid duplication, and every certificate entry's hours are included. Uploaded hours count immediately. OCR is deferred. |
 
 ### Still open (ask the user; use the default until answered)
 - **When does HR see the applicant's real identity / unlock the printable PDS?**
@@ -284,7 +284,7 @@ Create and manage invitations (email, role HR/EVALUATOR, token, expiry).
 | **job_postings** | `id`, `hr_id`, `title`, `description`, `requirements`, `slots`, `status` (DRAFT/OPEN/CLOSED), `deadline`, `created_at` |
 | **applications** | `id`, `job_id`, `applicant_id`, `pds_version_id` (snapshot), `status`, `applied_at`. **UNIQUE(job_id, applicant_id)** |
 | **document_types** | `id`, `name`, `is_required` (global) |
-| **documents** | `id`, `applicant_id`, `document_type_id`, `file_path`, `version`, `status`, `uploaded_at`; training certificate uploads also store `training_hours` and optional `pds_learning_development_id` |
+| **documents** | `id`, `applicant_id`, `document_type_id`, `file_path`, `version`, `status`, `uploaded_at`; every training certificate upload is a separate row and also stores `training_hours` and optional `pds_learning_development_id` |
 | **document_reviews** | `id`, `document_id`, `evaluator_id`, `status`, `remarks`, `reviewed_at` |
 | **application_evaluations** | `id`, `application_id`, `evaluator_id`, `result` (QUALIFIED/NOT_QUALIFIED), `remarks`, `evaluated_at` |
 | **hiring_decisions** | `id`, `application_id`, `hr_id`, `decision` (HIRED/REJECTED), `decided_at` |

@@ -44,7 +44,7 @@ export function Sidebar() {
             <ul className="mt-2 space-y-1">
               {section.items.map(({ label, href, icon: Icon, available }) => {
                 const itemClasses =
-                  "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition";
+                  "flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition";
                 const icon = <Icon className="text-base" />;
                 const isApplicantOverview = href === "/applicant";
                 const isActive = isApplicantOverview

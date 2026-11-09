@@ -95,8 +95,9 @@ export function PdsWizardShell({
   return (
     <section className="mt-7 rounded-2xl border border-primary/15 bg-panel p-4 shadow-sm sm:p-6">
       {previousSubmittedVersion !== null && (
-        <p className="mb-5 rounded-xl border border-primary/20 bg-primary-light p-3 text-sm leading-6 text-primary-dark">
-          Submitted version {previousSubmittedVersion} remains active for your applications until this update is submitted.
+        <p className="mb-5 rounded-md border border-primary/20 bg-primary-light p-3 text-sm leading-6 text-primary-dark">
+          Submitted version {previousSubmittedVersion} remains active for your
+          applications until this update is submitted.
         </p>
       )}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -129,7 +130,8 @@ export function PdsWizardShell({
               return {
                 value: step,
                 label: `${step}. ${label}`,
-                disabled: step !== currentStep && !completedSteps.includes(step),
+                disabled:
+                  step !== currentStep && !completedSteps.includes(step),
               };
             })}
             value={currentStep}
@@ -147,7 +149,7 @@ export function PdsWizardShell({
                 <button
                   aria-current={active ? "step" : undefined}
                   aria-disabled={!canOpen}
-                  className={`flex min-h-14 w-full items-start gap-2 rounded-xl border p-2.5 text-left text-xs transition sm:text-sm ${
+                  className={`flex min-h-14 w-full items-start gap-2 rounded-md border p-2.5 text-left text-xs transition sm:text-sm ${
                     active
                       ? "border-primary bg-primary-light text-primary-dark"
                       : completed
@@ -175,7 +177,7 @@ export function PdsWizardShell({
         </ol>
       </nav>
 
-      <div aria-live="polite" className="rounded-xl bg-panel-muted p-4 sm:p-5">
+      <div aria-live="polite" className="rounded-md bg-panel-muted p-4 sm:p-5">
         {message && (
           <p className="mb-3 text-sm text-danger" role="alert">
             {message}
@@ -246,7 +248,9 @@ export function PdsWizardShell({
             draftData={currentDraftData}
             onSubmitted={() => {
               setCompletedSteps((steps) =>
-                steps.includes(11) ? steps : [...steps, 11].sort((a, b) => a - b),
+                steps.includes(11)
+                  ? steps
+                  : [...steps, 11].sort((a, b) => a - b),
               );
               router.push("/applicant/dashboard");
             }}

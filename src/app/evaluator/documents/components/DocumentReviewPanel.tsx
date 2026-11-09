@@ -28,7 +28,11 @@ export function DocumentReviewPanel({
   documentId: string;
   storageKey: string;
   documentStatus: string;
-  previousReview: { status: string; remarks: string | null; reviewed_at: string } | null;
+  previousReview: {
+    status: string;
+    remarks: string | null;
+    reviewed_at: string;
+  } | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -57,7 +61,10 @@ export function DocumentReviewPanel({
         return;
       }
       if (preview) preview.location.replace(data.signedUrl);
-      else setFileError("Your browser blocked the file window. Allow pop-ups and try again.");
+      else
+        setFileError(
+          "Your browser blocked the file window. Allow pop-ups and try again.",
+        );
     });
   }
 
@@ -82,7 +89,8 @@ export function DocumentReviewPanel({
         <WorkflowStatusTag status={documentStatus} />
       </div>
       <p className="mt-2 text-sm leading-6 text-muted">
-        The stored object uses an opaque key. The applicant’s original filename is not shown here.
+        The stored object uses an opaque key. The applicant’s original filename
+        is not shown here.
       </p>
       <button
         className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
@@ -92,20 +100,31 @@ export function DocumentReviewPanel({
       >
         {viewing ? "Creating secure link…" : "Open document"}
       </button>
-      {fileError && <p className="mt-2 text-sm text-danger" role="alert">{fileError}</p>}
+      {fileError && (
+        <p className="mt-2 text-sm text-danger" role="alert">
+          {fileError}
+        </p>
+      )}
 
       {previousReview && (
-        <div className="mt-5 rounded-xl bg-panel-muted p-4">
+        <div className="mt-5 rounded-md bg-panel-muted p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-semibold text-ink">Your latest review</p>
             <WorkflowStatusTag status={previousReview.status} />
           </div>
-          {previousReview.remarks && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{previousReview.remarks}</p>}
+          {previousReview.remarks && (
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">
+              {previousReview.remarks}
+            </p>
+          )}
         </div>
       )}
 
       {documentStatus === "FOR_REVIEW" ? (
-        <form className="mt-5 space-y-4 border-t border-line-subtle pt-5" onSubmit={form.handleSubmit(submitReview)}>
+        <form
+          className="mt-5 space-y-4 border-t border-line-subtle pt-5"
+          onSubmit={form.handleSubmit(submitReview)}
+        >
           <FormSelect
             control={form.control}
             label="Review result"
@@ -129,7 +148,14 @@ export function DocumentReviewPanel({
           >
             {pending ? "Saving review…" : "Save review"}
           </button>
-          {message && <p className={`text-sm ${message === "Document review saved." ? "text-primary" : "text-danger"}`} role="status">{message}</p>}
+          {message && (
+            <p
+              className={`text-sm ${message === "Document review saved." ? "text-primary" : "text-danger"}`}
+              role="status"
+            >
+              {message}
+            </p>
+          )}
         </form>
       ) : (
         <p className="mt-5 border-t border-line-subtle pt-4 text-sm text-muted">

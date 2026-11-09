@@ -27,7 +27,9 @@ function formatStatus(status: string) {
 
 export function WorkflowStatusTag({ status }: { status: string }) {
   return (
-    <StatusTag className={statusStyles[status] ?? "border-line bg-panel-muted text-muted"}>
+    <StatusTag
+      className={`block text-xs! font-medium ${statusStyles[status] ?? "border-line bg-panel-muted text-muted"}`}
+    >
       {formatStatus(status)}
     </StatusTag>
   );

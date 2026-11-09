@@ -8,8 +8,13 @@ import { useNotifications } from "@/context/NotificationContext";
 
 export function NotificationBell() {
   const router = useRouter();
-  const { notifications, unreadCount, loading, markAsRead, refreshNotifications } =
-    useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    markAsRead,
+    refreshNotifications,
+  } = useNotifications();
   const [open, setOpen] = useState(false);
 
   async function openNotifications(nextOpen: boolean) {
@@ -27,9 +32,7 @@ export function NotificationBell() {
     <div className="notification-popover-content">
       <div className="flex items-center justify-between border-b border-line-subtle px-4 py-3">
         <p className="text-sm font-semibold text-ink">Notifications</p>
-        <span className="text-xs text-muted">
-          {unreadCount} unread
-        </span>
+        <span className="text-xs text-muted">{unreadCount} unread</span>
       </div>
       <div className="notification-list-scroll">
         {loading ? (
@@ -66,7 +69,10 @@ export function NotificationBell() {
                   <span className="flex items-start gap-2">
                     {!notification.is_read && (
                       <>
-                        <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
+                        <span
+                          aria-hidden="true"
+                          className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
+                        />
                         <span className="sr-only">Unread</span>
                       </>
                     )}
@@ -105,7 +111,7 @@ export function NotificationBell() {
       <button
         aria-expanded={open}
         aria-label={`Notifications, ${unreadCount} unread`}
-        className="grid size-11 place-items-center rounded-xl text-muted transition hover:bg-panel-muted"
+        className="grid size-11 place-items-center rounded-md text-muted transition hover:bg-panel-muted"
         type="button"
       >
         <Badge count={unreadCount} size="small" overflowCount={99}>

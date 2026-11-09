@@ -12,9 +12,10 @@ export function MobileDrawer() {
 
   useEffect(() => {
     if (!mobileNavOpen) return;
-    const previousFocus = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
+    const previousFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
@@ -40,10 +41,18 @@ export function MobileDrawer() {
 
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && (document.activeElement === first || !drawerRef.current.contains(document.activeElement))) {
+      if (
+        event.shiftKey &&
+        (document.activeElement === first ||
+          !drawerRef.current.contains(document.activeElement))
+      ) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && (document.activeElement === last || !drawerRef.current.contains(document.activeElement))) {
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last ||
+          !drawerRef.current.contains(document.activeElement))
+      ) {
         event.preventDefault();
         first.focus();
       }
@@ -76,10 +85,12 @@ export function MobileDrawer() {
         tabIndex={-1}
       >
         <div className="flex h-14 items-center justify-end px-3">
-          <h2 className="sr-only" id="mobile-navigation-title">Navigation</h2>
+          <h2 className="sr-only" id="mobile-navigation-title">
+            Navigation
+          </h2>
           <button
             aria-label="Close navigation menu"
-            className="grid size-11 place-items-center rounded-xl text-muted hover:bg-panel-muted"
+            className="grid size-11 place-items-center rounded-md text-muted hover:bg-panel-muted"
             onClick={() => setMobileNavOpen(false)}
             ref={closeButtonRef}
             type="button"

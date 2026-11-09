@@ -18,17 +18,20 @@ type TrainingEntry = { id: string; title: string; hours: number | null };
 export function DocumentUploadForm({
   documentTypeId,
   isTrainingCertificate,
+  onCancel,
   trainingEntries,
   trainingEntriesUnavailable,
 }: {
   documentTypeId: string;
   isTrainingCertificate: boolean;
+  onCancel: () => void;
   trainingEntries: TrainingEntry[];
   trainingEntriesUnavailable: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [uploadSucceeded, setUploadSucceeded] = useState(false);
   const form = useForm<DocumentUploadValues>({
     resolver: yupResolver(documentUploadSchema),
     defaultValues: { files: [], trainingHours: null, pdsLearningDevelopmentId: "" },
@@ -36,6 +39,7 @@ export function DocumentUploadForm({
 
   function submit(values: DocumentUploadValues) {
     setMessage(null);
+    setUploadSucceeded(false);
     const uploadFile = values.files[0]?.originFileObj as File | undefined;
     if (!uploadFile) {
       setMessage("Choose a document file.");
@@ -59,10 +63,11 @@ export function DocumentUploadForm({
         setMessage(result.message);
         return;
       }
+      setUploadSucceeded(true);
       form.reset({ files: [] as UploadFile[], trainingHours: null, pdsLearningDevelopmentId: "" });
       setMessage(
         isTrainingCertificate
-          ? `Certificate uploaded with ${values.trainingHours} hours and sent for review.`
+          ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
           : `Version ${result.version} uploaded and sent for review.`,
       );
       router.refresh();
@@ -70,21 +75,34 @@ export function DocumentUploadForm({
   }
 
   return (
-    <form className="mt-4 border-t border-line-subtle pt-4" onSubmit={form.handleSubmit(submit)}>
+    <form
+      className="border-t border-line-subtle bg-panel-muted/60 px-4 py-4 sm:px-5"
+      onSubmit={form.handleSubmit(submit)}
+    >
+      {message && (
+        <p
+          className={`mb-3 text-sm ${uploadSucceeded ? "text-primary" : "text-danger"}`}
+          role="status"
+        >
+          {message}
+        </p>
+      )}
       <FormUpload
         accept={ACCEPTED_FILES}
         control={form.control}
-        hint="PDF, JPG, PNG, DOC, or DOCX · 50 MB maximum"
-        label="Choose a file"
+        drag
+        hint={isTrainingCertificate ? "Select one certificate per upload so each entry has its own hours." : "PDF, JPG, PNG, DOC, or DOCX · up to 50 MB"}
+        label={isTrainingCertificate ? "Certificate file" : "Document file"}
         maxCount={1}
         name="files"
       />
       {isTrainingCertificate && (
-        <>
-          <div className="mt-4">
+        <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
+          <div>
             <FormInput
               control={form.control}
-              hint="Enter the hours shown on the certificate. Decimals are allowed."
+              hint="Hours shown on the certificate. Decimals allowed."
+              placeholder="e.g. 8"
               label="Hours rendered"
               min={0}
               name="trainingHours"
@@ -93,10 +111,10 @@ export function DocumentUploadForm({
               type="number"
             />
           </div>
-          <div className="mt-4">
+          <div>
             <FormSelect
               control={form.control}
-              hint="Link this certificate to the matching PDS entry to avoid counting the training twice."
+              hint="Linking prevents the same PDS training from being counted twice."
               label="Matching PDS training (optional)"
               name="pdsLearningDevelopmentId"
               options={[
@@ -108,21 +126,29 @@ export function DocumentUploadForm({
               ]}
             />
           </div>
-          {trainingEntriesUnavailable && (
-            <p className="mt-3 text-sm text-danger" role="alert">
-              Your PDS training entries could not be loaded. Refresh before uploading this certificate.
-            </p>
-          )}
-        </>
+        </div>
       )}
-      <button
-        className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={pending || (isTrainingCertificate && trainingEntriesUnavailable)}
-        type="submit"
-      >
-        {pending ? "Uploading…" : "Upload document"}
-      </button>
-      {message && <p className="mt-3 text-sm text-muted" role="status">{message}</p>}
+      {trainingEntriesUnavailable && isTrainingCertificate && (
+        <p className="mb-3 text-sm text-danger" role="alert">
+          Your PDS training entries could not be loaded. Refresh before uploading this certificate.
+        </p>
+      )}
+      <div className="mt-1 flex flex-wrap items-center gap-2">
+        <button
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={pending || (isTrainingCertificate && trainingEntriesUnavailable)}
+          type="submit"
+        >
+          {pending ? "Uploading…" : isTrainingCertificate ? "Upload certificate" : "Upload document"}
+        </button>
+        <button
+          className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-muted hover:bg-panel"
+          onClick={onCancel}
+          type="button"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }

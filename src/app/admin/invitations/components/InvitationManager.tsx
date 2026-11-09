@@ -16,7 +16,13 @@ import { invitationSchema, type InvitationValues } from "../schema";
 
 type Invitation = Pick<
   Tables<"invitations">,
-  "id" | "email" | "role" | "created_at" | "expires_at" | "accepted_at" | "revoked_at"
+  | "id"
+  | "email"
+  | "role"
+  | "created_at"
+  | "expires_at"
+  | "accepted_at"
+  | "revoked_at"
 >;
 type RowActionResult =
   | Awaited<ReturnType<typeof revokeInvitation>>
@@ -54,7 +60,9 @@ export function InvitationManager({
       return;
     }
     setError(null);
-    setMessage(`Invitation link expires ${new Date(result.expiresAt).toLocaleString()}.`);
+    setMessage(
+      `Invitation link expires ${new Date(result.expiresAt).toLocaleString()}.`,
+    );
     setInviteUrl(`${window.location.origin}${result.invitePath}`);
   }
 
@@ -126,12 +134,14 @@ export function InvitationManager({
             Create one-time link
           </Button>
         </form>
-        {error && <Alert className="mt-4" message={error} showIcon type="error" />}
+        {error && (
+          <Alert className="mt-4" message={error} showIcon type="error" />
+        )}
         {message && (
           <Alert className="mt-4" message={message} showIcon type="success" />
         )}
         {inviteUrl && (
-          <div className="mt-4 rounded-xl border border-primary/15 bg-primary-light/50 p-3">
+          <div className="mt-4 rounded-md border border-primary/15 bg-primary-light/50 p-3">
             <p className="break-all text-xs leading-5 text-ink">{inviteUrl}</p>
             <Button className="mt-3" onClick={copyInvite} size="small">
               Copy link
@@ -159,16 +169,21 @@ export function InvitationManager({
                       {invitation.email}
                     </p>
                     <p className="mt-1 text-xs text-muted">
-                      {invitation.role} · expires {new Date(invitation.expires_at).toLocaleDateString()}
+                      {invitation.role} · expires{" "}
+                      {new Date(invitation.expires_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Tag color={status === "Pending" ? "green" : "default"}>{status}</Tag>
+                    <Tag color={status === "Pending" ? "green" : "default"}>
+                      {status}
+                    </Tag>
                     {canManage && (
                       <>
                         <Button
                           disabled={isWorking}
-                          onClick={() => runRowAction(resendInvitation, invitation.id)}
+                          onClick={() =>
+                            runRowAction(resendInvitation, invitation.id)
+                          }
                           size="small"
                         >
                           Resend link
@@ -177,7 +192,9 @@ export function InvitationManager({
                           <Button
                             danger
                             disabled={isWorking}
-                            onClick={() => runRowAction(revokeInvitation, invitation.id)}
+                            onClick={() =>
+                              runRowAction(revokeInvitation, invitation.id)
+                            }
                             size="small"
                           >
                             Revoke

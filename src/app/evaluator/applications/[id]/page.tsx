@@ -155,7 +155,7 @@ export default async function EvaluatorApplicationReviewPage({
       {jobId === application.job_id && (
         <nav
           aria-label="Applicant review sequence"
-          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel p-4"
+          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-panel p-4"
         >
           <Link
             className="inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary-light"

@@ -63,7 +63,10 @@ function readableValue(value: string) {
   const country = COUNTRY_OPTIONS.find((option) => option.value === value);
   if (country) return country.label;
   if (/^[A-Z][A-Z_]+$/.test(value)) {
-    return value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return value
+      .replaceAll("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
   return value;
 }
@@ -79,18 +82,27 @@ function SummaryValue({ value }: { value: Json | undefined }) {
     return readableValue(value);
   }
   if (Array.isArray(value)) {
-    if (value.length === 0) return <span className="text-muted">None recorded</span>;
+    if (value.length === 0)
+      return <span className="text-muted">None recorded</span>;
     return (
       <div className="space-y-3">
         {value.map((entry, index) => (
-          <div className="rounded-lg border border-line bg-panel p-3" key={index}>
+          <div
+            className="rounded-lg border border-line bg-panel p-3"
+            key={index}
+          >
             {entry && typeof entry === "object" && !Array.isArray(entry) ? (
               <>
                 {typeof entry.question_code === "string" && (
                   <p className="mb-2 text-sm font-semibold text-primary">
                     {typeof entry.question_code === "string" && (
                       <>
-                        {entry.question_code}: {PDS_QUESTIONNAIRE_ITEMS.find((item) => item.code === entry.question_code)?.question}
+                        {entry.question_code}:{" "}
+                        {
+                          PDS_QUESTIONNAIRE_ITEMS.find(
+                            (item) => item.code === entry.question_code,
+                          )?.question
+                        }
                       </>
                     )}
                   </p>
@@ -113,15 +125,19 @@ function SummaryValue({ value }: { value: Json | undefined }) {
 
 function SummaryObject({ value }: { value: Record<string, Json | undefined> }) {
   const entries = Object.entries(value).filter(
-    ([key]) => !["id", "pds_version_id", "sort_order", "question_code"].includes(key),
+    ([key]) =>
+      !["id", "pds_version_id", "sort_order", "question_code"].includes(key),
   );
-  if (entries.length === 0) return <span className="text-muted">Not provided</span>;
+  if (entries.length === 0)
+    return <span className="text-muted">Not provided</span>;
 
   return (
     <dl className="grid grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2">
       {entries.map(([key, item]) => (
         <div className="min-w-0" key={key}>
-          <dt className="text-xs font-medium text-muted">{readableLabel(key)}</dt>
+          <dt className="text-xs font-medium text-muted">
+            {readableLabel(key)}
+          </dt>
           <dd className="mt-1 break-words text-sm text-ink">
             <SummaryValue value={item} />
           </dd>
@@ -131,7 +147,11 @@ function SummaryObject({ value }: { value: Record<string, Json | undefined> }) {
   );
 }
 
-export function ReviewSubmitStep({ draftData, onSubmitted, pdsVersionId }: Props) {
+export function ReviewSubmitStep({
+  draftData,
+  onSubmitted,
+  pdsVersionId,
+}: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const { control, handleSubmit } = useForm<PdsStepElevenValues>({
@@ -157,7 +177,8 @@ export function ReviewSubmitStep({ draftData, onSubmitted, pdsVersionId }: Props
       <div>
         <h3 className="text-base font-semibold text-ink">Review and submit</h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Review your answers below. Use the stepper to return to any completed section before submitting.
+          Review your answers below. Use the stepper to return to any completed
+          section before submitting.
         </p>
       </div>
 
@@ -165,7 +186,7 @@ export function ReviewSubmitStep({ draftData, onSubmitted, pdsVersionId }: Props
         const step = asRecord(steps[String(index + 1)] ?? null);
         return (
           <section
-            className="rounded-xl border border-line bg-panel-muted p-4 sm:p-5"
+            className="rounded-md border border-line bg-panel-muted p-4 sm:p-5"
             key={title}
           >
             <h4 className="mb-4 text-sm font-semibold text-ink">

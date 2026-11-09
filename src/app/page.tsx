@@ -23,17 +23,18 @@ export default function Home() {
               A fairer path to public service.
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 sm:text-base">
-              Follow your application from a complete PDS through review and hiring.
+              Follow your application from a complete PDS through review and
+              hiring.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-panel px-4 text-sm font-semibold text-primary hover:bg-panel-muted"
+                className="inline-flex min-h-11 items-center justify-center rounded-md bg-panel px-4 text-sm font-semibold text-primary hover:bg-panel-muted"
                 href="/login"
               >
                 Sign in
               </Link>
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-hero-line px-4 text-sm font-semibold text-hero-text hover:bg-hero-surface"
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-hero-line px-4 text-sm font-semibold text-hero-text hover:bg-hero-surface"
                 href="/register"
               >
                 Applicant registration
@@ -64,14 +65,17 @@ export default function Home() {
               A connected hiring process
             </h2>
           </div>
-          <p className="text-sm text-muted">Built in small, reviewable phases</p>
+          <p className="text-sm text-muted">
+            Built in small, reviewable phases
+          </p>
         </div>
 
         <RoadmapCards />
       </section>
 
-      <p className="mt-8 rounded-xl border border-line bg-panel px-4 py-3 text-xs leading-5 text-muted">
-        Applicant information stays private while staff review applications using role-specific access.
+      <p className="mt-8 rounded-md border border-line bg-panel px-4 py-3 text-xs leading-5 text-muted">
+        Applicant information stays private while staff review applications
+        using role-specific access.
       </p>
     </AppShell>
   );

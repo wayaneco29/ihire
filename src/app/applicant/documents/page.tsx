@@ -5,7 +5,7 @@ import { getApplicantContext } from "@/lib/auth/server";
 import { TRAINING_CERTIFICATE_DOCUMENT_TYPE } from "@/constants/documents";
 import {
   DocumentTypeCard,
-  type DocumentVersion,
+  type DocumentRecord,
 } from "./components/DocumentTypeCard";
 
 export default async function ApplicantDocumentsPage() {
@@ -20,7 +20,7 @@ export default async function ApplicantDocumentsPage() {
     applicant.supabase
       .from("documents")
       .select(
-        "id, document_type_id, file_path, version, status, uploaded_at, training_hours",
+        "id, document_type_id, file_path, version, status, uploaded_at, training_hours, pds_learning_development_id",
       )
       .eq("applicant_id", applicant.applicant.id)
       .order("version", { ascending: false }),
@@ -33,7 +33,7 @@ export default async function ApplicantDocumentsPage() {
       .limit(1)
       .maybeSingle(),
   ]);
-  console.log(documentsResult);
+
   if (typesResult.error || documentsResult.error) {
     return (
       <>
@@ -77,39 +77,118 @@ export default async function ApplicantDocumentsPage() {
     }
   }
 
-  const versionsByType = new Map<string, DocumentVersion[]>();
+  const documentsByType = new Map<string, DocumentRecord[]>();
   for (const document of documents) {
-    const versions = versionsByType.get(document.document_type_id) ?? [];
-    versions.push({
+    const typeDocuments = documentsByType.get(document.document_type_id) ?? [];
+    typeDocuments.push({
       ...document,
       remarks: latestRemarks.get(document.id) ?? null,
     });
-    versionsByType.set(document.document_type_id, versions);
+    documentsByType.set(document.document_type_id, typeDocuments);
   }
+
+  const documentTypes = typesResult.data ?? [];
+  const requiredTypes = documentTypes.filter((type) => type.is_required);
+  const trainingCertificateType = documentTypes.find(
+    (type) => type.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE,
+  );
+  const optionalTypes = documentTypes.filter(
+    (type) =>
+      !type.is_required && type.name !== TRAINING_CERTIFICATE_DOCUMENT_TYPE,
+  );
+  const verifiedRequired = requiredTypes.filter(
+    (type) => documentsByType.get(type.id)?.[0]?.status === "VERIFIED",
+  ).length;
 
   return (
     <>
       <PageHeader
-        description="Upload required records, view submitted files, and track evaluator feedback. New versions return to review."
+        description="Upload required records and track evaluator feedback. New uploads are sent for review."
         eyebrow="Applicant workspace"
         title="Documents"
       />
-      {typesResult.data?.length ? (
-        <div className="mt-7 grid gap-4 xl:grid-cols-2">
-          {typesResult.data.map((type) => (
+      {documentTypes.length ? (
+        <div className="mt-6 max-w-4xl space-y-5">
+          {requiredTypes.length > 0 && (
+            <section
+              aria-label="Required documents"
+              className="rounded-md border border-primary/30 bg-primary-light/30 p-3 sm:p-4"
+            >
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-on-primary">
+                    Required
+                  </span>
+                  <h2 className="text-sm font-semibold text-ink">
+                    Needed for every application
+                  </h2>
+                </div>
+                <span className="text-xs font-medium text-primary">
+                  {verifiedRequired} of {requiredTypes.length} verified
+                </span>
+              </div>
+              <div
+                aria-label={`${verifiedRequired} of ${requiredTypes.length} required documents verified`}
+                className="mb-3 h-1.5 overflow-hidden rounded-full bg-white/80"
+                role="progressbar"
+                aria-valuemax={requiredTypes.length}
+                aria-valuemin={0}
+                aria-valuenow={verifiedRequired}
+              >
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{
+                    width: `${(verifiedRequired / requiredTypes.length) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {requiredTypes.map((type) => (
+                  <DocumentTypeCard
+                    documents={documentsByType.get(type.id) ?? []}
+                    featured
+                    id={type.id}
+                    isTrainingCertificate={false}
+                    key={type.id}
+                    name={type.name}
+                    trainingEntries={trainingResult.data ?? []}
+                    trainingEntriesUnavailable={Boolean(trainingResult.error)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+          {trainingCertificateType && (
             <DocumentTypeCard
-              id={type.id}
-              isTrainingCertificate={
-                type.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE
-              }
-              key={type.id}
-              name={type.name}
-              required={type.is_required}
+              documents={documentsByType.get(trainingCertificateType.id) ?? []}
+              id={trainingCertificateType.id}
+              isTrainingCertificate
+              key={trainingCertificateType.id}
+              name={trainingCertificateType.name}
               trainingEntries={trainingResult.data ?? []}
               trainingEntriesUnavailable={Boolean(trainingResult.error)}
-              versions={versionsByType.get(type.id) ?? []}
             />
-          ))}
+          )}
+          {optionalTypes.length > 0 && (
+            <section aria-label="">
+              <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                Other optional documents
+              </h2>
+              <div className="overflow-hidden rounded-md border border-line bg-panel p-4">
+                {optionalTypes.map((type) => (
+                  <DocumentTypeCard
+                    documents={documentsByType.get(type.id) ?? []}
+                    id={type.id}
+                    isTrainingCertificate={false}
+                    key={type.id}
+                    name={type.name}
+                    trainingEntries={trainingResult.data ?? []}
+                    trainingEntriesUnavailable={Boolean(trainingResult.error)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       ) : (
         <div className="mt-7">

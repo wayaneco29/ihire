@@ -9,7 +9,10 @@ import { FormTextArea } from "@/components/form/FormTextArea";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
 import { submitApplicationEvaluation } from "../actions";
-import { applicationEvaluationSchema, type ApplicationEvaluationValues } from "../schema";
+import {
+  applicationEvaluationSchema,
+  type ApplicationEvaluationValues,
+} from "../schema";
 
 const evaluationOptions = [
   { label: "Qualified", value: "QUALIFIED" },
@@ -23,7 +26,11 @@ export function ApplicationEvaluationPanel({
 }: {
   applicationId: string;
   applicationStatus: string;
-  previousEvaluation: { result: string; remarks: string | null; evaluated_at: string } | null;
+  previousEvaluation: {
+    result: string;
+    remarks: string | null;
+    evaluated_at: string;
+  } | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -46,29 +53,51 @@ export function ApplicationEvaluationPanel({
     });
   }
 
-  const isFinal = applicationStatus === "HIRED" || applicationStatus === "REJECTED";
+  const isFinal =
+    applicationStatus === "HIRED" || applicationStatus === "REJECTED";
 
   return (
     <section className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold text-ink">Application evaluation</h2>
-          <p className="mt-1 text-sm text-muted">Required document types must be verified before you submit an assessment.</p>
+          <p className="mt-1 text-sm text-muted">
+            Required document types must be verified before you submit an
+            assessment.
+          </p>
         </div>
-        {previousEvaluation && <WorkflowStatusTag status={previousEvaluation.result} />}
+        {previousEvaluation && (
+          <WorkflowStatusTag status={previousEvaluation.result} />
+        )}
       </div>
 
       {previousEvaluation && (
-        <div className="mt-4 rounded-xl bg-panel-muted p-4">
-          <p className="text-xs text-muted">Your latest evaluation · {formatDate(previousEvaluation.evaluated_at, "MMM D, YYYY · h:mm A")}</p>
-          {previousEvaluation.remarks && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-ink">{previousEvaluation.remarks}</p>}
+        <div className="mt-4 rounded-md bg-panel-muted p-4">
+          <p className="text-xs text-muted">
+            Your latest evaluation ·{" "}
+            {formatDate(
+              previousEvaluation.evaluated_at,
+              "MMM D, YYYY · h:mm A",
+            )}
+          </p>
+          {previousEvaluation.remarks && (
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-ink">
+              {previousEvaluation.remarks}
+            </p>
+          )}
         </div>
       )}
 
       {isFinal ? (
-        <p className="mt-4 text-sm text-muted">The application has a final hiring decision and can no longer be evaluated.</p>
+        <p className="mt-4 text-sm text-muted">
+          The application has a final hiring decision and can no longer be
+          evaluated.
+        </p>
       ) : (
-        <form className="mt-5 space-y-4 border-t border-line-subtle pt-5" onSubmit={form.handleSubmit(submit)}>
+        <form
+          className="mt-5 space-y-4 border-t border-line-subtle pt-5"
+          onSubmit={form.handleSubmit(submit)}
+        >
           <FormSelect
             control={form.control}
             label="Assessment result"
@@ -93,7 +122,14 @@ export function ApplicationEvaluationPanel({
           >
             {pending ? "Saving assessment…" : "Save assessment"}
           </button>
-          {message && <p className={`text-sm ${message === "Application evaluation saved." ? "text-primary" : "text-danger"}`} role="status">{message}</p>}
+          {message && (
+            <p
+              className={`text-sm ${message === "Application evaluation saved." ? "text-primary" : "text-danger"}`}
+              role="status"
+            >
+              {message}
+            </p>
+          )}
         </form>
       )}
     </section>

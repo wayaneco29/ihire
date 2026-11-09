@@ -21,11 +21,7 @@ export function SurfaceCard({
 }: SurfaceCardProps) {
   return (
     <Component
-      className={cn(
-        "rounded-xl border",
-        TONE_CLASSES[tone],
-        className,
-      )}
+      className={cn("rounded-md border", TONE_CLASSES[tone], className)}
       {...props}
     />
   );

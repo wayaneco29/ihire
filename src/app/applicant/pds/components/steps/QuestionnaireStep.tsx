@@ -88,7 +88,7 @@ export function QuestionnaireStep({
         return (
           <section
             aria-labelledby={`pds-question-${item.code}`}
-            className="rounded-xl border border-line bg-panel p-4 sm:p-5"
+            className="rounded-md border border-line bg-panel p-4 sm:p-5"
             key={item.code}
           >
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem] md:items-start">
@@ -96,7 +96,9 @@ export function QuestionnaireStep({
                 className="text-sm font-medium leading-6 text-ink"
                 id={`pds-question-${item.code}`}
               >
-                <span className="mr-2 font-semibold text-primary">{item.code}</span>
+                <span className="mr-2 font-semibold text-primary">
+                  {item.code}
+                </span>
                 {item.question}
               </h4>
               <FormRadioYesNo
@@ -172,7 +174,7 @@ export function QuestionnaireStep({
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "Draft saved"
-              : autosave.message ?? "Your draft saves automatically."}
+              : (autosave.message ?? "Your draft saves automatically.")}
         </p>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           {submitMessage && (

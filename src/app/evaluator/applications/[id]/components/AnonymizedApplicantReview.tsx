@@ -7,7 +7,10 @@ import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
-import { createDocumentPreviewUrl, submitDocumentReview } from "../../../documents/actions";
+import {
+  createDocumentPreviewUrl,
+  submitDocumentReview,
+} from "../../../documents/actions";
 
 type AnonymizedDocument = {
   document_id: string;
@@ -68,11 +71,16 @@ export function AnonymizedApplicantReview({
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [selectedDocument, setSelectedDocument] = useState<AnonymizedDocument | null>(null);
+  const [selectedDocument, setSelectedDocument] =
+    useState<AnonymizedDocument | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewContentType, setPreviewContentType] = useState<string | null>(null);
+  const [previewContentType, setPreviewContentType] = useState<string | null>(
+    null,
+  );
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<"preview" | "verify" | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "preview" | "verify" | null
+  >(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -117,7 +125,10 @@ export function AnonymizedApplicantReview({
       setPendingAction(null);
       setFeedback(result.message);
       if (result.success) {
-        setSelectedDocument({ ...selectedDocument, document_status: "VERIFIED" });
+        setSelectedDocument({
+          ...selectedDocument,
+          document_status: "VERIFIED",
+        });
         router.refresh();
       }
     });
@@ -128,11 +139,15 @@ export function AnonymizedApplicantReview({
       <div className="mt-7 grid gap-4 sm:grid-cols-2">
         <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Applicant number</p>
-          <p className="mt-2 text-lg font-semibold text-primary">{applicantNumber}</p>
+          <p className="mt-2 text-lg font-semibold text-primary">
+            {applicantNumber}
+          </p>
         </section>
         <section className="rounded-2xl border border-line bg-panel p-5">
           <p className="text-xs text-muted">Training hours</p>
-          <p className="mt-2 text-sm font-semibold text-ink">{trainingHours ?? 0}</p>
+          <p className="mt-2 text-sm font-semibold text-ink">
+            {trainingHours ?? 0}
+          </p>
         </section>
       </div>
 
@@ -140,17 +155,26 @@ export function AnonymizedApplicantReview({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Skills</h2>
-            <p className="mt-1 text-sm text-muted">Applicant credibility information</p>
+            <p className="mt-1 text-sm text-muted">
+              Applicant credibility information
+            </p>
           </div>
           <WorkflowStatusTag status={applicationStatus} />
         </div>
         {skills?.length ? (
           <ul className="mt-4 flex flex-wrap gap-2">
             {skills.map((skill) => (
-              <li className="rounded-full bg-primary-light px-3 py-1.5 text-sm text-primary" key={skill}>{skill}</li>
+              <li
+                className="rounded-full bg-primary-light px-3 py-1.5 text-sm text-primary"
+                key={skill}
+              >
+                {skill}
+              </li>
             ))}
           </ul>
-        ) : <p className="mt-4 text-sm text-muted">No skills listed.</p>}
+        ) : (
+          <p className="mt-4 text-sm text-muted">No skills listed.</p>
+        )}
       </section>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
@@ -158,25 +182,35 @@ export function AnonymizedApplicantReview({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-ink">Education</h2>
-              <p className="mt-1 text-sm text-muted">Schools, programs, attendance, and graduation details</p>
+              <p className="mt-1 text-sm text-muted">
+                Schools, programs, attendance, and graduation details
+              </p>
             </div>
             <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
               {education.length} record{education.length === 1 ? "" : "s"}
             </span>
           </div>
           {educationUnavailable ? (
-            <p className="mt-5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-              Education details could not be loaded. Apply the latest Supabase migrations, then refresh this page.
+            <p className="mt-5 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+              Education details could not be loaded. Apply the latest Supabase
+              migrations, then refresh this page.
             </p>
           ) : education.length ? (
             <ul className="mt-5 space-y-3">
               {education.map((item) => (
-                <li className="rounded-xl border border-line-subtle bg-panel-muted p-4" key={item.education_id}>
+                <li
+                  className="rounded-md border border-line-subtle bg-panel-muted p-4"
+                  key={item.education_id}
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-semibold text-ink">{item.school_name || item.level.replaceAll("_", " ")}</p>
+                      <p className="font-semibold text-ink">
+                        {item.school_name || item.level.replaceAll("_", " ")}
+                      </p>
                       <p className="mt-1 text-sm text-muted">
-                        {item.degree_course || item.highest_level_units_earned || `${item.level.replaceAll("_", " ")} studies`}
+                        {item.degree_course ||
+                          item.highest_level_units_earned ||
+                          `${item.level.replaceAll("_", " ")} studies`}
                       </p>
                     </div>
                     <span className="rounded-full border border-line bg-panel px-2.5 py-1 text-xs font-medium capitalize text-muted">
@@ -184,20 +218,34 @@ export function AnonymizedApplicantReview({
                     </span>
                   </div>
                   <dl className="mt-4 grid gap-3 border-t border-line-subtle pt-3 sm:grid-cols-2">
-                    <DetailValue label="Attendance" value={`${item.period_from ?? "—"} – ${item.period_to ?? "Present"}`} />
-                    <DetailValue label="Year graduated" value={item.year_graduated?.toString()} />
+                    <DetailValue
+                      label="Attendance"
+                      value={`${item.period_from ?? "—"} – ${item.period_to ?? "Present"}`}
+                    />
+                    <DetailValue
+                      label="Year graduated"
+                      value={item.year_graduated?.toString()}
+                    />
                     {item.highest_level_units_earned && (
-                      <DetailValue label="Units earned" value={item.highest_level_units_earned} />
+                      <DetailValue
+                        label="Units earned"
+                        value={item.highest_level_units_earned}
+                      />
                     )}
                     {item.honors_received && (
-                      <DetailValue label="Honors" value={item.honors_received} />
+                      <DetailValue
+                        label="Honors"
+                        value={item.honors_received}
+                      />
                     )}
                   </dl>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-xl bg-panel-muted px-4 py-3 text-sm text-muted">No education records listed.</p>
+            <p className="mt-5 rounded-md bg-panel-muted px-4 py-3 text-sm text-muted">
+              No education records listed.
+            </p>
           )}
         </section>
 
@@ -205,32 +253,47 @@ export function AnonymizedApplicantReview({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-ink">Work experience</h2>
-              <p className="mt-1 text-sm text-muted">Employment history and responsibilities</p>
+              <p className="mt-1 text-sm text-muted">
+                Employment history and responsibilities
+              </p>
             </div>
             <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
               {Number(experienceYears ?? 0).toFixed(1)} years total
             </span>
           </div>
           {workExperienceUnavailable ? (
-            <p className="mt-5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-              Work experience details could not be loaded. Apply the latest Supabase migrations, then refresh this page.
+            <p className="mt-5 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+              Work experience details could not be loaded. Apply the latest
+              Supabase migrations, then refresh this page.
             </p>
           ) : workExperience.length ? (
             <ul className="mt-5 space-y-3">
               {workExperience.map((item) => (
-                <li className="rounded-xl border border-line-subtle bg-panel-muted p-4" key={item.experience_id}>
+                <li
+                  className="rounded-md border border-line-subtle bg-panel-muted p-4"
+                  key={item.experience_id}
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-semibold text-ink">{item.position_title}</p>
-                      <p className="mt-1 text-sm text-muted">{item.agency_company}</p>
+                      <p className="font-semibold text-ink">
+                        {item.position_title}
+                      </p>
+                      <p className="mt-1 text-sm text-muted">
+                        {item.agency_company}
+                      </p>
                     </div>
                     <span className="whitespace-nowrap text-xs font-medium text-muted">
-                      {formatDate(item.date_from, "MMM YYYY")} – {item.date_to ? formatDate(item.date_to, "MMM YYYY") : "Present"}
+                      {formatDate(item.date_from, "MMM YYYY")} –{" "}
+                      {item.date_to
+                        ? formatDate(item.date_to, "MMM YYYY")
+                        : "Present"}
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="rounded-full border border-line bg-panel px-2.5 py-1 text-xs text-muted">
-                      {item.is_gov_service ? "Government service" : "Non-government"}
+                      {item.is_gov_service
+                        ? "Government service"
+                        : "Non-government"}
                     </span>
                     {item.appointment_status && (
                       <span className="rounded-full border border-line bg-panel px-2.5 py-1 text-xs text-muted">
@@ -247,7 +310,9 @@ export function AnonymizedApplicantReview({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-xl bg-panel-muted px-4 py-3 text-sm text-muted">No work experience records listed.</p>
+            <p className="mt-5 rounded-md bg-panel-muted px-4 py-3 text-sm text-muted">
+              No work experience records listed.
+            </p>
           )}
         </section>
       </div>
@@ -256,21 +321,35 @@ export function AnonymizedApplicantReview({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Supporting documents</h2>
-            <p className="mt-1 text-sm text-muted">Files are labeled only with their document type and applicant number.</p>
+            <p className="mt-1 text-sm text-muted">
+              Files are labeled only with their document type and applicant
+              number.
+            </p>
           </div>
-          <span className="text-sm text-muted">{documents.length} document types</span>
+          <span className="text-sm text-muted">
+            {documents.length} document types
+          </span>
         </div>
         {documentsUnavailable ? (
-          <p className="mt-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-            Supporting documents could not be loaded. Refresh the page to try again.
+          <p className="mt-4 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            Supporting documents could not be loaded. Refresh the page to try
+            again.
           </p>
         ) : documents.length ? (
           <ul className="mt-4 divide-y divide-line-subtle">
             {documents.map((document) => (
-              <li className="flex flex-wrap items-center justify-between gap-3 py-4" key={document.document_id}>
+              <li
+                className="flex flex-wrap items-center justify-between gap-3 py-4"
+                key={document.document_id}
+              >
                 <div className="min-w-0">
-                  <p className="font-medium text-ink">{document.document_type}</p>
-                  <p className="mt-1 text-xs text-muted">Uploaded {formatDate(document.uploaded_at, "MMM D, YYYY · h:mm A")}</p>
+                  <p className="font-medium text-ink">
+                    {document.document_type}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    Uploaded{" "}
+                    {formatDate(document.uploaded_at, "MMM D, YYYY · h:mm A")}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <WorkflowStatusTag status={document.document_status} />
@@ -309,9 +388,18 @@ export function AnonymizedApplicantReview({
           <div className="flex max-h-[92dvh] flex-col">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line-subtle px-5 py-4">
               <div>
-                <h2 className="font-semibold text-ink" id="document-preview-title">{selectedDocument.document_type}</h2>
+                <h2
+                  className="font-semibold text-ink"
+                  id="document-preview-title"
+                >
+                  {selectedDocument.document_type}
+                </h2>
                 <p className="mt-1 text-xs text-muted">
-                  Applicant {applicantNumber} · Uploaded {formatDate(selectedDocument.uploaded_at, "MMM D, YYYY · h:mm A")}
+                  Applicant {applicantNumber} · Uploaded{" "}
+                  {formatDate(
+                    selectedDocument.uploaded_at,
+                    "MMM D, YYYY · h:mm A",
+                  )}
                 </p>
               </div>
               <button
@@ -343,23 +431,29 @@ export function AnonymizedApplicantReview({
                       title={`${selectedDocument.document_type} document preview`}
                     />
                   ) : (
-                    <div className="max-w-md rounded-xl border border-line bg-panel p-5 text-center">
-                      <p className="font-medium text-ink">Preview not available for this file type</p>
+                    <div className="max-w-md rounded-md border border-line bg-panel p-5 text-center">
+                      <p className="font-medium text-ink">
+                        Preview not available for this file type
+                      </p>
                       <p className="mt-2 text-sm text-muted">
-                        Download the file to review it. You can still verify it after checking the document.
+                        Download the file to review it. You can still verify it
+                        after checking the document.
                       </p>
                     </div>
                   )}
                   {previewContentType?.startsWith("image/") && (
                     <p className="mt-2 text-xs text-muted">
-                      Image scaled to fit the preview. Download to view at full resolution.
+                      Image scaled to fit the preview. Download to view at full
+                      resolution.
                     </p>
                   )}
                 </div>
               ) : (
                 <div className="grid min-h-64 place-items-center rounded-lg border border-dashed border-line-strong bg-panel px-5 text-center">
                   <p className="text-sm text-muted">
-                    {pendingAction === "preview" ? "Loading secure document preview…" : feedback ?? "The preview is not available."}
+                    {pendingAction === "preview"
+                      ? "Loading secure document preview…"
+                      : (feedback ?? "The preview is not available.")}
                   </p>
                 </div>
               )}
@@ -376,7 +470,14 @@ export function AnonymizedApplicantReview({
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line-subtle px-5 py-4">
               <div aria-live="polite" className="text-sm">
                 {feedback && (
-                  <p className={feedback === "Document review saved." ? "text-primary" : "text-danger"} role="status">
+                  <p
+                    className={
+                      feedback === "Document review saved."
+                        ? "text-primary"
+                        : "text-danger"
+                    }
+                    role="status"
+                  >
                     {feedback}
                   </p>
                 )}
@@ -396,12 +497,17 @@ export function AnonymizedApplicantReview({
                       onClick={verifyDocument}
                       type="button"
                     >
-                      {pendingAction === "verify" ? "Verifying…" : "Mark as verified"}
+                      {pendingAction === "verify"
+                        ? "Verifying…"
+                        : "Mark as verified"}
                     </button>
                   </>
                 ) : (
                   <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">
-                    Current status <WorkflowStatusTag status={selectedDocument.document_status} />
+                    Current status{" "}
+                    <WorkflowStatusTag
+                      status={selectedDocument.document_status}
+                    />
                   </span>
                 )}
               </div>
@@ -413,7 +519,13 @@ export function AnonymizedApplicantReview({
   );
 }
 
-function DetailValue({ label, value }: { label: string; value: string | null | undefined }) {
+function DetailValue({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   return (
     <div>
       <dt className="text-xs font-medium text-muted">{label}</dt>

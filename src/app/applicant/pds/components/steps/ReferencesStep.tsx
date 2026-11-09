@@ -17,7 +17,11 @@ type Props = {
   pdsVersionId: string;
 };
 
-export function ReferencesStep({ draftData, onCompleted, pdsVersionId }: Props) {
+export function ReferencesStep({
+  draftData,
+  onCompleted,
+  pdsVersionId,
+}: Props) {
   const {
     control,
     handleSubmit,
@@ -54,14 +58,15 @@ export function ReferencesStep({ draftData, onCompleted, pdsVersionId }: Props) 
       <div>
         <h3 className="text-base font-semibold text-ink">References</h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Enter exactly three people who are not related to you by consanguinity or affinity.
+          Enter exactly three people who are not related to you by consanguinity
+          or affinity.
         </p>
       </div>
 
       {values.references.map((_, index) => (
         <section
           aria-labelledby={`reference-heading-${index + 1}`}
-          className="rounded-xl border border-line bg-panel p-4 sm:p-5"
+          className="rounded-md border border-line bg-panel p-4 sm:p-5"
           key={index}
         >
           <h4
@@ -108,7 +113,7 @@ export function ReferencesStep({ draftData, onCompleted, pdsVersionId }: Props) 
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "Draft saved"
-              : autosave.message ?? "Your draft saves automatically."}
+              : (autosave.message ?? "Your draft saves automatically.")}
         </p>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           {submitMessage && (
