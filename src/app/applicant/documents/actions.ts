@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { TRAINING_CERTIFICATE_DOCUMENT_TYPE } from "@/constants/documents";
+import {
+  TRAINING_CERTIFICATE_DOCUMENT_TYPE,
+  TRANSCRIPT_DOCUMENT_TYPE,
+} from "@/constants/documents";
 import { getApplicantContext } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -17,6 +20,33 @@ const ALLOWED_TYPES = new Set([
 export type DocumentUploadResult =
   | { success: true; version: number }
   | { success: false; message: string };
+
+function parseMetric(
+  raw: FormDataEntryValue | null,
+  max: number,
+  label: string,
+  required: boolean,
+): { value: number | null; error: string | null } {
+  const parsed = typeof raw === "string" && raw.trim() !== ""
+    ? Number(raw)
+    : Number.NaN;
+  if (!Number.isFinite(parsed)) {
+    return required
+      ? { value: null, error: `Enter ${label}.` }
+      : { value: null, error: null };
+  }
+  if (
+    parsed < 0 ||
+    parsed > max ||
+    Math.abs(parsed * 100 - Math.round(parsed * 100)) >= 1e-8
+  ) {
+    return {
+      value: null,
+      error: `Enter ${label} from 0 to ${max.toLocaleString()}, using at most two decimals.`,
+    };
+  }
+  return { value: parsed, error: null };
+}
 
 export async function uploadApplicantDocument(formData: FormData): Promise<DocumentUploadResult> {
   const applicant = await getApplicantContext();
@@ -67,32 +97,96 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
   }
 
   const isTrainingCertificate = documentType.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE;
-  let trainingHours: number | null = null;
+  const isTranscript = documentType.name === TRANSCRIPT_DOCUMENT_TYPE;
+  const hasOcrInput = [
+    "ocr_confidence",
+    "ocr_training_hours",
+    "ocr_total_units",
+  ].some((key) => formData.has(key));
+  const hasApplicantMetricInput = [
+    "training_hours",
+    "pds_learning_development_id",
+    "total_units",
+    "pds_education_id",
+  ].some((key) => formData.has(key));
+  if (
+    (isTrainingCertificate && (formData.has("total_units") || formData.has("pds_education_id") || formData.has("ocr_total_units"))) ||
+    (isTranscript && (formData.has("training_hours") || formData.has("pds_learning_development_id") || formData.has("ocr_training_hours"))) ||
+    (!isTrainingCertificate && !isTranscript && (hasApplicantMetricInput || hasOcrInput))
+  ) {
+    return { success: false, message: "Document values do not match this document type." };
+  }
+
+  const trainingResult = isTrainingCertificate
+    ? parseMetric(formData.get("training_hours"), 999999.99, "certificate hours", true)
+    : { value: null, error: null };
+  const unitsResult = isTranscript
+    ? parseMetric(formData.get("total_units"), 99999999.99, "total transcript units", true)
+    : { value: null, error: null };
+  if (trainingResult.error || unitsResult.error) {
+    return {
+      success: false,
+      message: trainingResult.error ?? unitsResult.error ?? "Enter a valid document value.",
+    };
+  }
+
+  let ocrTrainingHours: number | null = null;
+  let ocrTotalUnits: number | null = null;
+  let ocrConfidence: number | null = null;
+  if (hasOcrInput) {
+    const rawConfidence = formData.get("ocr_confidence");
+    const confidenceResult = parseMetric(
+      rawConfidence,
+      100,
+      "OCR confidence",
+      true,
+    );
+    if (confidenceResult.error) {
+      return { success: false, message: confidenceResult.error };
+    }
+    ocrConfidence = confidenceResult.value;
+    if (isTrainingCertificate) {
+      const result = parseMetric(
+        formData.get("ocr_training_hours"),
+        999999.99,
+        "OCR training hours",
+        false,
+      );
+      if (result.error) return { success: false, message: result.error };
+      ocrTrainingHours = result.value;
+    }
+    if (isTranscript) {
+      const result = parseMetric(
+        formData.get("ocr_total_units"),
+        99999999.99,
+        "OCR transcript units",
+        false,
+      );
+      if (result.error) return { success: false, message: result.error };
+      ocrTotalUnits = result.value;
+    }
+  }
+
+  const rawPdsEntryId = isTrainingCertificate
+    ? (formData.get("pds_learning_development_id") ?? "")
+    : isTranscript
+      ? (formData.get("pds_education_id") ?? "")
+      : null;
   let pdsLearningDevelopmentId: string | null = null;
-
-  if (isTrainingCertificate) {
-    const rawHours = formData.get("training_hours");
-    const rawLearningId = formData.get("pds_learning_development_id");
-    const parsedHours = typeof rawHours === "string" && rawHours.trim() !== ""
-      ? Number(rawHours)
-      : Number.NaN;
-
-    if (
-      !Number.isFinite(parsedHours) ||
-      parsedHours < 0 ||
-      parsedHours > 999999.99 ||
-      Math.abs(parsedHours * 100 - Math.round(parsedHours * 100)) >= 1e-8
-    ) {
-      return { success: false, message: "Enter certificate hours from 0 to 999,999.99, using at most two decimals." };
+  let pdsEducationId: string | null = null;
+  if (isTrainingCertificate || isTranscript) {
+    if (typeof rawPdsEntryId !== "string") {
+      return {
+        success: false,
+        message: "Choose a valid PDS entry or leave it unlinked.",
+      };
     }
-
-    trainingHours = parsedHours;
-    if (typeof rawLearningId !== "string") {
-      return { success: false, message: "Choose a valid PDS training entry or leave it unlinked." };
-    }
-    if (rawLearningId !== "") {
-      if (!/^[0-9a-f-]{36}$/i.test(rawLearningId)) {
-        return { success: false, message: "Choose a valid PDS training entry or leave it unlinked." };
+    if (rawPdsEntryId !== "") {
+      if (!/^[0-9a-f-]{36}$/i.test(rawPdsEntryId)) {
+        return {
+          success: false,
+          message: "Choose a valid PDS entry or leave it unlinked.",
+        };
       }
 
       const { data: submittedPds, error: pdsError } = await applicant.supabase
@@ -103,32 +197,61 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
         .order("version_no", { ascending: false })
         .limit(1)
         .maybeSingle();
-
       if (pdsError) {
-        return { success: false, message: "We could not verify your submitted PDS. Refresh and try again." };
+        return {
+          success: false,
+          message: "We could not verify your submitted PDS. Refresh and try again.",
+        };
       }
       if (!submittedPds) {
-        return { success: false, message: "Submit a PDS before linking this certificate to a training entry." };
+        return {
+          success: false,
+          message: "Submit a PDS before linking this document to an entry.",
+        };
       }
 
-      const { data: learningEntry, error: learningError } = await applicant.supabase
-        .from("pds_learning_development")
-        .select("id")
-        .eq("id", rawLearningId)
-        .eq("pds_version_id", submittedPds.id)
-        .maybeSingle();
-
-      if (learningError) {
-        return { success: false, message: "We could not verify that PDS training entry. Refresh and try again." };
+      if (isTrainingCertificate) {
+        const { data: entry, error: entryError } = await applicant.supabase
+          .from("pds_learning_development")
+          .select("id")
+          .eq("id", rawPdsEntryId)
+          .eq("pds_version_id", submittedPds.id)
+          .maybeSingle();
+        if (entryError) {
+          return {
+            success: false,
+            message: "We could not verify that PDS training entry. Refresh and try again.",
+          };
+        }
+        if (!entry) {
+          return {
+            success: false,
+            message: "That PDS training entry is no longer available. Refresh and choose again.",
+          };
+        }
+        pdsLearningDevelopmentId = entry.id;
+      } else {
+        const { data: entry, error: entryError } = await applicant.supabase
+          .from("pds_education")
+          .select("id")
+          .eq("id", rawPdsEntryId)
+          .eq("pds_version_id", submittedPds.id)
+          .maybeSingle();
+        if (entryError) {
+          return {
+            success: false,
+            message: "We could not verify that PDS education entry. Refresh and try again.",
+          };
+        }
+        if (!entry) {
+          return {
+            success: false,
+            message: "That PDS education entry is no longer available. Refresh and choose again.",
+          };
+        }
+        pdsEducationId = entry.id;
       }
-      if (!learningEntry) {
-        return { success: false, message: "That PDS training entry is no longer available. Refresh and choose again." };
-      }
-
-      pdsLearningDevelopmentId = learningEntry.id;
     }
-  } else if (formData.has("training_hours") || formData.has("pds_learning_development_id")) {
-    return { success: false, message: "Hours can only be recorded for Training and Seminar Certificates." };
   }
 
   const version = (latest?.version ?? 0) + 1;
@@ -150,8 +273,22 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
     status: "PENDING",
     ...(isTrainingCertificate
       ? {
-          training_hours: trainingHours,
+          training_hours: trainingResult.value,
           pds_learning_development_id: pdsLearningDevelopmentId,
+        }
+      : {}),
+    ...(isTranscript
+      ? {
+          total_units: unitsResult.value,
+          pds_education_id: pdsEducationId,
+        }
+      : {}),
+    ...(hasOcrInput
+      ? {
+          ocr_training_hours: ocrTrainingHours,
+          ocr_total_units: ocrTotalUnits,
+          ocr_confidence: ocrConfidence,
+          ocr_processed_at: new Date().toISOString(),
         }
       : {}),
   });

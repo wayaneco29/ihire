@@ -20,7 +20,7 @@ export default async function EvaluatorReviewsPage({
     evaluator.supabase
       .from("v_anonymized_applicants")
       .select(
-        "application_id, applicant_number, application_status, applied_at, job_id",
+        "application_id, applicant_number, application_status, applied_at, job_id, position_title, position_track",
       )
       .order("applied_at", { ascending: false }),
     evaluator.supabase

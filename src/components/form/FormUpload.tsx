@@ -13,6 +13,7 @@ type FormUploadProps<T extends FieldValues> = FormControlProps<T> & {
   drag?: boolean;
   maxCount?: number;
   multiple?: boolean;
+  onFileChange?: (file: File | undefined) => void;
 };
 
 export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
@@ -25,6 +26,7 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
     required,
     rules,
     drag,
+    onFileChange,
     ...uploadProps
   } = props;
   const uploadId = fieldId(name, id);
@@ -49,7 +51,11 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                 beforeUpload={() => false}
                 className="rounded-sm"
                 fileList={(field.value ?? []) as UploadFile[]}
-                onChange={({ fileList }) => field.onChange(fileList)}
+                onChange={({ fileList }) => {
+                  field.onChange(fileList);
+                  const file = fileList[0]?.originFileObj;
+                  onFileChange?.(file instanceof File ? file : undefined);
+                }}
                 showUploadList
               >
                 <div className="flex min-h-14 items-center justify-between gap-3 px-2 text-left">
@@ -76,7 +82,11 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                 {...uploadProps}
                 beforeUpload={() => false}
                 fileList={(field.value ?? []) as UploadFile[]}
-                onChange={({ fileList }) => field.onChange(fileList)}
+                onChange={({ fileList }) => {
+                  field.onChange(fileList);
+                  const file = fileList[0]?.originFileObj;
+                  onFileChange?.(file instanceof File ? file : undefined);
+                }}
               >
                 <button
                   aria-describedby={

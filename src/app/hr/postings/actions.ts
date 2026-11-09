@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ValidationError } from "yup";
 import { getHrContext } from "@/lib/auth/server";
-import { postingSchema } from "./schema";
+import { postingSchema, type HiringTrack } from "./schema";
 
 type ActionResult = { success: boolean; message: string };
 
@@ -55,6 +55,29 @@ async function parseInput(input: unknown) {
   }
 }
 
+async function validateHiringTrack(
+  supabase: NonNullable<Awaited<ReturnType<typeof getHrContext>>>["supabase"],
+  positionIds: string[],
+  hiringTrack: HiringTrack,
+) {
+  const { data: positions, error } = await supabase
+    .from("positions")
+    .select("id, track")
+    .in("id", positionIds);
+
+  if (error) {
+    return "The selected positions could not be verified. Refresh and try again.";
+  }
+  if (
+    !positions ||
+    positions.length !== positionIds.length ||
+    positions.some((position) => position.track !== hiringTrack)
+  ) {
+    return "Select positions that match the chosen hiring type.";
+  }
+  return null;
+}
+
 function deadlineIso(value: string) {
   return value ? new Date(value).toISOString() : null;
 }
@@ -70,18 +93,27 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
     return { success: false, message: error instanceof Error ? error.message : "Check the posting details." };
   }
 
+  const hiringTrackMessage = await validateHiringTrack(
+    hr.supabase,
+    values.positionIds,
+    values.hiringTrack,
+  );
+  if (hiringTrackMessage) {
+    return { success: false, message: hiringTrackMessage };
+  }
+
   if (values.status === "OPEN" && values.deadline && Date.parse(values.deadline) <= Date.now()) {
     return { success: false, message: "An expired posting cannot be opened." };
   }
 
-  const { error } = await hr.supabase.from("job_postings").insert({
-    hr_id: hr.user.id,
-    title: values.title,
-    description: values.description,
-    requirements: values.requirements || null,
-    slots: values.slots,
-    status: values.status,
-    deadline: deadlineIso(values.deadline),
+  const { error } = await hr.supabase.rpc("create_job_posting_with_positions", {
+    p_title: values.title,
+    p_description: values.description,
+    p_requirements: values.requirements || null,
+    p_slots: values.slots,
+    p_status: values.status,
+    p_deadline: deadlineIso(values.deadline),
+    p_position_ids: values.positionIds,
   });
 
   if (error) {
@@ -111,6 +143,15 @@ export async function updateJobPosting(
     return { success: false, message: error instanceof Error ? error.message : "Check the posting details." };
   }
 
+  const hiringTrackMessage = await validateHiringTrack(
+    hr.supabase,
+    values.positionIds,
+    values.hiringTrack,
+  );
+  if (hiringTrackMessage) {
+    return { success: false, message: hiringTrackMessage };
+  }
+
   const capacityMessage = await validateCapacity(
     hr.supabase,
     jobId,
@@ -120,20 +161,19 @@ export async function updateJobPosting(
   );
   if (capacityMessage) return { success: false, message: capacityMessage };
 
-  const { data, error } = await hr.supabase
-    .from("job_postings")
-    .update({
-      title: values.title,
-      description: values.description,
-      requirements: values.requirements || null,
-      slots: values.slots,
-      status: values.status,
-      deadline: deadlineIso(values.deadline),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", jobId)
-    .select("id")
-    .maybeSingle();
+  const { data, error } = await hr.supabase.rpc(
+    "update_job_posting_with_positions",
+    {
+      p_job_id: jobId,
+      p_title: values.title,
+      p_description: values.description,
+      p_requirements: values.requirements || null,
+      p_slots: values.slots,
+      p_status: values.status,
+      p_deadline: deadlineIso(values.deadline),
+      p_position_ids: values.positionIds,
+    },
+  );
 
   if (error || !data) {
     return { success: false, message: "The posting could not be updated. Refresh and try again." };

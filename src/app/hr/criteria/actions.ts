@@ -1,0 +1,114 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import * as yup from "yup";
+import { ValidationError } from "yup";
+import { getHrContext } from "@/lib/auth/server";
+import {
+  positionSchema,
+  positionWeightsSchema,
+  type PositionValues,
+} from "./schema";
+
+type ActionResult = { success: boolean; message: string };
+
+export async function createPosition(input: unknown): Promise<ActionResult> {
+  const hr = await getHrContext();
+  if (!hr) return { success: false, message: "HR access is required." };
+
+  let values: PositionValues;
+  try {
+    values = await positionSchema.validate(input, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof ValidationError
+          ? error.errors[0] ?? "Check the position details."
+          : "Check the position details.",
+    };
+  }
+
+  const { error } = await hr.supabase.from("positions").insert({
+    track: values.track,
+    title: values.title,
+    created_by: hr.user.id,
+  });
+
+  if (error?.code === "23505") {
+    return {
+      success: false,
+      message: "That title already exists in this position track.",
+    };
+  }
+  if (error) {
+    return { success: false, message: "The position could not be created." };
+  }
+
+  revalidatePath("/hr/criteria");
+  revalidatePath("/hr/postings/new");
+  revalidatePath("/hr/postings");
+  return { success: true, message: "Position created." };
+}
+
+export async function savePositionWeights(
+  positionId: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const hr = await getHrContext();
+  if (!hr) return { success: false, message: "HR access is required." };
+  if (!/^[0-9a-f-]{36}$/i.test(positionId)) {
+    return { success: false, message: "This position is unavailable." };
+  }
+
+  let values: { criterionIds: string[]; weights: number[] };
+  try {
+    values = await yup
+      .object({
+        criterionIds: yup
+          .array()
+          .of(yup.string().uuid().required())
+          .required(),
+        weights: positionWeightsSchema,
+      })
+      .test(
+        "matching-lengths",
+        "A weight is required for every criterion.",
+        (value) => value?.criterionIds?.length === value?.weights?.length,
+      )
+      .validate(input, { abortEarly: false, stripUnknown: true });
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof ValidationError
+          ? error.errors[0] ?? "Enter weights that total exactly 100 points."
+          : "Enter weights that total exactly 100 points.",
+    };
+  }
+
+  const { error } = await hr.supabase.rpc("save_position_weight_profile", {
+    p_position_id: positionId,
+    p_weights: values.weights.map((points, index) => ({
+      criterion_id: values.criterionIds[index],
+      points,
+    })),
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message:
+        error.code === "22023"
+          ? error.message
+          : "The weight profile could not be saved. Refresh and try again.",
+    };
+  }
+
+  revalidatePath("/hr/criteria");
+  revalidatePath("/hr/postings");
+  return { success: true, message: "Weight profile saved and versioned." };
+}

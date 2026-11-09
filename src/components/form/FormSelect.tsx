@@ -12,6 +12,7 @@ type FormSelectProps<T extends FieldValues> = FormControlProps<T> & {
   disabled?: boolean;
   allowClear?: boolean;
   showSearch?: boolean;
+  onValueChange?: (value: string) => void;
 };
 
 export function FormSelect<T extends FieldValues>(props: FormSelectProps<T>) {
@@ -23,6 +24,7 @@ export function FormSelect<T extends FieldValues>(props: FormSelectProps<T>) {
     hint,
     required,
     rules,
+    onValueChange,
     ...selectProps
   } = props;
   const selectId = fieldId(name, id);
@@ -49,7 +51,10 @@ export function FormSelect<T extends FieldValues>(props: FormSelectProps<T>) {
             className="w-full"
             id={selectId}
             onBlur={field.onBlur}
-            onChange={field.onChange}
+            onChange={(value) => {
+              field.onChange(value);
+              if (typeof value === "string") onValueChange?.(value);
+            }}
             options={selectProps.options}
             value={field.value as SelectProps["value"]}
           />

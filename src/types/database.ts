@@ -3,6 +3,7 @@ import type { DatabaseTables02 } from './database/tables-02';
 import type { DatabaseTables03 } from './database/tables-03';
 import type { DatabaseTables04 } from './database/tables-04';
 import type { DatabaseTables05 } from './database/tables-05';
+import type { DatabaseTables06 } from './database/tables-06';
 import type { PublicCompositeTypes } from './database-composite-types';
 import type { PublicEnums } from './database-enums';
 import type { PublicFunctions } from './database-functions';
@@ -12,7 +13,7 @@ export { Constants } from './database-constants';
 
 export type Database = {
   public: {
-    Tables: DatabaseTables01 & DatabaseTables02 & DatabaseTables03 & DatabaseTables04 & DatabaseTables05;
+    Tables: DatabaseTables01 & DatabaseTables02 & DatabaseTables03 & DatabaseTables04 & DatabaseTables05 & DatabaseTables06;
     Views: PublicViews;
     Functions: PublicFunctions;
     Enums: PublicEnums;

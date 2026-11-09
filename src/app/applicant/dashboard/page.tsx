@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
+import { formatPositionLabel } from "@/utils/format-position-track";
 import { DashboardSections } from "./components/DashboardSections";
 
 export default async function ApplicantDashboardPage() {
@@ -25,7 +26,7 @@ export default async function ApplicantDashboardPage() {
       .limit(3),
     applicant.supabase
       .from("applications")
-      .select("id, job_id, status, applied_at")
+      .select("id, job_id, position_id, status, applied_at")
       .eq("applicant_id", applicant.applicant.id)
       .order("applied_at", { ascending: false }),
     applicant.supabase
@@ -61,9 +62,31 @@ export default async function ApplicantDashboardPage() {
   const jobTitles = new Map(
     (jobsResult.data ?? []).map((job) => [job.id, job.title] as const),
   );
+  const positionIds = [
+    ...new Set(
+      applications
+        .map((application) => application.position_id)
+        .filter((positionId): positionId is string => positionId !== null),
+    ),
+  ];
+  const positionsResult = positionIds.length
+    ? await applicant.supabase
+        .from("positions")
+        .select("id, title, track")
+        .in("id", positionIds)
+    : { data: [], error: null };
+  const positionTitles = new Map(
+    (positionsResult.data ?? []).map(
+      (position) =>
+        [position.id, formatPositionLabel(position.title, position.track)] as const,
+    ),
+  );
   const dashboardApplications = applications.map((application) => ({
     ...application,
     jobTitle: jobTitles.get(application.job_id) ?? "Job posting",
+    positionLabel: application.position_id
+      ? positionTitles.get(application.position_id) ?? "Position unavailable"
+      : "Position not recorded",
   }));
 
   const documentTypes = new Map(

@@ -8,6 +8,7 @@ export type ApplicantApplication = {
   status: string;
   applied_at: string;
   jobTitle: string;
+  positionLabel: string;
 };
 
 function ApplicationSummary({
@@ -101,6 +102,9 @@ export function ApplicationList({
                 <h3 className="truncate text-sm font-semibold text-ink">
                   {application.jobTitle}
                 </h3>
+                <p className="mt-1 text-xs text-muted">
+                  Applying for {application.positionLabel}
+                </p>
                 <p className="mt-1 text-xs text-muted">
                   Submitted{" "}
                   <time dateTime={application.applied_at}>

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEvaluatorContext } from "@/lib/auth/server";
+import { formatPositionLabel } from "@/utils/format-position-track";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
 import { buildReviewQueueItems } from "../../reviews/queue";
 import { AnonymizedApplicantReview } from "./components/AnonymizedApplicantReview";
@@ -30,7 +31,7 @@ export default async function EvaluatorApplicationReviewPage({
   const { data: application, error } = await evaluator.supabase
     .from("v_anonymized_applicants")
     .select(
-      "application_id, applicant_number, application_status, job_id, education_levels, experience_years, training_hours, skills",
+      "application_id, applicant_number, application_status, job_id, education_levels, experience_years, training_hours, skills, position_title, position_track",
     )
     .eq("application_id", id)
     .maybeSingle();
@@ -89,7 +90,7 @@ export default async function EvaluatorApplicationReviewPage({
       ? evaluator.supabase
           .from("v_anonymized_applicants")
           .select(
-            "application_id, applicant_number, application_status, applied_at, job_id",
+            "application_id, applicant_number, application_status, applied_at, job_id, position_title, position_track",
           )
           .eq("job_id", jobId)
           .order("applied_at", { ascending: false })
@@ -148,7 +149,14 @@ export default async function EvaluatorApplicationReviewPage({
   return (
     <>
       <PageHeader
-        description={jobResult.data?.title ?? "Application review"}
+        description={`${jobResult.data?.title ?? "Application review"} · ${
+          application.position_title
+            ? formatPositionLabel(
+                application.position_title,
+                application.position_track ?? "",
+              )
+            : "Position not recorded"
+        }`}
         eyebrow="Anonymized applicant review"
         title={application.applicant_number}
       />

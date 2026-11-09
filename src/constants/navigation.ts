@@ -5,6 +5,7 @@ import {
   EnvelopeIcon,
   FolderOpenIcon,
   MagnifyingGlassIcon,
+  AdjustmentsHorizontalIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
   UserIcon,
@@ -46,8 +47,18 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "Workspace",
       items: [
-        { label: "Overview", href: "/applicant", icon: Squares2X2Icon, available: true },
-        { label: "Browse jobs", href: "/applicant/jobs", icon: MagnifyingGlassIcon, available: true },
+        {
+          label: "Overview",
+          href: "/applicant",
+          icon: Squares2X2Icon,
+          available: true,
+        },
+        {
+          label: "Browse jobs",
+          href: "/applicant/jobs",
+          icon: MagnifyingGlassIcon,
+          available: true,
+        },
         {
           label: "My applications",
           href: "/applicant/applications",
@@ -65,7 +76,12 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "My profile",
       items: [
-        { label: "Personal data sheet", href: "/applicant/pds", icon: ClipboardDocumentCheckIcon, available: true },
+        {
+          label: "Personal data sheet",
+          href: "/applicant/pds",
+          icon: ClipboardDocumentCheckIcon,
+          available: true,
+        },
         {
           label: "Profile",
           href: "/applicant/profile",
@@ -85,7 +101,12 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "Reviews",
       items: [
-        { label: "Review queue", href: "/evaluator/reviews", icon: ClipboardDocumentCheckIcon, available: true },
+        {
+          label: "Review queue",
+          href: "/evaluator/reviews",
+          icon: ClipboardDocumentCheckIcon,
+          available: true,
+        },
       ],
     },
   ],
@@ -103,6 +124,12 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
           label: "Job postings",
           href: "/hr/postings",
           icon: ShieldCheckIcon,
+          available: true,
+        },
+        {
+          label: "Positions and criteria",
+          href: "/hr/criteria",
+          icon: AdjustmentsHorizontalIcon,
           available: true,
         },
       ],

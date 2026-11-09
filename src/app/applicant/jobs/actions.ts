@@ -7,9 +7,15 @@ type ApplyResult =
   | { success: true; applicationId: string; alreadyApplied: boolean }
   | { success: false; message: string };
 
-export async function applyToJob(jobId: string): Promise<ApplyResult> {
+export async function applyToJob(
+  jobId: string,
+  positionId: string,
+): Promise<ApplyResult> {
   if (!/^[0-9a-f-]{36}$/i.test(jobId)) {
     return { success: false, message: "This job posting is not available." };
+  }
+  if (!/^[0-9a-f-]{36}$/i.test(positionId)) {
+    return { success: false, message: "Choose a position included in this job posting." };
   }
 
   const applicant = await getApplicantContext();
@@ -42,13 +48,29 @@ export async function applyToJob(jobId: string): Promise<ApplyResult> {
     return { success: true, applicationId: existing.id, alreadyApplied: true };
   }
 
-  const { data: applicationId, error } = await applicant.supabase.rpc("apply_to_job", {
-    p_job_id: jobId,
-  });
+  const { data: applicationId, error } = await applicant.supabase.rpc(
+    "apply_to_job",
+    {
+      p_job_id: jobId,
+      p_position_id: positionId,
+    },
+  );
   if (error || !applicationId) {
+    const message =
+      error?.code === "PGRST202"
+        ? "The application service has not been updated yet. Please try again later or contact HR."
+        : error?.message.includes(
+              "Choose a position included in this job posting",
+            )
+          ? "That position is no longer available for this posting. Refresh and choose an available position."
+          : error?.message.includes("The job is not open for applications")
+            ? "This posting is closed or no longer accepting applications."
+            : error?.message.includes("Submit a PDS before applying")
+              ? "Submit your PDS before applying to a job."
+              : "Your application could not be submitted. Please try again or contact HR.";
     return {
       success: false,
-      message: "Your application could not be submitted. Confirm your PDS is submitted, then try again.",
+      message,
     };
   }
 

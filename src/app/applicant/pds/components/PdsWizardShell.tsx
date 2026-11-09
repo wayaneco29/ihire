@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { Select } from "antd";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import type { Json } from "@/types/database";
 import { setPdsWizardStep } from "../actions/navigation";
 import { PersonalInformationStep } from "./steps/PersonalInformationStep";
@@ -85,6 +87,9 @@ export function PdsWizardShell({
   }
 
   const activeStepName = STEPS[currentStep - 1] ?? STEPS[0];
+  const progressPercent = Math.round(
+    (completedSteps.length / STEPS.length) * 100,
+  );
   const savedSteps =
     currentDraftData &&
     typeof currentDraftData === "object" &&
@@ -93,30 +98,15 @@ export function PdsWizardShell({
       : [];
 
   return (
-    <section className="mt-7 rounded-sm border border-primary/15 bg-panel p-4 shadow-sm sm:p-6">
-      {previousSubmittedVersion !== null && (
-        <p className="mb-5 rounded-sm border border-primary/20 bg-primary-light p-3 text-sm leading-6 text-primary-dark">
-          Submitted version {previousSubmittedVersion} remains active for your
-          applications until this update is submitted.
-        </p>
-      )}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-            Personal Data Sheet
-          </p>
-          <h2 className="mt-1 text-lg font-semibold text-ink">
-            Step {currentStep} of {STEPS.length}: {activeStepName}
-          </h2>
-          <p className="mt-1 text-xs text-muted">PDS version {versionNumber}</p>
-        </div>
-        <p className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-dark">
-          {completedSteps.length} of {STEPS.length} finished
-        </p>
-      </div>
-
-      <nav aria-label="PDS steps" className="mb-7">
-        <div className="mb-3 sm:hidden">
+    <SurfaceCard
+      as="section"
+      className="mt-7 rounded-2xl"
+    >
+      <nav
+        aria-label="PDS sections"
+        className="sticky top-header z-10 border-b border-line-subtle bg-panel-muted/95 px-5 py-4 backdrop-blur sm:px-7"
+      >
+        <div className="sm:hidden">
           <label className="sr-only" htmlFor="pds-mobile-step">
             Choose a completed PDS step
           </label>
@@ -137,49 +127,106 @@ export function PdsWizardShell({
             value={currentStep}
           />
         </div>
-        <ol className="hidden grid-cols-2 gap-2 sm:grid sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-          {STEPS.map((label, index) => {
-            const step = index + 1;
-            const completed = completedSteps.includes(step);
-            const active = currentStep === step;
-            const canOpen = completed && !active && Boolean(pdsVersionId);
+        <div className="hidden overflow-x-auto pb-2 sm:block">
+          <ol className="flex min-w-[58rem] items-start">
+            {STEPS.map((label, index) => {
+              const step = index + 1;
+              const completed = completedSteps.includes(step);
+              const active = currentStep === step;
+              const canOpen = completed && !active && Boolean(pdsVersionId);
+              const progressPassed = completed || step < currentStep;
 
-            return (
-              <li key={label}>
-                <button
+              return (
+                <li
                   aria-current={active ? "step" : undefined}
-                  aria-disabled={!canOpen}
-                  className={`flex min-h-14 w-full items-start gap-2 rounded-sm border p-2.5 text-left text-xs transition sm:text-sm ${
-                    active
-                      ? "border-primary bg-primary-light text-primary-dark"
-                      : completed
-                        ? "border-primary/20 bg-panel text-ink hover:border-primary"
-                        : "cursor-not-allowed border-line bg-panel-muted text-muted"
-                  }`}
-                  disabled={!canOpen || isPending}
-                  onClick={() => openStep(step)}
-                  type="button"
+                  className="relative flex min-w-0 flex-1 flex-col items-center px-1 text-center"
+                  key={label}
                 >
+                  {index < STEPS.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className={`absolute left-1/2 right-[-50%] top-4 h-0.5 ${
+                        progressPassed ? "bg-primary" : "bg-line-strong"
+                      }`}
+                    />
+                  )}
+                  <button
+                    aria-label={`${label}${active ? ", current section" : completed ? ", completed" : ", not yet available"}`}
+                    className={`relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                      active
+                        ? "border-primary bg-primary text-on-primary ring-4 ring-primary-light"
+                        : completed
+                          ? "border-primary bg-primary text-on-primary hover:bg-primary-dark"
+                          : "border-line-strong bg-panel text-muted"
+                    } ${canOpen ? "cursor-pointer" : "cursor-default"}`}
+                    disabled={!canOpen || isPending}
+                    onClick={() => openStep(step)}
+                    type="button"
+                  >
+                    {completed ? (
+                      <CheckIcon aria-hidden="true" className="size-4" />
+                    ) : (
+                      step
+                    )}
+                  </button>
                   <span
-                    className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                      completed || active
-                        ? "bg-primary text-on-primary"
-                        : "bg-line text-muted"
+                    className={`mt-2 max-w-20 text-[10px] leading-4 ${
+                      active
+                        ? "font-semibold text-primary-dark"
+                        : completed
+                          ? "font-medium text-ink"
+                          : "text-muted"
                     }`}
                   >
-                    {completed ? "✓" : step}
+                    {label}
                   </span>
-                  <span className="pt-0.5 leading-4">{label}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </nav>
+      {previousSubmittedVersion !== null && (
+        <div className="border-b border-primary/15 bg-primary-light/60 px-5 py-3.5 text-sm leading-6 text-ink sm:px-7">
+          Submitted version {previousSubmittedVersion} remains active for your
+          applications until this update is submitted.
+        </div>
+      )}
+      <header className="px-5 pb-5 pt-6 sm:px-7 sm:pb-6 sm:pt-7">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-muted">
+              Personal Data Sheet · Version {versionNumber}
+            </p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+              {activeStepName}
+            </h2>
+          </div>
+          <p className="text-sm font-medium text-muted">
+            <span className="font-semibold text-primary">
+              {completedSteps.length} of {STEPS.length}
+            </span>{" "}
+            sections complete
+          </p>
+        </div>
+        <div
+          aria-label={`${progressPercent}% complete`}
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={progressPercent}
+          className="mt-5 h-2 overflow-hidden rounded-full bg-panel-muted"
+          role="progressbar"
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-[width]"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </header>
 
-      <div aria-live="polite" className="rounded-sm bg-panel-muted p-4 sm:p-5">
+      <div aria-live="polite" className="p-5 sm:p-7">
         {message && (
-          <p className="mb-3 text-sm text-danger" role="alert">
+          <p className="mb-4 rounded-lg border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
             {message}
           </p>
         )}
@@ -264,6 +311,6 @@ export function PdsWizardShell({
           </p>
         )}
       </div>
-    </section>
+    </SurfaceCard>
   );
 }

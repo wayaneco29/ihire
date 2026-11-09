@@ -8,6 +8,7 @@ type ApplicationItem = {
   status: string;
   applied_at: string;
   jobTitle: string;
+  positionLabel: string;
 };
 
 type DocumentItem = {
@@ -160,6 +161,9 @@ export function DashboardSections({
                     >
                       {application.jobTitle}
                     </Link>
+                    <p className="mt-0.5 text-[11px] text-muted">
+                      Applying for {application.positionLabel}
+                    </p>
                     <p className="mt-0.5 text-[11px] text-muted">
                       Applied {formatDate(application.applied_at)}
                     </p>

@@ -28,7 +28,7 @@ export default async function HrPostingDetailPage({
   const { data: applicants, error } = await hr.supabase
     .from("v_anonymized_applicants")
     .select(
-      "application_id, applicant_number, application_status, applied_at, education_levels, experience_years, training_hours, skills",
+      "application_id, applicant_number, application_status, applied_at, education_levels, experience_years, training_hours, skills, position_title, position_track",
     )
     .eq("job_id", posting.id)
     .order("applied_at", { ascending: false });

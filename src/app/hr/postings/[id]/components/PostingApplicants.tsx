@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { Alert, Button, Popconfirm } from "antd";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
+import { formatPositionLabel } from "@/utils/format-position-track";
 import { recordHiringDecision } from "../actions";
 
 export type ApplicantItem = {
@@ -15,6 +16,8 @@ export type ApplicantItem = {
   experience_years: number | null;
   training_hours: number | null;
   skills: string[] | null;
+  position_title: string | null;
+  position_track: string | null;
 };
 
 export function PostingApplicants({
@@ -119,6 +122,17 @@ export function PostingApplicants({
                   <WorkflowStatusTag status={applicant.application_status} />
                 </div>
                 <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <Credibility
+                    label="Position applying for"
+                    value={
+                      applicant.position_title
+                        ? formatPositionLabel(
+                            applicant.position_title,
+                            applicant.position_track ?? "",
+                          )
+                        : "Position not recorded"
+                    }
+                  />
                   <Credibility
                     label="Education"
                     value={

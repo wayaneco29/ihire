@@ -10,6 +10,8 @@ export type PublicViews = {
             "education_levels": (string)[] | null;
             "experience_years": number | null;
             "job_id": string;
+            "position_title": string | null;
+            "position_track": string | null;
             "skills": (string)[] | null;
             "training_hours": number | null;
         };
@@ -40,7 +42,23 @@ export type PublicViews = {
             "document_type": string;
             "job_id": string;
             "storage_key": string;
+            "total_units": number | null;
+            "training_hours": number | null;
             "uploaded_at": string;
+        };
+        ComputedFields: never;
+        Relationships: [
+        ];
+    };
+    "v_anonymized_document_metrics": {
+        Row: {
+            "document_id": string;
+            "ocr_confidence": number | null;
+            "ocr_processed_at": string | null;
+            "ocr_total_units": number | null;
+            "ocr_training_hours": number | null;
+            "total_units": number | null;
+            "training_hours": number | null;
         };
         ComputedFields: never;
         Relationships: [

@@ -105,6 +105,7 @@ export type ApplicationsTable = {
         "id": string;
         "job_id": string;
         "pds_version_id": string;
+        "position_id": string | null;
         "status": PublicEnums["application_status"];
     };
     ComputedFields: never;
@@ -114,6 +115,7 @@ export type ApplicationsTable = {
         "id"?: string;
         "job_id": string;
         "pds_version_id": string;
+        "position_id"?: string | null;
         "status"?: PublicEnums["application_status"];
     };
     Update: {
@@ -122,6 +124,7 @@ export type ApplicationsTable = {
         "id"?: string;
         "job_id"?: string;
         "pds_version_id"?: string;
+        "position_id"?: string | null;
         "status"?: PublicEnums["application_status"];
     };
     Relationships: [
@@ -168,12 +171,27 @@ export type ApplicationsTable = {
             referencedColumns: [
                 "id"
             ];
+        },
+        {
+            foreignKeyName: "applications_job_position_fkey";
+            columns: [
+                "job_id",
+                "position_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "job_posting_positions";
+            referencedColumns: [
+                "job_id",
+                "position_id"
+            ];
         }
     ];
 };
 
 export type DocumentReviewsTable = {
     Row: {
+        "confirmed_total_units": number | null;
+        "confirmed_training_hours": number | null;
         "document_id": string;
         "evaluator_id": string;
         "id": string;
@@ -183,6 +201,8 @@ export type DocumentReviewsTable = {
     };
     ComputedFields: never;
     Insert: {
+        "confirmed_total_units"?: number | null;
+        "confirmed_training_hours"?: number | null;
         "document_id": string;
         "evaluator_id": string;
         "id"?: string;
@@ -191,6 +211,8 @@ export type DocumentReviewsTable = {
         "status": PublicEnums["document_status"];
     };
     Update: {
+        "confirmed_total_units"?: number | null;
+        "confirmed_training_hours"?: number | null;
         "document_id"?: string;
         "evaluator_id"?: string;
         "id"?: string;

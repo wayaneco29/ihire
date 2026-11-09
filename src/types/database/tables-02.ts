@@ -6,8 +6,14 @@ export type DocumentsTable = {
         "document_type_id": string;
         "file_path": string;
         "id": string;
+        "ocr_confidence": number | null;
+        "ocr_processed_at": string | null;
+        "ocr_total_units": number | null;
+        "ocr_training_hours": number | null;
+        "pds_education_id": string | null;
         "pds_learning_development_id": string | null;
         "status": PublicEnums["document_status"];
+        "total_units": number | null;
         "training_hours": number | null;
         "uploaded_at": string;
         "version": number;
@@ -18,8 +24,14 @@ export type DocumentsTable = {
         "document_type_id": string;
         "file_path"?: string;
         "id"?: string;
+        "ocr_confidence"?: number | null;
+        "ocr_processed_at"?: string | null;
+        "ocr_total_units"?: number | null;
+        "ocr_training_hours"?: number | null;
+        "pds_education_id"?: string | null;
         "pds_learning_development_id"?: string | null;
         "status"?: PublicEnums["document_status"];
+        "total_units"?: number | null;
         "training_hours"?: number | null;
         "uploaded_at"?: string;
         "version": number;
@@ -29,8 +41,14 @@ export type DocumentsTable = {
         "document_type_id"?: string;
         "file_path"?: string;
         "id"?: string;
+        "ocr_confidence"?: number | null;
+        "ocr_processed_at"?: string | null;
+        "ocr_total_units"?: number | null;
+        "ocr_training_hours"?: number | null;
+        "pds_education_id"?: string | null;
         "pds_learning_development_id"?: string | null;
         "status"?: PublicEnums["document_status"];
+        "total_units"?: number | null;
         "training_hours"?: number | null;
         "uploaded_at"?: string;
         "version"?: number;
@@ -65,6 +83,17 @@ export type DocumentsTable = {
             ];
             isOneToOne: false;
             referencedRelation: "pds_learning_development";
+            referencedColumns: [
+                "id"
+            ];
+        },
+        {
+            foreignKeyName: "documents_pds_education_id_fkey";
+            columns: [
+                "pds_education_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "pds_education";
             referencedColumns: [
                 "id"
             ];

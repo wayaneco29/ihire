@@ -12,6 +12,8 @@ export type ReviewApplicant = {
   application_status: string;
   applied_at: string;
   job_id: string;
+  position_title: string | null;
+  position_track: string | null;
 };
 
 export type ReviewQueueItem = ReviewApplicant & {

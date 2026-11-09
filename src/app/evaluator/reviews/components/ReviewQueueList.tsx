@@ -2,6 +2,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
+import { formatPositionLabel } from "@/utils/format-position-track";
 import type { ReviewQueueItem } from "../queue";
 
 export function ReviewQueueList({
@@ -71,6 +72,9 @@ export function ReviewQueueList({
                   Applicant
                 </th>
                 <th className="px-5 py-3 font-semibold" scope="col">
+                  Position
+                </th>
+                <th className="px-5 py-3 font-semibold" scope="col">
                   Applied
                 </th>
                 <th className="px-5 py-3 font-semibold" scope="col">
@@ -92,6 +96,14 @@ export function ReviewQueueList({
                 >
                   <td className="px-5 py-4 font-semibold text-ink">
                     {item.applicant_number}
+                  </td>
+                  <td className="px-5 py-4 text-muted">
+                    {item.position_title
+                      ? formatPositionLabel(
+                          item.position_title,
+                          item.position_track ?? "",
+                        )
+                      : "Position not recorded"}
                   </td>
                   <td className="whitespace-nowrap px-5 py-4 text-muted">
                     {formatDate(item.applied_at)}

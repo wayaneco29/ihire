@@ -7,8 +7,10 @@ import { createPdsUpdateDraft } from "../actions/versioning";
 
 export function StartPdsUpdateButton({
   redirectToPds = false,
+  className = "mt-4",
 }: {
   redirectToPds?: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -28,7 +30,7 @@ export function StartPdsUpdateButton({
   }
 
   return (
-    <div className="mt-4">
+    <div className={className}>
       <Button loading={isPending} onClick={startUpdate} type="primary">
         Update PDS
       </Button>

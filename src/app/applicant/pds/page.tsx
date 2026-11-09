@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { getApplicantContext } from "@/lib/auth/server";
 import { hydratePdsDraftData } from "./load-draft-data";
 import { PdsWizardShell } from "./components/PdsWizardShell";
@@ -16,7 +18,7 @@ function PdsUnavailable() {
         title="Personal Data Sheet"
         description="We could not load your saved PDS right now. Please try again."
       />
-      <div className="mt-7">
+      <div className="mt-6">
         <EmptyState
           description="Your information remains private. Try refreshing this page."
           title="PDS unavailable"
@@ -78,7 +80,7 @@ export default async function ApplicantPdsPage() {
       <PageHeader
         eyebrow="Applicant workspace"
         title="Personal Data Sheet"
-        description="Complete each section in order. Your draft is saved as you go."
+        description="Complete your personal record section by section. Your draft saves as you go."
       />
       {draft ? (
         <PdsWizardShell
@@ -90,19 +92,35 @@ export default async function ApplicantPdsPage() {
           versionNumber={draft.version_no}
         />
       ) : (
-        <section className="mt-7 rounded-sm border border-primary/15 bg-panel p-5 sm:p-6">
-          <p className="text-sm leading-6 text-muted">
-            PDS version {submitted?.version_no} is submitted. It remains the
-            active version for your applications until you submit an update.
-          </p>
-          <StartPdsUpdateButton />
-          <Link
-            className="mt-4 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
-            href="/applicant/dashboard"
-          >
-            Go to dashboard
-          </Link>
-        </section>
+        <SurfaceCard
+          as="section"
+          className="mt-7 overflow-hidden rounded-2xl"
+        >
+          <div className="flex items-start gap-4 p-5 sm:p-7">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-light text-primary">
+              <CheckCircleIcon aria-hidden="true" className="size-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold tracking-tight text-ink">
+                Your PDS is submitted
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                Version {submitted?.version_no} remains active for your
+                applications. Start an update when you’re ready to make
+                changes.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <StartPdsUpdateButton className="mt-0" />
+                <Link
+                  className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href="/applicant/dashboard"
+                >
+                  Go to dashboard
+                </Link>
+              </div>
+            </div>
+          </div>
+        </SurfaceCard>
       )}
     </>
   );

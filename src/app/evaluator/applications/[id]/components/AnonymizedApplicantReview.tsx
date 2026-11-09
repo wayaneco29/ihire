@@ -4,6 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  TRAINING_CERTIFICATE_DOCUMENT_TYPE,
+  TRANSCRIPT_DOCUMENT_TYPE,
+} from "@/constants/documents";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
@@ -121,6 +125,8 @@ export function AnonymizedApplicantReview({
         documentId: selectedDocument.document_id,
         status: "VERIFIED",
         remarks: "",
+        confirmedTrainingHours: null,
+        confirmedTotalUnits: null,
       });
       setPendingAction(null);
       setFeedback(result.message);
@@ -489,18 +495,28 @@ export function AnonymizedApplicantReview({
                       className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                       href={`/evaluator/documents/${selectedDocument.document_id}`}
                     >
-                      Other review actions
+                      {selectedDocument.document_type ===
+                        TRAINING_CERTIFICATE_DOCUMENT_TYPE ||
+                      selectedDocument.document_type ===
+                        TRANSCRIPT_DOCUMENT_TYPE
+                        ? "Confirm values and review"
+                        : "Other review actions"}
                     </Link>
-                    <button
-                      className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={!previewUrl || isPending}
-                      onClick={verifyDocument}
-                      type="button"
-                    >
-                      {pendingAction === "verify"
-                        ? "Verifying…"
-                        : "Mark as verified"}
-                    </button>
+                    {selectedDocument.document_type !==
+                      TRAINING_CERTIFICATE_DOCUMENT_TYPE &&
+                      selectedDocument.document_type !==
+                        TRANSCRIPT_DOCUMENT_TYPE && (
+                        <button
+                          className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={!previewUrl || isPending}
+                          onClick={verifyDocument}
+                          type="button"
+                        >
+                          {pendingAction === "verify"
+                            ? "Verifying…"
+                            : "Mark as verified"}
+                        </button>
+                      )}
                   </>
                 ) : (
                   <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">

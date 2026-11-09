@@ -34,7 +34,15 @@ export default async function EvaluatorDocumentPage({
   const document = documents?.[0];
   if (!document) notFound();
 
-  const [applicationResult, reviewResult] = await Promise.all([
+  const [metricsResult, applicationResult, reviewResult] = await Promise.all([
+    evaluator.supabase
+      .from("v_anonymized_document_metrics")
+      .select(
+        "training_hours, total_units, ocr_training_hours, ocr_total_units, ocr_confidence",
+      )
+      .eq("document_id", document.document_id)
+      .limit(1)
+      .maybeSingle(),
     evaluator.supabase
       .from("v_anonymized_applicants")
       .select("job_id")
@@ -42,13 +50,24 @@ export default async function EvaluatorDocumentPage({
       .maybeSingle(),
     evaluator.supabase
       .from("document_reviews")
-      .select("status, remarks, reviewed_at")
+      .select(
+        "status, remarks, reviewed_at, confirmed_training_hours, confirmed_total_units",
+      )
       .eq("document_id", document.document_id)
       .eq("evaluator_id", evaluator.user.id)
       .order("reviewed_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
   ]);
+
+  if (metricsResult.error || !metricsResult.data) {
+    return (
+      <EmptyState
+        description="Refresh this page to load evaluator-confirmed document values."
+        title="Document values unavailable"
+      />
+    );
+  }
 
   const jobResult = applicationResult.data
     ? await evaluator.supabase
@@ -73,6 +92,12 @@ export default async function EvaluatorDocumentPage({
           applicationId={document.application_id}
           documentId={document.document_id}
           documentStatus={document.document_status}
+          documentType={document.document_type}
+          trainingHours={metricsResult.data.training_hours}
+          totalUnits={metricsResult.data.total_units}
+          ocrTrainingHours={metricsResult.data.ocr_training_hours}
+          ocrTotalUnits={metricsResult.data.ocr_total_units}
+          ocrConfidence={metricsResult.data.ocr_confidence}
           previousReview={reviewResult.data ?? null}
           storageKey={document.storage_key}
         />

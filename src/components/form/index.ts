@@ -1,4 +1,5 @@
 export { FormCheckbox } from "./FormCheckbox";
+export { FormCheckboxGroup } from "./FormCheckboxGroup";
 export { FormDatePicker } from "./FormDatePicker";
 export { FormInput } from "./FormInput";
 export { FormRadio } from "./FormRadio";

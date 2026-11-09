@@ -1,12 +1,27 @@
+import type { PublicEnums } from "./database-enums";
+
 export type PublicFunctions = {
     "apply_to_job": {
         Args: {
             "p_job_id": string;
+            "p_position_id": string;
         };
         Returns: string;
     };
     "clone_pds_version": {
         Args: Record<PropertyKey, never>;
+        Returns: string;
+    };
+    "create_job_posting_with_positions": {
+        Args: {
+            "p_deadline": string | null;
+            "p_description": string;
+            "p_position_ids": string[];
+            "p_requirements": string | null;
+            "p_slots": number;
+            "p_status": PublicEnums["job_status"];
+            "p_title": string;
+        };
         Returns: string;
     };
     "complete_pds_step": {
@@ -42,9 +57,36 @@ export type PublicFunctions = {
         };
         Returns: string;
     };
+    "save_position_weight_profile": {
+        Args: {
+            "p_position_id": string;
+            "p_weights": import("./database-json").Json;
+        };
+        Returns: string;
+    };
+    "set_job_posting_positions": {
+        Args: {
+            "p_job_id": string;
+            "p_position_ids": string[];
+        };
+        Returns: undefined;
+    };
     "submit_pds_version": {
         Args: {
             "p_pds_version_id": string;
+        };
+        Returns: string;
+    };
+    "update_job_posting_with_positions": {
+        Args: {
+            "p_deadline": string | null;
+            "p_description": string;
+            "p_job_id": string;
+            "p_position_ids": string[];
+            "p_requirements": string | null;
+            "p_slots": number;
+            "p_status": PublicEnums["job_status"];
+            "p_title": string;
         };
         Returns: string;
     };

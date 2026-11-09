@@ -3,7 +3,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
-import { formatDate } from "@/utils/format-date";
+import { formatPositionTrack } from "@/utils/format-position-track";
 import {
   ApplicationTimeline,
   type ApplicationEvent,
@@ -19,7 +19,7 @@ export default async function ApplicantApplicationDetailPage({
 
   const { data: application, error } = await applicant.supabase
     .from("applications")
-    .select("id, job_id, status, applied_at")
+    .select("id, job_id, position_id, status, applied_at")
     .eq("id", id)
     .eq("applicant_id", applicant.applicant.id)
     .maybeSingle();
@@ -34,8 +34,12 @@ export default async function ApplicantApplicationDetailPage({
   }
   if (!application) notFound();
 
-  const [{ data: job }, { data: evaluations }, { data: decision }] =
-    await Promise.all([
+  const [
+    { data: job },
+    { data: evaluations },
+    { data: decision },
+    { data: position, error: positionError },
+  ] = await Promise.all([
       applicant.supabase
         .from("job_postings")
         .select("title, description, requirements, slots, deadline")
@@ -51,7 +55,23 @@ export default async function ApplicantApplicationDetailPage({
         .select("decision, decided_at")
         .eq("application_id", application.id)
         .maybeSingle(),
+      application.position_id
+        ? applicant.supabase
+            .from("positions")
+            .select("title, track")
+            .eq("id", application.position_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
     ]);
+
+  if (positionError) {
+    return (
+      <EmptyState
+        description="Refresh the page to try loading this application again."
+        title="Application details unavailable"
+      />
+    );
+  }
 
   const events: ApplicationEvent[] = [
     {
@@ -104,6 +124,18 @@ export default async function ApplicantApplicationDetailPage({
       />
 
       <div className="mt-7 grid gap-5">
+        <section className="rounded-2xl border border-line bg-panel p-5 shadow-card sm:p-7">
+          <h2 className="text-sm font-semibold text-ink">
+            Position applying for
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            {position
+              ? `${position.title} · ${formatPositionTrack(position.track)}`
+              : application.position_id
+                ? "Position unavailable"
+                : "Position not recorded"}
+          </p>
+        </section>
         <section className="h-fit rounded-2xl border border-line bg-panel p-5 shadow-card sm:p-7">
           <div className="border-b border-line-subtle pb-4">
             <h2 className="text-lg font-semibold tracking-tight text-ink">
