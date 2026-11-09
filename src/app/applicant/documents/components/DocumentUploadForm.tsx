@@ -19,12 +19,14 @@ export function DocumentUploadForm({
   documentTypeId,
   isTrainingCertificate,
   onCancel,
+  onSuccess,
   trainingEntries,
   trainingEntriesUnavailable,
 }: {
   documentTypeId: string;
   isTrainingCertificate: boolean;
   onCancel: () => void;
+  onSuccess?: (message: string) => void;
   trainingEntries: TrainingEntry[];
   trainingEntriesUnavailable: boolean;
 }) {
@@ -65,11 +67,12 @@ export function DocumentUploadForm({
       }
       setUploadSucceeded(true);
       form.reset({ files: [] as UploadFile[], trainingHours: null, pdsLearningDevelopmentId: "" });
-      setMessage(
+      const successMessage =
         isTrainingCertificate
           ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
-          : `Version ${result.version} uploaded and sent for review.`,
-      );
+          : `Version ${result.version} uploaded and sent for review.`;
+      if (onSuccess) onSuccess(successMessage);
+      else setMessage(successMessage);
       router.refresh();
     });
   }

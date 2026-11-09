@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { FileTextOutlined } from "@ant-design/icons";
-import { Modal } from "antd";
+import { message, Modal } from "antd";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
 import { createClient } from "@/lib/supabase/client";
@@ -38,6 +38,7 @@ export function DocumentTypeCard({
   trainingEntries: { id: string; title: string; hours: number | null }[];
   trainingEntriesUnavailable: boolean;
 }) {
+  const [messageApi, contextHolder] = message.useMessage();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -111,13 +112,13 @@ export function DocumentTypeCard({
 
     return (
       <section
-        className="overflow-hidden rounded-md border border-line bg-panel"
+        className="overflow-hidden rounded-md shadow bg-panel"
         aria-label={name}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-4 py-3 bg-primary">
           <div>
-            <h2 className="text-sm font-semibold text-ink">{name}</h2>
-            <p className="mt-0.5 text-xs text-muted">
+            <h2 className="text-sm font-semibold text-white">{name}</h2>
+            <p className="mt-0.5 text-xs text-white/80">
               {documents.length}{" "}
               {documents.length === 1 ? "certificate" : "certificates"}
               {" · "}
@@ -131,7 +132,7 @@ export function DocumentTypeCard({
             </p>
           </div>
           <button
-            className="inline-flex min-h-10 px-4 items-center gap-2 cursor-pointer rounded-sm bg-primary text-sm! font-semibold text-on-primary transition hover:bg-primary-dark"
+            className="inline-flex min-h-10 px-4 items-center gap-2 cursor-pointer rounded-sm bg-white text-sm! font-semibold text-primary transition"
             onClick={() => setUploadOpen(!uploadOpen)}
             type="button"
           >
@@ -360,17 +361,45 @@ export function DocumentTypeCard({
           </div>
         )}
       </div>
-      {uploadOpen && (
-        <div className="w-full">
-          <DocumentUploadForm
-            documentTypeId={id}
-            isTrainingCertificate={false}
-            onCancel={() => setUploadOpen(false)}
-            trainingEntries={trainingEntries}
-            trainingEntriesUnavailable={trainingEntriesUnavailable}
-          />
-        </div>
+      {openError && (
+        <p className="px-4 py-2 text-sm text-danger" role="alert">
+          {openError}
+        </p>
       )}
+      {signedUrl && (
+        <a
+          className="m-3 inline-flex min-h-9 items-center px-2 text-sm font-medium text-primary hover:underline"
+          href={signedUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Open secure document
+        </a>
+      )}
+      {contextHolder}
+      <Modal
+        destroyOnHidden
+        footer={null}
+        onCancel={() => setUploadOpen(false)}
+        open={uploadOpen}
+        title={latest ? "Replace a document" : "Upload a document"}
+        width={640}
+      >
+        <p className="mb-4 text-sm text-muted">
+          Upload one document at a time and send it for review.
+        </p>
+        <DocumentUploadForm
+          documentTypeId={id}
+          isTrainingCertificate={false}
+          onCancel={() => setUploadOpen(false)}
+          onSuccess={(successMessage) => {
+            setUploadOpen(false);
+            messageApi.success(successMessage);
+          }}
+          trainingEntries={trainingEntries}
+          trainingEntriesUnavailable={trainingEntriesUnavailable}
+        />
+      </Modal>
     </div>
   );
 }

@@ -31,10 +31,15 @@ export default async function ApplicantProfilePage() {
       {submitted && (
         <div className="mt-5">
           {draft ? (
-            <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark" href="/applicant/pds">
+            <Link
+              className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+              href="/applicant/pds"
+            >
               Continue PDS update
             </Link>
-          ) : <StartPdsUpdateButton redirectToPds />}
+          ) : (
+            <StartPdsUpdateButton redirectToPds />
+          )}
         </div>
       )}
 
@@ -49,7 +54,10 @@ export default async function ApplicantProfilePage() {
         <div className="mt-7">
           <EmptyState
             action={
-              <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark" href="/applicant/pds">
+              <Link
+                className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                href="/applicant/pds"
+              >
                 Complete your PDS
               </Link>
             }
@@ -80,39 +88,47 @@ async function ProfileContent({
   versionNumber: number;
   hasDraft: boolean;
 }) {
-  const [personalResult, educationResult, experienceResult, trainingsResult, otherInfoResult] =
-    await Promise.all([
-      applicant.supabase
-        .from("pds_personal_info")
-        .select("*")
-        .eq("pds_version_id", pdsVersionId)
-        .maybeSingle(),
-      applicant.supabase
-        .from("pds_education")
-        .select("*")
-        .eq("pds_version_id", pdsVersionId)
-        .order("sort_order"),
-      applicant.supabase
-        .from("pds_work_experience")
-        .select("*")
-        .eq("pds_version_id", pdsVersionId)
-        .order("sort_order"),
-      applicant.supabase
-        .from("pds_learning_development")
-        .select("*")
-        .eq("pds_version_id", pdsVersionId)
-        .order("sort_order"),
-      applicant.supabase
-        .from("pds_other_info")
-        .select("*")
-        .eq("pds_version_id", pdsVersionId)
-        .eq("category", "SKILL_HOBBY")
-        .order("sort_order"),
-    ]);
+  const [
+    personalResult,
+    educationResult,
+    experienceResult,
+    trainingsResult,
+    otherInfoResult,
+  ] = await Promise.all([
+    applicant.supabase
+      .from("pds_personal_info")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .maybeSingle(),
+    applicant.supabase
+      .from("pds_education")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .order("sort_order"),
+    applicant.supabase
+      .from("pds_work_experience")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .order("sort_order"),
+    applicant.supabase
+      .from("pds_learning_development")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .order("sort_order"),
+    applicant.supabase
+      .from("pds_other_info")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .eq("category", "SKILL_HOBBY")
+      .order("sort_order"),
+  ]);
 
   const loadError =
-    personalResult.error || educationResult.error || experienceResult.error ||
-    trainingsResult.error || otherInfoResult.error;
+    personalResult.error ||
+    educationResult.error ||
+    experienceResult.error ||
+    trainingsResult.error ||
+    otherInfoResult.error;
 
   if (loadError) {
     return (
