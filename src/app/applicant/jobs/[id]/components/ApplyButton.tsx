@@ -25,7 +25,7 @@ export function ApplyButton({ jobId }: { jobId: string }) {
   return (
     <div>
       <button
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-sm bg-primary px-5 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         disabled={pending}
         onClick={apply}
         type="button"

@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import {
+  ArrowLeftIcon,
+  CalendarDaysIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
@@ -38,85 +43,110 @@ export default async function ApplicantJobDetailPage({
 
   return (
     <>
+      <Link
+        className="mb-5 inline-flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        href="/applicant/jobs"
+      >
+        <ArrowLeftIcon aria-hidden="true" className="size-4" />
+        Back to jobs
+      </Link>
       <PageHeader
         description="Review the position details before submitting your application."
         eyebrow="Open job posting"
         title={job.title}
       />
-      <article className="mt-7 rounded-sm border border-line bg-panel p-5 sm:p-8">
-        <div className="flex flex-wrap items-center gap-3">
+      <article className="mt-6 overflow-hidden rounded-2xl border border-line bg-panel shadow-card">
+        <div className="flex flex-wrap items-center gap-3 px-5 pt-5 sm:px-7 sm:pt-7">
           <WorkflowStatusTag status="OPEN" />
           <span className="text-sm text-muted">
             Posted {formatDate(job.created_at)}
           </span>
         </div>
 
-        <dl className="mt-6 grid gap-4 rounded-sm bg-panel-muted p-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-xs font-medium text-muted">
-              Available positions
-            </dt>
-            <dd className="mt-1 text-sm font-semibold text-ink">{job.slots}</dd>
+        <dl className="mx-5 mt-5 grid gap-3 rounded-xl bg-panel-muted p-4 sm:mx-7 sm:grid-cols-2 sm:gap-6 sm:p-5">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary-light text-primary"
+            >
+              <UserGroupIcon className="size-5" />
+            </span>
+            <div>
+              <dt className="text-xs font-medium text-muted">
+                Available positions
+              </dt>
+              <dd className="mt-0.5 text-base font-semibold text-ink">
+                {job.slots}
+              </dd>
+            </div>
           </div>
-          <div>
-            <dt className="text-xs font-medium text-muted">
-              Application deadline
-            </dt>
-            <dd className="mt-1 text-sm font-semibold text-ink">
-              {job.deadline ? formatDate(job.deadline) : "Not specified"}
-            </dd>
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary-light text-primary"
+            >
+              <CalendarDaysIcon className="size-5" />
+            </span>
+            <div>
+              <dt className="text-xs font-medium text-muted">
+                Application deadline
+              </dt>
+              <dd className="mt-0.5 text-base font-semibold text-ink">
+                {job.deadline ? formatDate(job.deadline) : "Not specified"}
+              </dd>
+            </div>
           </div>
         </dl>
 
-        <section className="mt-7">
-          <h2 className="text-base font-semibold text-ink">Position details</h2>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-ink">
-            {job.description}
-          </p>
-        </section>
-
-        {job.requirements && (
-          <section className="mt-7 border-t border-line-subtle pt-6">
-            <h2 className="text-base font-semibold text-ink">Requirements</h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-ink">
-              {job.requirements}
+        <div className="px-5 pb-6 sm:px-7 sm:pb-7">
+          <section className="py-6">
+            <h2 className="text-base font-semibold text-ink">
+              Position details
+            </h2>
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">
+              {job.description}
             </p>
           </section>
-        )}
 
-        <section className="mt-8 flex flex-col gap-4 border-t border-line-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-xl text-sm leading-6 text-muted">
-            Your latest submitted PDS will be attached to this application. HR
-            and evaluators see your applicant number and assessment data.
-          </p>
-          {application ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <WorkflowStatusTag status={application.status} />
-              <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-sm border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light"
-                href={`/applicant/applications/${application.id}`}
-              >
-                View your application
-              </Link>
-            </div>
-          ) : applicant.profile.has_submitted_pds ? (
-            <ApplyButton jobId={job.id} />
-          ) : (
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-              href="/applicant/pds"
-            >
-              Complete your PDS first
-            </Link>
+          {job.requirements && (
+            <section className="border-t border-line-subtle py-6">
+              <h2 className="text-base font-semibold text-ink">
+                Requirements
+              </h2>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">
+                {job.requirements}
+              </p>
+            </section>
           )}
-        </section>
+
+          <section className="flex flex-col gap-5 border-t border-line-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-sm leading-6 text-muted">
+              Your latest submitted PDS will be attached to this application. HR
+              and evaluators see your applicant number and assessment data.
+            </p>
+            {application ? (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <WorkflowStatusTag status={application.status} />
+                <Link
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href={`/applicant/applications/${application.id}`}
+                >
+                  View your application
+                </Link>
+              </div>
+            ) : applicant.profile.has_submitted_pds ? (
+              <ApplyButton jobId={job.id} />
+            ) : (
+              <Link
+                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                href="/applicant/pds"
+              >
+                Complete your PDS first
+              </Link>
+            )}
+          </section>
+        </div>
       </article>
-      <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
-        href="/applicant/jobs"
-      >
-        Back to jobs
-      </Link>
     </>
   );
 }
