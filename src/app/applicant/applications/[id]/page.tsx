@@ -97,78 +97,27 @@ export default async function ApplicantApplicationDetailPage({
   return (
     <>
       <PageHeader
-        description={job?.title ?? "Job application"}
+        description="Track the review history and details for this application."
         eyebrow="My applications"
-        title="Application details"
+        title={job?.title ?? "Application details"}
+        actions={<WorkflowStatusTag status={application.status} />}
       />
 
-      <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.8fr)]">
-        <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-semibold text-ink">Status timeline</h2>
-            <WorkflowStatusTag status={application.status} />
+      <div className="mt-7 grid gap-5">
+        <section className="h-fit rounded-2xl border border-line bg-panel p-5 shadow-card sm:p-7">
+          <div className="border-b border-line-subtle pb-4">
+            <h2 className="text-lg font-semibold tracking-tight text-ink">
+              Status timeline
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              Updates as your application moves through review.
+            </p>
           </div>
           <ApplicationTimeline
             currentStatus={application.status}
             events={events}
           />
         </section>
-
-        <aside className="space-y-5">
-          <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
-            <h2 className="font-semibold text-ink">Job information</h2>
-            {job ? (
-              <>
-                <h3 className="mt-4 text-lg font-semibold text-ink">
-                  {job.title}
-                </h3>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">
-                  {job.description}
-                </p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 rounded-sm bg-panel-muted p-3">
-                  <div>
-                    <dt className="text-xs text-muted">Positions</dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {job.slots}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-muted">Deadline</dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {job.deadline
-                        ? formatDate(job.deadline)
-                        : "Not specified"}
-                    </dd>
-                  </div>
-                </dl>
-                {job.requirements && (
-                  <div className="mt-4 border-t border-line-subtle pt-4">
-                    <h4 className="text-sm font-semibold text-ink">
-                      Requirements
-                    </h4>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">
-                      {job.requirements}
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="mt-3 text-sm text-muted">
-                This posting is no longer available.
-              </p>
-            )}
-            <p className="mt-5 border-t border-line-subtle pt-4 text-xs text-muted">
-              Submitted {formatDate(application.applied_at)}
-            </p>
-          </section>
-          <section className="rounded-sm border border-primary/15 bg-primary-light/60 p-5">
-            <h2 className="font-semibold text-primary">Evaluator remarks</h2>
-            <p className="mt-2 text-sm leading-6 text-ink">
-              Remarks from each evaluation are shown in the timeline when
-              available.
-            </p>
-          </section>
-        </aside>
       </div>
     </>
   );
