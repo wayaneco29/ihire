@@ -14,6 +14,7 @@ export type DocumentRecord = {
   version: number;
   status: string;
   uploaded_at: string;
+  certificate_title: string | null;
   remarks: string | null;
   training_hours: number | null;
   total_units: number | null;
@@ -77,7 +78,7 @@ export function DocumentTypeCard({
         : "Not listed in PDS";
       const matchesSearch =
         !query ||
-        `${recordLabel.toLocaleLowerCase()} ${document.version} ${linkedTraining} ${document.training_hours ?? ""} ${formatDate(document.uploaded_at)}`
+        `${document.certificate_title ?? ""} ${recordLabel.toLocaleLowerCase()} ${document.version} ${linkedTraining} ${document.training_hours ?? ""} ${formatDate(document.uploaded_at)}`
           .toLocaleLowerCase()
           .includes(query);
       const matchesStatus =
@@ -207,11 +208,10 @@ export function DocumentTypeCard({
                 <thead className="bg-panel-muted text-[10px] uppercase tracking-wider text-muted">
                   <tr>
                     <th className="px-3 py-2 font-medium">#</th>
-                    <th className="px-3 py-2 font-medium">{recordLabel}</th>
-                    <th className="px-3 py-2 font-medium">Hours</th>
                     <th className="px-3 py-2 font-medium">
-                      Linked PDS training
+                      {recordLabel} title
                     </th>
+                    <th className="px-3 py-2 font-medium">Hours</th>
                     <th className="px-3 py-2 font-medium w-32">Status</th>
                     <th className="px-3 py-2 font-medium w-20">
                       <span className="sr-only">Actions</span>
@@ -226,7 +226,12 @@ export function DocumentTypeCard({
                       </td>
                       <td className="px-3 py-3">
                         <p className="font-medium text-ink">
-                          {recordLabel} #{document.version}
+                          {document.certificate_title ||
+                            (document.pds_learning_development_id &&
+                              trainingTitles.get(
+                                document.pds_learning_development_id,
+                              )) ||
+                            `${recordLabel} #${document.version}`}
                         </p>
                         <p className="mt-0.5 text-[10px] text-muted">
                           Uploaded{" "}
@@ -235,13 +240,6 @@ export function DocumentTypeCard({
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 font-medium text-ink">
                         {document.training_hours ?? 0} hrs
-                      </td>
-                      <td className="px-3 py-3 text-muted">
-                        {document.pds_learning_development_id
-                          ? (trainingTitles.get(
-                              document.pds_learning_development_id,
-                            ) ?? "Linked PDS training")
-                          : "Not listed in PDS"}
                       </td>
                       <td className="px-3 py-3">
                         <WorkflowStatusTag status={document.status} />
@@ -262,7 +260,7 @@ export function DocumentTypeCard({
                     <tr>
                       <td
                         className="px-3 py-8 text-center text-sm text-muted"
-                        colSpan={6}
+                        colSpan={5}
                       >
                         No {recordLabel.toLowerCase()}s match this search or
                         filter.

@@ -104,6 +104,7 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
     "ocr_total_units",
   ].some((key) => formData.has(key));
   const hasApplicantMetricInput = [
+    "certificate_title",
     "training_hours",
     "pds_learning_development_id",
     "total_units",
@@ -111,7 +112,7 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
   ].some((key) => formData.has(key));
   if (
     (isTrainingCertificate && (formData.has("total_units") || formData.has("pds_education_id") || formData.has("ocr_total_units"))) ||
-    (isTranscript && (formData.has("training_hours") || formData.has("pds_learning_development_id") || formData.has("ocr_training_hours"))) ||
+    (isTranscript && (formData.has("certificate_title") || formData.has("training_hours") || formData.has("pds_learning_development_id") || formData.has("ocr_training_hours"))) ||
     (!isTrainingCertificate && !isTranscript && (hasApplicantMetricInput || hasOcrInput))
   ) {
     return { success: false, message: "Document values do not match this document type." };
@@ -120,6 +121,20 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
   const trainingResult = isTrainingCertificate
     ? parseMetric(formData.get("training_hours"), 999999.99, "certificate hours", true)
     : { value: null, error: null };
+  const rawCertificateTitle = isTrainingCertificate
+    ? formData.get("certificate_title")
+    : null;
+  const certificateTitle =
+    typeof rawCertificateTitle === "string" ? rawCertificateTitle.trim() : "";
+  if (
+    isTrainingCertificate &&
+    (!certificateTitle || certificateTitle.length > 200)
+  ) {
+    return {
+      success: false,
+      message: "Enter a certificate title of 200 characters or fewer.",
+    };
+  }
   const unitsResult = isTranscript
     ? parseMetric(formData.get("total_units"), 99999999.99, "total transcript units", true)
     : { value: null, error: null };
@@ -273,6 +288,7 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
     status: "PENDING",
     ...(isTrainingCertificate
       ? {
+          certificate_title: certificateTitle,
           training_hours: trainingResult.value,
           pds_learning_development_id: pdsLearningDevelopmentId,
         }

@@ -1,7 +1,7 @@
 import * as yup from "yup";
 import type { UploadFile } from "antd";
 
-export const documentUploadSchema = yup.object({
+const documentUploadSchemaBase = yup.object({
   files: yup
     .array()
     .of(yup.mixed<UploadFile>().required())
@@ -35,4 +35,17 @@ export const documentUploadSchema = yup.object({
   pdsEducationId: yup.string().optional(),
 });
 
-export type DocumentUploadValues = yup.InferType<typeof documentUploadSchema>;
+export const documentUploadSchema = (isTrainingCertificate: boolean) =>
+  documentUploadSchemaBase.shape({
+    certificateTitle: isTrainingCertificate
+      ? yup
+          .string()
+          .trim()
+          .required("Enter the certificate title.")
+          .max(200, "Certificate titles must be 200 characters or fewer.")
+      : yup.string().optional(),
+  });
+
+export type DocumentUploadValues = yup.InferType<
+  ReturnType<typeof documentUploadSchema>
+>;

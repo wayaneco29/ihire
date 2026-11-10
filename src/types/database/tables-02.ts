@@ -3,6 +3,7 @@ import type { PublicEnums } from '../database-enums';
 export type DocumentsTable = {
     Row: {
         "applicant_id": string;
+        "certificate_title": string | null;
         "document_type_id": string;
         "file_path": string;
         "id": string;
@@ -21,6 +22,7 @@ export type DocumentsTable = {
     ComputedFields: never;
     Insert: {
         "applicant_id": string;
+        "certificate_title"?: string | null;
         "document_type_id": string;
         "file_path"?: string;
         "id"?: string;
@@ -38,6 +40,7 @@ export type DocumentsTable = {
     };
     Update: {
         "applicant_id"?: string;
+        "certificate_title"?: string | null;
         "document_type_id"?: string;
         "file_path"?: string;
         "id"?: string;

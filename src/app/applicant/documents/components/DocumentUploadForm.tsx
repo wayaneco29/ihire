@@ -53,9 +53,10 @@ export function DocumentUploadForm({
   const ocrRequestId = useRef(0);
   const hasMetrics = isTrainingCertificate || isTranscript;
   const form = useForm<DocumentUploadValues>({
-    resolver: yupResolver(documentUploadSchema),
+    resolver: yupResolver(documentUploadSchema(isTrainingCertificate)),
     defaultValues: {
       files: [],
+      certificateTitle: "",
       trainingHours: null,
       totalUnits: null,
       pdsLearningDevelopmentId: "",
@@ -147,6 +148,7 @@ export function DocumentUploadForm({
     formData.set("document_type_id", documentTypeId);
     formData.set("file", uploadFile);
     if (isTrainingCertificate) {
+      formData.set("certificate_title", values.certificateTitle ?? "");
       formData.set("training_hours", String(values.trainingHours));
       formData.set(
         "pds_learning_development_id",
@@ -176,6 +178,7 @@ export function DocumentUploadForm({
       setUploadSucceeded(true);
       form.reset({
         files: [] as UploadFile[],
+        certificateTitle: "",
         trainingHours: null,
         totalUnits: null,
         pdsLearningDevelopmentId: "",
@@ -222,6 +225,19 @@ export function DocumentUploadForm({
         name="files"
         onFileChange={onSelectedFileChange}
       />
+      {isTrainingCertificate && (
+        <div className="mt-3">
+          <FormInput
+            control={form.control}
+            hint="Enter the title or name shown on the certificate."
+            label="Certificate title"
+            maxLength={200}
+            name="certificateTitle"
+            placeholder="e.g. First Aid and Basic Life Support"
+            required
+          />
+        </div>
+      )}
       {hasMetrics && (
         <div className="mt-3 rounded-sm border border-line-subtle bg-panel p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
