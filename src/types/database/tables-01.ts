@@ -98,6 +98,56 @@ export type ApplicationEvaluationsTable = {
     ];
 };
 
+export type ApplicationCriterionScoresTable = {
+  Row: {
+    application_id: string;
+    criterion_id: string;
+    created_at: string;
+    evaluator_id: string;
+    points: number;
+    updated_at: string;
+  };
+  Insert: {
+    application_id: string;
+    criterion_id: string;
+    created_at?: string;
+    evaluator_id: string;
+    points: number;
+    updated_at?: string;
+  };
+  Update: {
+    application_id?: string;
+    criterion_id?: string;
+    created_at?: string;
+    evaluator_id?: string;
+    points?: number;
+    updated_at?: string;
+  };
+  Relationships: [
+    {
+      foreignKeyName: "application_criterion_scores_application_id_fkey";
+      columns: ["application_id"];
+      isOneToOne: false;
+      referencedRelation: "applications";
+      referencedColumns: ["id"];
+    },
+    {
+      foreignKeyName: "application_criterion_scores_criterion_id_fkey";
+      columns: ["criterion_id"];
+      isOneToOne: false;
+      referencedRelation: "position_criteria";
+      referencedColumns: ["id"];
+    },
+    {
+      foreignKeyName: "application_criterion_scores_evaluator_id_fkey";
+      columns: ["evaluator_id"];
+      isOneToOne: false;
+      referencedRelation: "profiles";
+      referencedColumns: ["id"];
+    },
+  ];
+};
+
 export type ApplicationsTable = {
     Row: {
         "applicant_id": string;
@@ -283,6 +333,7 @@ export type DocumentTypesTable = {
 
 export type DatabaseTables01 = {
   "applicants": ApplicantsTable;
+  "application_criterion_scores": ApplicationCriterionScoresTable;
   "application_evaluations": ApplicationEvaluationsTable;
   "applications": ApplicationsTable;
   "document_reviews": DocumentReviewsTable;

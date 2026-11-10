@@ -11,6 +11,7 @@ import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
+import { calculateApplicantTrainingHours } from "@/utils/calculate-applicant-training-hours";
 import { ApplyButton } from "./components/ApplyButton";
 
 const CURRENT_TIME_MS = Date.now();
@@ -227,30 +228,10 @@ export default async function ApplicantJobDetailPage({
     );
   }
 
-  const latestCertificateByLearning = new Map<string, number>();
-  let unlinkedCertificateHours = 0;
-  for (const certificate of certificatesResult.data ?? []) {
-    if (certificate.training_hours === null) continue;
-    if (certificate.pds_learning_development_id === null) {
-      unlinkedCertificateHours += certificate.training_hours;
-    } else if (
-      !latestCertificateByLearning.has(
-        certificate.pds_learning_development_id,
-      )
-    ) {
-      latestCertificateByLearning.set(
-        certificate.pds_learning_development_id,
-        certificate.training_hours,
-      );
-    }
-  }
-  const trainingHours =
-    (learningResult.data ?? []).reduce(
-      (total, learning) =>
-        total +
-        (latestCertificateByLearning.get(learning.id) ?? learning.hours ?? 0),
-      0,
-    ) + unlinkedCertificateHours;
+  const trainingHours = calculateApplicantTrainingHours(
+    learningResult.data ?? [],
+    certificatesResult.data ?? [],
+  );
 
   const selectedPosition = positions.find(
     (position) => position.id === application?.position_id,
