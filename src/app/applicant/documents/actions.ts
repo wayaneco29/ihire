@@ -98,6 +98,59 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
 
   const isTrainingCertificate = documentType.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE;
   const isTranscript = documentType.name === TRANSCRIPT_DOCUMENT_TYPE;
+  const rawReplacementId = formData.get("replaces_document_id");
+  let replacementDocumentId: string | null = null;
+  if (rawReplacementId !== null) {
+    if (
+      !isTrainingCertificate ||
+      typeof rawReplacementId !== "string" ||
+      !/^[0-9a-f-]{36}$/i.test(rawReplacementId)
+    ) {
+      return { success: false, message: "Choose a valid certificate to update." };
+    }
+    replacementDocumentId = rawReplacementId;
+    const { data: existingDocument, error: existingDocumentError } =
+      await applicant.supabase
+        .from("documents")
+        .select("id, document_type_id")
+        .eq("id", replacementDocumentId)
+        .eq("applicant_id", applicant.applicant.id)
+        .maybeSingle();
+    if (existingDocumentError) {
+      return {
+        success: false,
+        message: "We could not verify this certificate. Refresh and try again.",
+      };
+    }
+    if (
+      !existingDocument ||
+      existingDocument.document_type_id !== documentTypeId
+    ) {
+      return {
+        success: false,
+        message: "That certificate is no longer available to update.",
+      };
+    }
+    const { data: existingReplacement, error: replacementError } =
+      await applicant.supabase
+        .from("documents")
+        .select("id")
+        .eq("replaces_document_id", replacementDocumentId)
+        .limit(1)
+        .maybeSingle();
+    if (replacementError) {
+      return {
+        success: false,
+        message: "We could not verify the current certificate version. Refresh and try again.",
+      };
+    }
+    if (existingReplacement) {
+      return {
+        success: false,
+        message: "This certificate already has a newer file. Refresh and update the latest version instead.",
+      };
+    }
+  }
   const hasOcrInput = [
     "ocr_confidence",
     "ocr_training_hours",
@@ -285,6 +338,7 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
     document_type_id: documentTypeId,
     file_path: filePath,
     version,
+    replaces_document_id: replacementDocumentId,
     status: "PENDING",
     ...(isTrainingCertificate
       ? {

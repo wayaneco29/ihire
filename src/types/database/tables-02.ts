@@ -13,6 +13,7 @@ export type DocumentsTable = {
         "ocr_training_hours": number | null;
         "pds_education_id": string | null;
         "pds_learning_development_id": string | null;
+        "replaces_document_id": string | null;
         "status": PublicEnums["document_status"];
         "total_units": number | null;
         "training_hours": number | null;
@@ -32,6 +33,7 @@ export type DocumentsTable = {
         "ocr_training_hours"?: number | null;
         "pds_education_id"?: string | null;
         "pds_learning_development_id"?: string | null;
+        "replaces_document_id"?: string | null;
         "status"?: PublicEnums["document_status"];
         "total_units"?: number | null;
         "training_hours"?: number | null;
@@ -50,6 +52,7 @@ export type DocumentsTable = {
         "ocr_training_hours"?: number | null;
         "pds_education_id"?: string | null;
         "pds_learning_development_id"?: string | null;
+        "replaces_document_id"?: string | null;
         "status"?: PublicEnums["document_status"];
         "total_units"?: number | null;
         "training_hours"?: number | null;
@@ -97,6 +100,17 @@ export type DocumentsTable = {
             ];
             isOneToOne: false;
             referencedRelation: "pds_education";
+            referencedColumns: [
+                "id"
+            ];
+        },
+        {
+            foreignKeyName: "documents_replaces_document_id_fkey";
+            columns: [
+                "replaces_document_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "documents";
             referencedColumns: [
                 "id"
             ];

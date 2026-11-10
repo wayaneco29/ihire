@@ -32,16 +32,28 @@ export async function createPosition(input: unknown): Promise<ActionResult> {
     };
   }
 
+  const applicationType =
+    values.applicationType === "TEACHING" ? "teaching" : "non-teaching";
+  const { data: applicationTypeData, error: applicationTypeError } =
+    await hr.supabase
+      .from("application_type")
+      .select("id")
+      .eq("name", applicationType)
+      .single();
+
+  if (applicationTypeError || !applicationTypeData) {
+    return { success: false, message: "The position could not be created." };
+  }
+
   const { error } = await hr.supabase.from("positions").insert({
-    track: values.track,
+    application_type_id: applicationTypeData.id,
     title: values.title,
-    created_by: hr.user.id,
   });
 
   if (error?.code === "23505") {
     return {
       success: false,
-      message: "That title already exists in this position track.",
+      message: "That title already exists for this application type.",
     };
   }
   if (error) {

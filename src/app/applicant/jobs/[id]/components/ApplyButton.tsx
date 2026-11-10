@@ -14,7 +14,7 @@ import { applicationSchema, type ApplicationValues } from "../../schema";
 type PositionOption = {
   id: string;
   title: string;
-  track: string;
+  application_type: { name: string } | null;
   criteria: Array<{
     id: string;
     key: string;
@@ -76,7 +76,10 @@ export function ApplyButton({
         label="Position applying for"
         name="positionId"
         options={positions.map((position) => ({
-          label: formatPositionLabel(position.title, position.track),
+          label: formatPositionLabel(
+            position.title,
+            position.application_type?.name ?? "",
+          ),
           value: position.id,
         }))}
         placeholder="Select a position"

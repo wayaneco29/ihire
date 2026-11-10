@@ -1,12 +1,12 @@
 import * as yup from "yup";
 
-export const POSITION_TRACKS = ["TEACHING", "NON_TEACHING"] as const;
+export const POSITION_APPLICATION_TYPES = ["TEACHING", "NON_TEACHING"] as const;
 
 export const positionSchema = yup.object({
-  track: yup
-    .mixed<(typeof POSITION_TRACKS)[number]>()
-    .oneOf(POSITION_TRACKS, "Choose a position track.")
-    .required("Choose a position track."),
+  applicationType: yup
+    .mixed<(typeof POSITION_APPLICATION_TYPES)[number]>()
+    .oneOf(POSITION_APPLICATION_TYPES, "Choose an application type.")
+    .required("Choose an application type."),
   title: yup
     .string()
     .trim()

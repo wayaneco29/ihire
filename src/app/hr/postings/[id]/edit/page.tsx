@@ -42,13 +42,13 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
   const positionIds = (selectedResult.data ?? []).map(
     (selection) => selection.position_id,
   );
-  const selectedTracksResult = positionIds.length
+  const selectedPositionsResult = positionIds.length
     ? await hr.supabase
         .from("positions")
-        .select("id, track")
+        .select("id, application_type_id")
         .in("id", positionIds)
     : { data: [], error: null };
-  if (selectedTracksResult.error) {
+  if (selectedPositionsResult.error) {
     return (
       <>
         <PageHeader
@@ -65,7 +65,35 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
       </>
     );
   }
-  const hiringTrack = selectedTracksResult.data[0]?.track;
+  const applicationTypeId = selectedPositionsResult.data?.[0]?.application_type_id;
+  const selectedApplicationType = applicationTypeId
+    ? await hr.supabase
+        .from("application_type")
+        .select("name")
+        .eq("id", applicationTypeId)
+        .maybeSingle()
+    : { data: null, error: null };
+  if (selectedApplicationType.error) {
+    return (
+      <>
+        <PageHeader
+          description="Update position details and applicable roles."
+          eyebrow="HR workspace"
+          title="Edit job posting"
+        />
+        <div className="mt-7">
+          <EmptyState
+            description="Refresh the page to try loading position selections again."
+            title="Position selections unavailable"
+          />
+        </div>
+      </>
+    );
+  }
+  const hiringTrack =
+    selectedApplicationType.data?.name === "non-teaching"
+      ? "NON_TEACHING"
+      : "TEACHING";
 
   return <>
     <PageHeader description="Update the position details and manage its open, draft, or closed status." eyebrow="HR workspace" title="Edit job posting" />

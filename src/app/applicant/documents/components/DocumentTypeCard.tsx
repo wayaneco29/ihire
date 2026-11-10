@@ -20,6 +20,8 @@ export type DocumentRecord = {
   total_units: number | null;
   pds_learning_development_id: string | null;
   pds_education_id: string | null;
+  replaces_document_id: string | null;
+  supersededByVersion: number | null;
 };
 
 const INITIAL_CERTIFICATE_COUNT = 5;
@@ -54,6 +56,8 @@ export function DocumentTypeCard({
 }) {
   const [messageApi, contextHolder] = message.useMessage();
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [replacementTarget, setReplacementTarget] =
+    useState<DocumentRecord | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [showAll, setShowAll] = useState(false);
@@ -119,16 +123,23 @@ export function DocumentTypeCard({
   }
 
   if (isTrainingCertificate) {
-    const forReviewCount = documents.filter((document) =>
+    const currentDocuments = documents.filter(
+      (document) => document.supersededByVersion === null,
+    );
+    const forReviewCount = currentDocuments.filter((document) =>
       ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(document.status),
     ).length;
-    const verifiedCount = documents.filter(
+    const verifiedCount = currentDocuments.filter(
       (document) => document.status === "VERIFIED",
     ).length;
-    const metricTotal = documents.reduce(
+    const metricTotal = currentDocuments.reduce(
       (total, document) => total + (document.training_hours ?? 0),
       0,
     );
+    const closeUpload = () => {
+      setUploadOpen(false);
+      setReplacementTarget(null);
+    };
 
     return (
       <tr>
@@ -204,7 +215,7 @@ export function DocumentTypeCard({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[680px] text-left text-xs">
+              <table className="w-full min-w-[760px] text-left text-xs">
                 <thead className="bg-panel-muted text-[10px] uppercase tracking-wider text-muted">
                   <tr>
                     <th className="px-3 py-2 font-medium">#</th>
@@ -242,17 +253,34 @@ export function DocumentTypeCard({
                         {document.training_hours ?? 0} hrs
                       </td>
                       <td className="px-3 py-3">
-                        <WorkflowStatusTag status={document.status} />
+                        {document.supersededByVersion !== null ? (
+                          <span className="text-muted">
+                            Replaced by v{document.supersededByVersion}
+                          </span>
+                        ) : (
+                          <WorkflowStatusTag status={document.status} />
+                        )}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        <button
-                          className="min-h-9 px-2 cursor-pointer text-xs! font-medium text-primary hover:underline disabled:opacity-60"
-                          disabled={pending}
-                          onClick={() => openDocument(document)}
-                          type="button"
-                        >
-                          {pendingId === document.id ? "Preparing…" : "View"}
-                        </button>
+                        <div className="flex gap-2 items-center">
+                          <button
+                            className="min-h-9 px-2 cursor-pointer text-xs! font-medium text-primary hover:underline disabled:opacity-60"
+                            disabled={pending}
+                            onClick={() => openDocument(document)}
+                            type="button"
+                          >
+                            {pendingId === document.id ? "Preparing…" : "View"}
+                          </button>
+                          {document.supersededByVersion === null && (
+                            <button
+                              className="inline-flex min-h-9 items-center rounded-sm bg-primary px-3 text-xs! font-semibold cursor-pointer text-on-primary hover:bg-primary-dark"
+                              onClick={() => setReplacementTarget(document)}
+                              type="button"
+                            >
+                              Replace
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -305,20 +333,34 @@ export function DocumentTypeCard({
             <Modal
               destroyOnHidden
               footer={null}
-              onCancel={() => setUploadOpen(false)}
-              open={uploadOpen}
-              title="Add a certificate"
+              onCancel={closeUpload}
+              open={uploadOpen || replacementTarget !== null}
+              title={
+                replacementTarget
+                  ? "Update certificate file"
+                  : "Add a certificate"
+              }
               width={640}
             >
               <p className="mb-4 text-sm text-muted">
-                Upload one certificate at a time so its hours can be recorded
-                separately.
+                {replacementTarget
+                  ? "Upload a new file for this certificate. The previous file and review history will remain available."
+                  : "Upload one certificate at a time so its hours can be recorded separately."}
               </p>
               <DocumentUploadForm
                 documentTypeId={id}
                 isTrainingCertificate={isTrainingCertificate}
                 isTranscript={isTranscript}
-                onCancel={() => setUploadOpen(false)}
+                onCancel={closeUpload}
+                onSuccess={
+                  replacementTarget
+                    ? (successMessage) => {
+                        closeUpload();
+                        messageApi.success(successMessage);
+                      }
+                    : undefined
+                }
+                replacementDocument={replacementTarget}
                 trainingEntries={trainingEntries}
                 trainingEntriesUnavailable={trainingEntriesUnavailable}
                 educationEntries={educationEntries}

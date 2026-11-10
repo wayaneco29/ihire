@@ -15,6 +15,12 @@ import { uploadApplicantDocument } from "../actions";
 const ACCEPTED_FILES = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
 type TrainingEntry = { id: string; title: string; hours: number | null };
+type ReplacementDocument = {
+  id: string;
+  certificate_title: string | null;
+  training_hours: number | null;
+  pds_learning_development_id: string | null;
+};
 
 export function DocumentUploadForm({
   documentTypeId,
@@ -24,12 +30,14 @@ export function DocumentUploadForm({
   trainingEntries,
   trainingEntriesUnavailable,
   isTranscript = false,
+  replacementDocument = null,
   educationEntries = [],
   educationEntriesUnavailable = false,
 }: {
   documentTypeId: string;
   isTrainingCertificate: boolean;
   isTranscript?: boolean;
+  replacementDocument?: ReplacementDocument | null;
   onCancel: () => void;
   onSuccess?: (message: string) => void;
   trainingEntries: TrainingEntry[];
@@ -56,10 +64,16 @@ export function DocumentUploadForm({
     resolver: yupResolver(documentUploadSchema(isTrainingCertificate)),
     defaultValues: {
       files: [],
-      certificateTitle: "",
-      trainingHours: null,
+      certificateTitle: replacementDocument?.certificate_title ?? "",
+      trainingHours: replacementDocument?.training_hours ?? null,
       totalUnits: null,
-      pdsLearningDevelopmentId: "",
+      pdsLearningDevelopmentId:
+        trainingEntries.some(
+          (entry) =>
+            entry.id === replacementDocument?.pds_learning_development_id,
+        )
+          ? replacementDocument?.pds_learning_development_id ?? ""
+          : "",
       pdsEducationId: "",
     },
   });
@@ -70,8 +84,10 @@ export function DocumentUploadForm({
     setOcrResult(null);
     setOcrProgress(null);
     setOcrError(null);
-    form.setValue("trainingHours", null);
-    form.setValue("totalUnits", null);
+    if (!replacementDocument) {
+      form.setValue("trainingHours", null);
+      form.setValue("totalUnits", null);
+    }
     if (
       file &&
       hasMetrics &&
@@ -147,6 +163,9 @@ export function DocumentUploadForm({
     const formData = new FormData();
     formData.set("document_type_id", documentTypeId);
     formData.set("file", uploadFile);
+    if (replacementDocument) {
+      formData.set("replaces_document_id", replacementDocument.id);
+    }
     if (isTrainingCertificate) {
       formData.set("certificate_title", values.certificateTitle ?? "");
       formData.set("training_hours", String(values.trainingHours));
@@ -187,7 +206,9 @@ export function DocumentUploadForm({
       setSelectedFile(null);
       setOcrResult(null);
       setOcrProgress(null);
-      const successMessage = isTrainingCertificate
+      const successMessage = replacementDocument
+        ? `Certificate file updated. The new version with ${values.trainingHours} hours has been sent for review.`
+        : isTrainingCertificate
         ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
         : isTranscript
           ? `Transcript uploaded with ${values.totalUnits} units and sent for review.`
@@ -381,7 +402,9 @@ export function DocumentUploadForm({
           {pending
             ? "Uploading…"
             : isTrainingCertificate
-              ? "Upload certificate"
+              ? replacementDocument
+                ? "Update certificate file"
+                : "Upload certificate"
               : "Upload document"}
         </button>
         <button

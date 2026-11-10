@@ -64,7 +64,7 @@ export default async function ApplicantApplicationDetailPage({
     application.position_id
       ? applicant.supabase
           .from("positions")
-          .select("title, track")
+          .select("title, application_type(name)")
           .eq("id", application.position_id)
           .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
@@ -112,7 +112,7 @@ export default async function ApplicantApplicationDetailPage({
         ? (
             await applicant.supabase
               .from("positions")
-              .select("id, title, track")
+              .select("id, title, application_type(name)")
               .eq("id", resolvedPositionId)
               .maybeSingle()
           ).data
@@ -126,7 +126,7 @@ export default async function ApplicantApplicationDetailPage({
     const certificatesResult = await applicant.supabase
       .from("documents")
       .select(
-        "training_hours, pds_learning_development_id, uploaded_at, version",
+        "id, training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
       )
       .eq("applicant_id", applicant.applicant.id)
       .eq("document_type_id", certificateType.id)
@@ -288,7 +288,7 @@ export default async function ApplicantApplicationDetailPage({
           </h2>
           <p className="mt-1 text-sm text-muted">
             {resolvedPosition
-              ? `${resolvedPosition.title} · ${formatPositionTrack(resolvedPosition.track)}`
+              ? `${resolvedPosition.title} · ${formatPositionTrack(resolvedPosition.application_type?.name ?? "")}`
               : resolvedPositionId
                 ? "Position unavailable"
                 : "Position not recorded"}

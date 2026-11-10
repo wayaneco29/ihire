@@ -38,13 +38,16 @@ export default async function ApplicantApplicationsPage() {
   const positionsResponse = positionIds.length
     ? await applicant.supabase
         .from("positions")
-        .select("id, title, track")
+        .select("id, title, application_type(name)")
         .in("id", positionIds)
     : { data: [], error: null };
   const positionTitles = new Map(
     (positionsResponse.data ?? []).map((position) => [
       position.id,
-      formatPositionLabel(position.title, position.track),
+      formatPositionLabel(
+        position.title,
+        position.application_type?.name ?? "",
+      ),
     ]),
   );
   const list = (applications ?? []).map((application) => ({

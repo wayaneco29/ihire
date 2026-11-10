@@ -60,9 +60,20 @@ async function validateHiringTrack(
   positionIds: string[],
   hiringTrack: HiringTrack,
 ) {
+  const applicationTypeName =
+    hiringTrack === "TEACHING" ? "teaching" : "non-teaching";
+  const { data: applicationType, error: applicationTypeError } = await supabase
+    .from("application_type")
+    .select("id")
+    .eq("name", applicationTypeName)
+    .single();
+  if (applicationTypeError || !applicationType) {
+    return "The selected positions could not be verified. Refresh and try again.";
+  }
+
   const { data: positions, error } = await supabase
     .from("positions")
-    .select("id, track")
+    .select("id, application_type_id")
     .in("id", positionIds);
 
   if (error) {
@@ -71,7 +82,9 @@ async function validateHiringTrack(
   if (
     !positions ||
     positions.length !== positionIds.length ||
-    positions.some((position) => position.track !== hiringTrack)
+    positions.some(
+      (position) => position.application_type_id !== applicationType.id,
+    )
   ) {
     return "Select positions that match the chosen hiring type.";
   }

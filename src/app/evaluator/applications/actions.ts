@@ -142,12 +142,13 @@ export async function submitApplicationCriterionScores(input: {
   if (!applicationResult.data.position_id) {
     return { success: false, message: "A position must be selected before criterion scores can be entered." };
   }
+  const positionId = applicationResult.data.position_id;
 
   const { data: jobPosition, error: jobPositionError } = await evaluator.supabase
     .from("job_posting_positions")
     .select("weight_profile_id")
     .eq("job_id", applicationResult.data.job_id)
-    .eq("position_id", applicationResult.data.position_id)
+    .eq("position_id", positionId)
     .maybeSingle();
   if (jobPositionError || !jobPosition) {
     return { success: false, message: "The scoring profile for this application could not be loaded." };
@@ -162,19 +163,18 @@ export async function submitApplicationCriterionScores(input: {
   }
   const { data: criteria, error: criteriaError } = await evaluator.supabase
     .from("position_criteria")
-    .select("id, criterion_key, track, title")
+    .select("id, criterion_key, title")
     .in(
       "id",
       weights.map((weight) => weight.criterion_id),
     )
-    .eq("track", "TEACHING")
+    .eq("position_id", applicationResult.data.position_id)
     .eq("criterion_key", "CLASSROOM_OBSERVATION");
   if (criteriaError || !criteria?.length) {
     return { success: false, message: "The position scoring criteria could not be loaded." };
   }
 
   if (
-    criteria.some((criterion) => criterion.track !== "TEACHING") ||
     criteria.some(
       (criterion) => criterion.criterion_key !== "CLASSROOM_OBSERVATION",
     )

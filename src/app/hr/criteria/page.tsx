@@ -8,21 +8,25 @@ export default async function HrPositionCriteriaPage() {
   const hr = await getHrContext();
   if (!hr) redirect("/login");
 
-  const [positionsResult, criteriaResult] = await Promise.all([
-    hr.supabase
-      .from("positions")
-      .select("id, track, title")
-      .eq("is_active", true)
-      .order("track")
-      .order("title"),
-    hr.supabase
-      .from("position_criteria")
-      .select("id, track, title, display_order")
-      .order("track")
-      .order("display_order"),
-  ]);
+  const [positionsResult, criteriaResult, applicationTypesResult] =
+    await Promise.all([
+      hr.supabase
+        .from("positions")
+        .select("id, title, application_type_id")
+        .order("title"),
+      hr.supabase
+        .from("position_criteria")
+        .select("id, position_id, title, display_order")
+        .order("position_id")
+        .order("display_order"),
+      hr.supabase.from("application_type").select("id, name"),
+    ]);
 
-  if (positionsResult.error || criteriaResult.error) {
+  if (
+    positionsResult.error ||
+    criteriaResult.error ||
+    applicationTypesResult.error
+  ) {
     return (
       <>
         <PageHeader
@@ -40,7 +44,16 @@ export default async function HrPositionCriteriaPage() {
     );
   }
 
-  const positions = positionsResult.data ?? [];
+  const applicationTypeNames = new Map(
+    (applicationTypesResult.data ?? []).map((applicationType) => [
+      applicationType.id,
+      applicationType.name,
+    ]),
+  );
+  const positions = (positionsResult.data ?? []).map((position) => ({
+    ...position,
+    applicationType: applicationTypeNames.get(position.application_type_id) ?? "",
+  }));
   const { data: currentProfiles, error: profilesError } = positions.length
     ? await hr.supabase
         .from("position_weight_profiles")

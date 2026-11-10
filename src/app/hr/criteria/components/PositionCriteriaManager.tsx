@@ -17,15 +17,15 @@ import { createPosition, savePositionWeights } from "../actions";
 
 type Criterion = {
   id: string;
+  position_id: string;
   title: string;
   display_order: number;
-  track: string;
 };
 
 type Position = {
   id: string;
   title: string;
-  track: string;
+  applicationType: string;
 };
 
 function CreatePositionForm({
@@ -44,7 +44,7 @@ function CreatePositionForm({
   } | null>(null);
   const form = useForm<PositionValues>({
     resolver: yupResolver(positionSchema) as Resolver<PositionValues>,
-    defaultValues: { track: "TEACHING", title: "" },
+    defaultValues: { applicationType: "TEACHING", title: "" },
   });
 
   async function submit(values: PositionValues) {
@@ -52,7 +52,7 @@ function CreatePositionForm({
     const result = await createPosition(values);
     setMessage({ text: result.message, isError: !result.success });
     if (result.success) {
-      form.reset({ track: values.track, title: "" });
+      form.reset({ applicationType: values.applicationType, title: "" });
       router.refresh();
       onCreated();
     }
@@ -60,7 +60,7 @@ function CreatePositionForm({
 
   function close() {
     if (form.formState.isSubmitting) return;
-    form.reset({ track: "TEACHING", title: "" });
+    form.reset({ applicationType: "TEACHING", title: "" });
     setMessage(null);
     onCancel();
   }
@@ -81,7 +81,7 @@ function CreatePositionForm({
         <FormSelect
           control={form.control}
           label="Hiring type"
-          name="track"
+          name="applicationType"
           options={[
             { label: "Teaching", value: "TEACHING" },
             { label: "Non-teaching", value: "NON_TEACHING" },
@@ -196,7 +196,9 @@ function PositionWeightEditor({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <StatusTag className="border-primary/20 bg-primary-light text-primary-dark">
-                {position.track === "TEACHING" ? "Teaching" : "Non-teaching"}
+                {position.applicationType === "teaching"
+                  ? "Teaching"
+                  : "Non-teaching"}
               </StatusTag>
               {currentVersion !== null && (
                 <span className="text-xs text-muted">
@@ -298,17 +300,21 @@ export function PositionCriteriaManager({
     { version: number; weights: Record<string, number> }
   >;
 }) {
-  const teaching = positions.filter((position) => position.track === "TEACHING");
-  const nonTeaching = positions.filter(
-    (position) => position.track === "NON_TEACHING",
-  );
   const [isAddingPosition, setIsAddingPosition] = useState(false);
   const groups = [
-    { title: "Teaching", track: "TEACHING", positions: teaching },
+    {
+      title: "Teaching",
+      applicationType: "teaching",
+      positions: positions.filter(
+        (position) => position.applicationType === "teaching",
+      ),
+    },
     {
       title: "Non-teaching",
-      track: "NON_TEACHING",
-      positions: nonTeaching,
+      applicationType: "non-teaching",
+      positions: positions.filter(
+        (position) => position.applicationType === "non-teaching",
+      ),
     },
   ];
 
@@ -320,7 +326,7 @@ export function PositionCriteriaManager({
             Position criteria
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted">
-            Each position uses its track’s criteria, weighted to 100 points.
+            Each position has its own criteria and a separate 100-point profile.
           </p>
         </div>
         <Button onClick={() => setIsAddingPosition(true)} type="primary">
@@ -355,14 +361,8 @@ export function PositionCriteriaManager({
             </thead>
             <tbody>
               {groups.map((group) => {
-                const trackCriteria = criteria
-                  .filter((criterion) => criterion.track === group.track)
-                  .sort(
-                    (left, right) => left.display_order - right.display_order,
-                  );
-
                 return (
-                  <Fragment key={group.track}>
+                  <Fragment key={group.applicationType}>
                     <tr className="border-y border-line-subtle bg-panel-muted/70">
                       <th
                         className="px-5 py-3 text-sm font-semibold text-ink"
@@ -377,7 +377,7 @@ export function PositionCriteriaManager({
                               ? "position"
                               : "positions"}
                             {" · "}
-                            {trackCriteria.length} criteria, 100 points each
+                            separate criteria per position
                           </span>
                         </span>
                       </th>
@@ -385,6 +385,14 @@ export function PositionCriteriaManager({
                     {group.positions.length ? (
                       group.positions.map((position) => {
                         const profile = profileByPosition[position.id];
+                        const positionCriteria = criteria
+                          .filter(
+                            (criterion) => criterion.position_id === position.id,
+                          )
+                          .sort(
+                            (left, right) =>
+                              left.display_order - right.display_order,
+                          );
                         return (
                           <Fragment key={position.id}>
                             <tr className="border-b border-line-subtle">
@@ -410,7 +418,7 @@ export function PositionCriteriaManager({
                               </td>
                               <td className="px-5 py-4 text-right align-top">
                                 <PositionWeightEditor
-                                  criteria={trackCriteria}
+                                  criteria={positionCriteria}
                                   currentVersion={profile?.version ?? null}
                                   currentWeights={profile?.weights ?? {}}
                                   position={position}

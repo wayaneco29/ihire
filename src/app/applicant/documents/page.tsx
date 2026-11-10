@@ -23,7 +23,7 @@ export default async function ApplicantDocumentsPage() {
     applicant.supabase
       .from("documents")
       .select(
-        "id, document_type_id, file_path, version, status, uploaded_at, certificate_title, training_hours, pds_learning_development_id, total_units, pds_education_id",
+        "id, document_type_id, file_path, version, status, uploaded_at, certificate_title, training_hours, pds_learning_development_id, total_units, pds_education_id, replaces_document_id",
       )
       .eq("applicant_id", applicant.applicant.id)
       .order("version", { ascending: false }),
@@ -90,12 +90,18 @@ export default async function ApplicantDocumentsPage() {
     }
   }
 
+  const replacementVersionByDocumentId = new Map(
+    documents
+      .filter((document) => document.replaces_document_id)
+      .map((document) => [document.replaces_document_id!, document.version]),
+  );
   const documentsByType = new Map<string, DocumentRecord[]>();
   for (const document of documents) {
     const typeDocuments = documentsByType.get(document.document_type_id) ?? [];
     typeDocuments.push({
       ...document,
       remarks: latestRemarks.get(document.id) ?? null,
+      supersededByVersion: replacementVersionByDocumentId.get(document.id) ?? null,
     });
     documentsByType.set(document.document_type_id, typeDocuments);
   }

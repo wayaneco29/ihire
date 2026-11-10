@@ -72,13 +72,19 @@ export default async function ApplicantDashboardPage() {
   const positionsResult = positionIds.length
     ? await applicant.supabase
         .from("positions")
-        .select("id, title, track")
+        .select("id, title, application_type(name)")
         .in("id", positionIds)
     : { data: [], error: null };
   const positionTitles = new Map(
     (positionsResult.data ?? []).map(
       (position) =>
-        [position.id, formatPositionLabel(position.title, position.track)] as const,
+        [
+          position.id,
+          formatPositionLabel(
+            position.title,
+            position.application_type?.name ?? "",
+          ),
+        ] as const,
     ),
   );
   const dashboardApplications = applications.map((application) => ({

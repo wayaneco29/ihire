@@ -4,18 +4,31 @@ type TrainingRecord = {
 };
 
 type TrainingCertificate = {
+  id?: string;
   training_hours: number | null;
   pds_learning_development_id: string | null;
+  replaces_document_id?: string | null;
 };
 
 export function calculateApplicantTrainingHours(
   trainingRecords: TrainingRecord[],
   certificates: TrainingCertificate[],
 ) {
+  const replacedCertificateIds = new Set(
+    certificates
+      .map((certificate) => certificate.replaces_document_id)
+      .filter((id): id is string => id !== null && id !== undefined),
+  );
   const latestCertificateByTraining = new Map<string, number>();
   let unlinkedCertificateHours = 0;
 
   for (const certificate of certificates) {
+    if (
+      certificate.id &&
+      replacedCertificateIds.has(certificate.id)
+    ) {
+      continue;
+    }
     if (certificate.training_hours === null) continue;
     if (certificate.pds_learning_development_id === null) {
       unlinkedCertificateHours += certificate.training_hours;

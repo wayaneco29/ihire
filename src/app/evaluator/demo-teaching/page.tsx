@@ -104,7 +104,7 @@ export default async function EvaluatorDemoTeachingPage({
     criterionIds.length
       ? evaluator.supabase
           .from("position_criteria")
-          .select("id, criterion_key, track, title")
+          .select("id, criterion_key, title")
           .in("id", criterionIds)
       : Promise.resolve({ data: [], error: null }),
     applicationIds.length
@@ -244,8 +244,7 @@ export default async function EvaluatorDemoTeachingPage({
               })
               .find(
                 (item) =>
-                  item.criterion.criterion_key === "CLASSROOM_OBSERVATION" &&
-                  item.criterion.track === "TEACHING",
+                  item.criterion.criterion_key === "CLASSROOM_OBSERVATION",
               );
 
             return (

@@ -96,7 +96,7 @@ export function ProfileDetails({
   hasDraft: boolean;
 }) {
   return (
-    <div className="mt-5 grid items-start gap-4">
+    <div className="mt-5 items-start gap-4">
       {hasDraft && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 md:col-span-2">
           <div className="min-w-0">
@@ -112,8 +112,8 @@ export function ProfileDetails({
         </div>
       )}
 
-      <div className="min-w-0">
-        <div className="mt-2 space-y-3">
+      <div>
+        <div className="mt-4 space-y-3">
           <ProfileSection
             icon={<UserIcon className="size-4" />}
             id="personal-information"

@@ -63,10 +63,8 @@ export default async function ApplicantJobDetailPage({
   const positionsResult = positionIds.length
     ? await applicant.supabase
         .from("positions")
-        .select("id, title, track")
+        .select("id, title, application_type(name)")
         .in("id", positionIds)
-        .eq("is_active", true)
-        .order("track")
         .order("title")
     : { data: [], error: null };
   if (positionsResult.error) {
@@ -77,20 +75,20 @@ export default async function ApplicantJobDetailPage({
       />
     );
   }
-  const activePositions = positionsResult.data ?? [];
-  const activePositionIds = new Set(
-    activePositions.map((position) => position.id),
+  const availablePositions = positionsResult.data ?? [];
+  const availablePositionIds = new Set(
+    availablePositions.map((position) => position.id),
   );
-  const activeLinks = linkedPositions.filter((jobPosition) =>
-    activePositionIds.has(jobPosition.position_id),
+  const availableLinks = linkedPositions.filter((jobPosition) =>
+    availablePositionIds.has(jobPosition.position_id),
   );
-  const weightsResult = activeLinks.length
+  const weightsResult = availableLinks.length
     ? await applicant.supabase
         .from("position_criterion_weights")
         .select("profile_id, criterion_id, points")
         .in(
           "profile_id",
-          activeLinks.map((jobPosition) => jobPosition.weight_profile_id),
+          availableLinks.map((jobPosition) => jobPosition.weight_profile_id),
         )
     : { data: [], error: null };
   if (weightsResult.error) {
@@ -150,12 +148,12 @@ export default async function ApplicantJobDetailPage({
     weightsByProfile.set(weight.profile_id, profileWeights);
   }
   const linkByPosition = new Map(
-    activeLinks.map((jobPosition) => [
+    availableLinks.map((jobPosition) => [
       jobPosition.position_id,
       jobPosition,
     ]),
   );
-  const positions = activePositions.map((position) => {
+  const positions = availablePositions.map((position) => {
     const link = linkByPosition.get(position.id);
     const criteria = link
       ? (weightsByProfile.get(link.weight_profile_id) ?? []).sort(
@@ -211,7 +209,7 @@ export default async function ApplicantJobDetailPage({
     applicant.supabase
       .from("documents")
       .select(
-        "training_hours, pds_learning_development_id, uploaded_at, version",
+        "id, training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
       )
       .eq("applicant_id", applicant.applicant.id)
       .eq("document_type_id", certificateType.id)
@@ -328,7 +326,7 @@ export default async function ApplicantJobDetailPage({
                     {selectedPosition
                       ? formatPositionLabel(
                           selectedPosition.title,
-                          selectedPosition.track,
+                          selectedPosition.application_type?.name ?? "",
                         )
                       : application.position_id
                         ? "Position unavailable"
@@ -352,7 +350,7 @@ export default async function ApplicantJobDetailPage({
                 />
               ) : (
                 <p className="max-w-sm text-sm text-muted">
-                  No active positions are available for this posting. Contact HR
+                  No positions are available for this posting. Contact HR
                   for assistance.
                 </p>
               )

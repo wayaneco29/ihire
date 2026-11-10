@@ -42,29 +42,53 @@ export type JobPostingPositionsTable = {
   ];
 };
 
+export type ApplicationTypeTable = {
+  Row: {
+    id: string;
+    name: string;
+  };
+  Insert: {
+    id?: string;
+    name: string;
+  };
+  Update: {
+    id?: string;
+    name?: string;
+  };
+  Relationships: [];
+};
+
 export type PositionCriteriaTable = {
   Row: {
     criterion_key: string;
     display_order: number;
     id: string;
+    position_id: string;
     title: string;
-    track: string;
   };
   Insert: {
     criterion_key: string;
     display_order: number;
     id?: string;
+    position_id: string;
     title: string;
-    track: string;
   };
   Update: {
     criterion_key?: string;
     display_order?: number;
     id?: string;
+    position_id?: string;
     title?: string;
-    track?: string;
   };
-  Relationships: [];
+  Relationships: [
+    {
+      foreignKeyName: "position_criteria_position_id_fkey";
+      columns: ["position_id"];
+      isOneToOne: false;
+      referencedRelation: "positions";
+      referencedColumns: ["id"];
+    },
+  ];
 };
 
 export type PositionCriterionWeightsTable = {
@@ -146,41 +170,33 @@ export type PositionWeightProfilesTable = {
 
 export type PositionsTable = {
   Row: {
-    created_at: string;
-    created_by: string;
+    application_type_id: string;
     id: string;
-    is_active: boolean;
     title: string;
-    track: string;
   };
   Insert: {
-    created_at?: string;
-    created_by: string;
+    application_type_id: string;
     id?: string;
-    is_active?: boolean;
     title: string;
-    track: string;
   };
   Update: {
-    created_at?: string;
-    created_by?: string;
+    application_type_id?: string;
     id?: string;
-    is_active?: boolean;
     title?: string;
-    track?: string;
   };
   Relationships: [
     {
-      foreignKeyName: "positions_created_by_fkey";
-      columns: ["created_by"];
+      foreignKeyName: "positions_application_type_id_fkey";
+      columns: ["application_type_id"];
       isOneToOne: false;
-      referencedRelation: "profiles";
+      referencedRelation: "application_type";
       referencedColumns: ["id"];
     },
   ];
 };
 
 export type DatabaseTables06 = {
+  application_type: ApplicationTypeTable;
   job_posting_positions: JobPostingPositionsTable;
   position_criteria: PositionCriteriaTable;
   position_criterion_weights: PositionCriterionWeightsTable;
