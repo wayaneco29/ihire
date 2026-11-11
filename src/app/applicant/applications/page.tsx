@@ -11,7 +11,9 @@ export default async function ApplicantApplicationsPage() {
 
   const applicationsResponse = await applicant.supabase
     .from("applications")
-    .select("id, job_id, position_id, status, applied_at, scheduled_assessment_at")
+    .select(
+      "id, job_id, position_id, status, applied_at, scheduled_assessment_at",
+    )
     .eq("applicant_id", applicant.applicant.id)
     .order("applied_at", { ascending: false });
   const applications = applicationsResponse.data ?? [];
@@ -57,7 +59,7 @@ export default async function ApplicantApplicationsPage() {
     scheduled_assessment_at: application.scheduled_assessment_at,
     jobTitle: titles.get(application.job_id) ?? "Job posting",
     positionLabel: application.position_id
-      ? positionTitles.get(application.position_id) ?? "Position unavailable"
+      ? (positionTitles.get(application.position_id) ?? "Position unavailable")
       : "Position not recorded",
   }));
   const inReviewCount = list.filter((application) =>
@@ -76,7 +78,7 @@ export default async function ApplicantApplicationsPage() {
     : "No applications submitted yet.";
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto">
       <PageHeader
         actions={
           <Link

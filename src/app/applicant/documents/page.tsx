@@ -184,7 +184,7 @@ export default async function ApplicantDocumentsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto">
       <PageHeader
         description="Upload documents and track evaluator feedback."
         title="Documents"

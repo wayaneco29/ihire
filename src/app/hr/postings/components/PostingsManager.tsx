@@ -2,132 +2,265 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Input } from "antd";
-import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
-import { formatDate } from "@/utils/format-date";
+
+type PostingStatus = "DRAFT" | "OPEN" | "CLOSED";
+type SortOrder = "deadline-asc" | "deadline-desc" | "created-desc";
 
 type PostingItem = {
   id: string;
   title: string;
   description: string;
   slots: number;
-  status: string;
+  status: PostingStatus;
   deadline: string | null;
   created_at: string;
+  deadlineLabel: string | null;
+  daysRemaining: number | null;
   total: number;
   qualified: number;
   hired: number;
 };
+
+function deadlineSortValue(deadline: string | null) {
+  if (!deadline) return Number.POSITIVE_INFINITY;
+  const timestamp = Date.parse(deadline);
+  return Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY;
+}
 
 export function PostingsManager({
   postings,
 }: Readonly<{ postings: PostingItem[] }>) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("deadline-asc");
+
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
-    return postings.filter(
+    const matches = postings.filter(
       (posting) =>
         (!term || posting.title.toLocaleLowerCase().includes(term)) &&
         (status === "ALL" || posting.status === status),
     );
-  }, [postings, search, status]);
+
+    return matches.sort((a, b) => {
+      if (sortOrder === "created-desc") {
+        return Date.parse(b.created_at) - Date.parse(a.created_at);
+      }
+
+      const left = deadlineSortValue(a.deadline);
+      const right = deadlineSortValue(b.deadline);
+      if (left === right) {
+        return Date.parse(b.created_at) - Date.parse(a.created_at);
+      }
+      if (!Number.isFinite(left)) return 1;
+      if (!Number.isFinite(right)) return -1;
+      return sortOrder === "deadline-asc" ? left - right : right - left;
+    });
+  }, [postings, search, sortOrder, status]);
 
   return (
-    <section className="mt-7">
-      <div className="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_200px]">
+    <section className="mt-6">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_170px_190px]">
         <label>
           <span className="sr-only">Search job postings</span>
-          <Input
+          <input
             aria-label="Search job postings"
+            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search job titles"
+            type="search"
             value={search}
           />
         </label>
         <label>
           <span className="sr-only">Filter by posting status</span>
           <select
-            className="min-h-11 w-full rounded-sm border border-line-strong bg-panel px-3 text-sm"
+            aria-label="Filter by posting status"
+            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onChange={(event) => setStatus(event.target.value)}
             value={status}
           >
             <option value="ALL">All statuses</option>
-            <option value="DRAFT">Draft</option>
             <option value="OPEN">Open</option>
             <option value="CLOSED">Closed</option>
+            <option value="DRAFT">Draft</option>
+          </select>
+        </label>
+        <label>
+          <span className="sr-only">Sort postings</span>
+          <select
+            aria-label="Sort postings"
+            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+            value={sortOrder}
+          >
+            <option value="deadline-asc">Soonest deadline</option>
+            <option value="deadline-desc">Latest deadline</option>
+            <option value="created-desc">Recently created</option>
           </select>
         </label>
       </div>
+
+      <p aria-live="polite" className="mt-3 text-xs text-muted">
+        {filtered.length} of {postings.length}{" "}
+        {postings.length === 1 ? "posting" : "postings"}
+      </p>
+
       {filtered.length ? (
-        <ul className="grid gap-4 lg:grid-cols-2">
-          {filtered.map((posting) => (
-            <li
-              className="rounded-sm border border-line bg-panel p-5 sm:p-6"
-              key={posting.id}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-lg font-semibold text-ink">
-                    {posting.title}
-                  </h2>
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted">
-                    {posting.description}
-                  </p>
-                </div>
-                <WorkflowStatusTag status={posting.status} />
-              </div>
-              <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                <Metric label="Applicants" value={posting.total} />
-                <Metric
-                  label="Qualified / total"
-                  value={`${posting.qualified} / ${posting.total}`}
-                />
-                <Metric
-                  label="Hired"
-                  value={`${posting.hired} / ${posting.slots}`}
-                />
-                <Metric
-                  label="Deadline"
-                  value={
-                    posting.deadline ? formatDate(posting.deadline) : "None"
-                  }
-                />
-              </dl>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link
-                  className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-                  href={`/hr/postings/${posting.id}`}
-                >
-                  View applicants
-                </Link>
-                <Link
-                  className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink hover:bg-panel-muted"
-                  href={`/hr/postings/${posting.id}/edit`}
-                >
-                  Edit posting
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-3 overflow-x-auto rounded-md border border-line bg-panel">
+          <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+            <thead className="bg-panel-muted/60 text-xs text-muted">
+              <tr>
+                <th className="px-4 py-3 font-medium" scope="col">
+                  Posting
+                </th>
+                <th className="px-3 py-3 font-medium" scope="col">
+                  Applicants
+                </th>
+                <th className="px-3 py-3 font-medium" scope="col">
+                  Qualified
+                </th>
+                <th className="px-3 py-3 font-medium" scope="col">
+                  Hired
+                </th>
+                <th className="px-3 py-3 font-medium" scope="col">
+                  Deadline
+                </th>
+                <th className="px-4 py-3 font-medium" scope="col">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line-subtle">
+              {filtered.map((posting) => {
+                const hiredPercent =
+                  posting.slots > 0
+                    ? Math.min(
+                        100,
+                        Math.round((posting.hired / posting.slots) * 100),
+                      )
+                    : 0;
+                const progressMaximum = Math.max(posting.slots, 1);
+
+                return (
+                  <tr
+                    className="transition-colors hover:bg-panel-muted/50"
+                    key={posting.id}
+                  >
+                    <th
+                      className="max-w-[330px] px-4 py-4 text-left font-normal"
+                      scope="row"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Link
+                          className="truncate font-semibold text-ink hover:text-primary"
+                          href={`/hr/postings/${posting.id}`}
+                        >
+                          {posting.title}
+                        </Link>
+                        <StatusPill status={posting.status} />
+                      </div>
+                      {posting.description && (
+                        <p className="mt-1 truncate text-xs text-muted">
+                          {posting.description}
+                        </p>
+                      )}
+                    </th>
+                    <td className="px-3 py-4 font-semibold text-ink">
+                      {posting.total}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap">
+                      <span className="font-semibold text-ink">
+                        {posting.qualified}
+                      </span>{" "}
+                      <span className="text-muted">of {posting.total}</span>
+                    </td>
+                    <td className="px-3 py-4">
+                      <div className="whitespace-nowrap">
+                        <span className="font-semibold text-ink">
+                          {posting.hired}
+                        </span>{" "}
+                        <span className="text-muted">of {posting.slots}</span>
+                      </div>
+                      <div
+                        aria-label={`${posting.hired} of ${posting.slots} hiring slots filled`}
+                        aria-valuemax={progressMaximum}
+                        aria-valuemin={0}
+                        aria-valuenow={Math.min(posting.hired, progressMaximum)}
+                        className="mt-2 h-1.5 w-28 overflow-hidden rounded-full bg-line"
+                        role="progressbar"
+                      >
+                        <span
+                          className="block h-full rounded-full bg-success"
+                          style={{ width: `${hiredPercent}%` }}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap">
+                      <p className="font-medium text-ink">
+                        {posting.deadlineLabel ?? "No deadline"}
+                      </p>
+                      {posting.status === "OPEN" &&
+                        posting.daysRemaining !== null && (
+                          <p
+                            className={`mt-0.5 text-xs ${
+                              posting.daysRemaining <= 7
+                                ? "text-warning"
+                                : "text-muted"
+                            }`}
+                          >
+                            {posting.daysRemaining === 0
+                              ? "Due today"
+                              : `${posting.daysRemaining} ${
+                                  posting.daysRemaining === 1 ? "day" : "days"
+                                } left`}
+                          </p>
+                        )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center justify-end gap-4 whitespace-nowrap">
+                        <Link
+                          className="inline-flex min-h-9 items-center justify-center rounded-[8px] border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          href={`/hr/postings/${posting.id}`}
+                        >
+                          View applicants
+                        </Link>
+                        <Link
+                          className="inline-flex min-h-9 items-center rounded-sm px-1 text-xs font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          href={`/hr/postings/${posting.id}/edit`}
+                        >
+                          Edit posting
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       ) : (
-        <div className="rounded-sm border border-dashed border-line-strong bg-panel p-8 text-center text-sm text-muted">
-          No postings match these filters.
+        <div className="mt-3 rounded-md border border-line bg-panel p-8 text-center">
+          <p className="text-sm text-muted">No postings match these filters.</p>
         </div>
       )}
     </section>
   );
 }
 
-function Metric({
-  label,
-  value,
-}: Readonly<{ label: string; value: string | number }>) {
+function StatusPill({ status }: Readonly<{ status: PostingStatus }>) {
+  const label =
+    status === "OPEN" ? "Open" : status === "DRAFT" ? "Draft" : "Closed";
+
   return (
-    <div className="rounded-sm bg-panel-muted p-3">
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-1 font-semibold text-ink">{value}</dd>
-    </div>
+    <span
+      className={`inline-flex min-h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-semibold ${
+        status === "OPEN"
+          ? "bg-success/15 text-success"
+          : "border border-line bg-panel-muted text-muted-strong"
+      }`}
+    >
+      {label}
+    </span>
   );
 }

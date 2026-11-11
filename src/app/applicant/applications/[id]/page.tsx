@@ -455,7 +455,7 @@ export default async function ApplicantApplicationDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto">
       <Link
         className="inline-flex min-h-9 items-center rounded-sm text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         href="/applicant/applications"

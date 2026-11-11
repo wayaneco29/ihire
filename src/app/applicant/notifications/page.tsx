@@ -54,13 +54,13 @@ export default async function ApplicantNotificationsPage({
   const totalCount = countResult.count ?? 0;
   const countsUnavailable = Boolean(
     countResult.error ||
-      applicationCountResult.error ||
-      documentCountResult.error ||
-      resubmissionCountResult.error,
+    applicationCountResult.error ||
+    documentCountResult.error ||
+    resubmissionCountResult.error,
   );
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto">
       <PageHeader
         description="Updates about your PDS, documents, and applications."
         title="Notifications"
@@ -85,8 +85,7 @@ export default async function ApplicantNotificationsPage({
               all: totalCount,
               applications: applicationCountResult.count ?? 0,
               documents: documentCountResult.count ?? 0,
-              documentsNeedingResubmission:
-                resubmissionCountResult.count ?? 0,
+              documentsNeedingResubmission: resubmissionCountResult.count ?? 0,
             }}
           />
           {totalCount > pageSize && (
