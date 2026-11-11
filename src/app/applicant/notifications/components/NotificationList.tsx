@@ -176,6 +176,7 @@ export function NotificationList({
             <section
               aria-label={groupDateLabel(group.date)}
               key={group.date}
+              className="bg-white rounded-sm p-4 shadow not-last:mb-4"
             >
               <h2 className="border-b border-line-subtle pb-2 text-xs font-semibold text-muted">
                 {groupDateLabel(group.date)}

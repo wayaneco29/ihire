@@ -50,7 +50,7 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
       items: [
         {
           label: "Overview",
-          href: "/applicant",
+          href: "/applicant/dashboard",
           icon: Squares2X2Icon,
           available: true,
         },
