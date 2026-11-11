@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import dayjs from "dayjs";
 import { Button } from "@/components/ui/Button";
 import { useNotifications } from "@/context/NotificationContext";
 import { formatDate } from "@/utils/format-date";
@@ -91,6 +92,13 @@ export function NotificationList({
     }
     return groups;
   }, []);
+  const today = dayjs().format("YYYY-MM-DD");
+  const yesterday = dayjs().subtract(1, "day").format("YYYY-MM-DD");
+  const groupDateLabel = (date: string) => {
+    if (date === today) return "Today";
+    if (date === yesterday) return "Yesterday";
+    return formatDate(date, "dddd, MMM D");
+  };
 
   if (counts.all === 0) {
     return (
@@ -166,11 +174,11 @@ export function NotificationList({
         <div className="mt-6">
           {notificationGroups.map((group) => (
             <section
-              aria-label={formatDate(group.date, "dddd, MMM D")}
+              aria-label={groupDateLabel(group.date)}
               key={group.date}
             >
               <h2 className="border-b border-line-subtle pb-2 text-xs font-semibold text-muted">
-                {formatDate(group.date, "dddd, MMM D")}
+                {groupDateLabel(group.date)}
               </h2>
               <ul>
                 {group.items.map((notification) => {

@@ -275,9 +275,7 @@ function SummaryArray({
             >
               <p className="text-sm leading-6 text-ink">
                 {code && (
-                  <span className="mr-2 font-semibold text-muted">
-                    {code}
-                  </span>
+                  <span className="mr-2 font-semibold text-muted">{code}</span>
                 )}
                 {question ?? "Questionnaire response"}
               </p>
@@ -311,8 +309,8 @@ function SummaryArray({
       {entries.map((entry, index) => {
         const record = asRecord(entry);
         const title = getRecordTitle(record, collection, index);
-        const titleKey = (RECORD_TITLE_KEYS[collection] ?? []).find(
-          (key) => hasContent(record[key]),
+        const titleKey = (RECORD_TITLE_KEYS[collection] ?? []).find((key) =>
+          hasContent(record[key]),
         );
         const details = Object.fromEntries(
           Object.entries(record).filter(([key]) => key !== titleKey),
@@ -327,7 +325,9 @@ function SummaryArray({
             <div className={collection === "education" ? "sm:pl-3" : undefined}>
               <SummaryObject
                 fieldGridClassName={
-                  collection === "education" ? "sm:grid-cols-2 lg:grid-cols-3" : undefined
+                  collection === "education"
+                    ? "sm:grid-cols-2 lg:grid-cols-3"
+                    : undefined
                 }
                 showEmpty={collection === "education" || showEmpty}
                 value={details}
@@ -375,9 +375,7 @@ function SummaryObject({
   }
   const groups = entries.filter(
     ([, item]) =>
-      item != null &&
-      typeof item === "object" &&
-      !Array.isArray(item),
+      item != null && typeof item === "object" && !Array.isArray(item),
   );
   const collections = entries.filter(([, item]) => Array.isArray(item));
 
@@ -873,7 +871,7 @@ export function ReviewSubmitStep({
                   variant="unstyled"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-semibold text-ink sm:text-lg">
+                    <span className="block text-base font-semibold sm:text-lg text-primary! font-[Bricolage_Grotesque]">
                       {title}
                     </span>
                     <span className="mt-0.5 block truncate text-sm text-muted">

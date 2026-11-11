@@ -18,7 +18,13 @@ export function FormCheckbox<T extends FieldValues>(
       render={({ field, fieldState }) => (
         <div className="mb-4 min-w-0">
           <Checkbox
-            aria-describedby={fieldState.error ? `${checkboxId}-error` : hint ? `${checkboxId}-hint` : undefined}
+            aria-describedby={
+              fieldState.error
+                ? `${checkboxId}-error`
+                : hint
+                  ? `${checkboxId}-hint`
+                  : undefined
+            }
             aria-invalid={fieldState.invalid}
             aria-required={required}
             checked={Boolean(field.value)}
@@ -35,7 +41,9 @@ export function FormCheckbox<T extends FieldValues>(
           {(fieldState.error?.message || hint) && (
             <p
               className={`mt-1.5 text-xs leading-5 ${fieldState.error ? "text-danger" : "text-muted"}`}
-              id={fieldState.error ? `${checkboxId}-error` : `${checkboxId}-hint`}
+              id={
+                fieldState.error ? `${checkboxId}-error` : `${checkboxId}-hint`
+              }
               role={fieldState.error ? "alert" : undefined}
             >
               {fieldState.error?.message ?? hint}
