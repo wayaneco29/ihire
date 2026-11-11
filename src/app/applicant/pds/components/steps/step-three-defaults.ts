@@ -20,20 +20,40 @@ function asYear(value: Json | undefined) {
   return null;
 }
 
+type EducationRow = PdsStepThreeValues["education"][number];
+
+export function createEmptyEducationRow(
+  level: EducationRow["level"],
+): EducationRow {
+  return {
+    level,
+    graduate_degree_type: null,
+    graduate_degree_completed:
+      level === "GRADUATE_STUDIES" ? false : null,
+    graduate_units_earned: null,
+    school_name: "",
+    degree_course: "",
+    period_from: null,
+    period_to: null,
+    highest_level_units_earned: "",
+    year_graduated: null,
+    honors_received: "",
+  };
+}
+
 export function createStepThreeDefaults(draftData: Json): PdsStepThreeValues {
   const steps = asRecord(draftData);
   const step = asRecord(steps["3"] ?? null);
   const rows = Array.isArray(step.education) ? step.education : [];
 
-  return {
-    education: rows.map((value) => {
+  const parsedRows: EducationRow[] = rows.map((value) => {
       const row = asRecord(value);
       return {
         level: asString(row.level) as PdsStepThreeValues["education"][number]["level"],
         graduate_degree_type:
           row.graduate_degree_type === "MASTERS" ||
           row.graduate_degree_type === "DOCTORATE"
-            ? row.graduate_degree_type
+            ? (row.graduate_degree_type as "MASTERS" | "DOCTORATE")
             : null,
         graduate_degree_completed:
           typeof row.graduate_degree_completed === "boolean"
@@ -48,6 +68,23 @@ export function createStepThreeDefaults(draftData: Json): PdsStepThreeValues {
         year_graduated: asYear(row.year_graduated),
         honors_received: asString(row.honors_received),
       };
-    }),
+    });
+  const fixedLevels: EducationRow["level"][] = [
+    "ELEMENTARY",
+    "SECONDARY",
+    "VOCATIONAL_TRADE",
+    "COLLEGE",
+  ];
+  const fixedRows = fixedLevels.map(
+    (level) =>
+      parsedRows.find((row) => row.level === level) ??
+      createEmptyEducationRow(level),
+  );
+  const graduateRows = parsedRows.filter(
+    (row) => row.level === "GRADUATE_STUDIES",
+  );
+
+  return {
+    education: [...fixedRows, ...graduateRows],
   };
 }

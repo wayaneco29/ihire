@@ -25,51 +25,62 @@ export function usePdsStepAutosave(
   const [message, setMessage] = useState<string | null>(null);
 
   const flush = useCallback(async () => {
-    if (saving.current) return;
+    if (saving.current) return false;
     saving.current = true;
+    let successful = true;
 
-    while (pending.current) {
-      pending.current = false;
-      const snapshot = latest.current;
-      setStatus("saving");
-      const result = await savePdsStepDraft(
-        snapshot.pdsVersionId,
-        snapshot.step,
-        JSON.parse(snapshot.serialized) as Json,
-      );
+    try {
+      while (pending.current) {
+        pending.current = false;
+        const snapshot = latest.current;
+        setStatus("saving");
+        const result = await savePdsStepDraft(
+          snapshot.pdsVersionId,
+          snapshot.step,
+          JSON.parse(snapshot.serialized) as Json,
+        );
 
-      const isLatest =
-        snapshot.pdsVersionId === latest.current.pdsVersionId &&
-        snapshot.step === latest.current.step &&
-        snapshot.serialized === latest.current.serialized;
+        const isLatest =
+          snapshot.pdsVersionId === latest.current.pdsVersionId &&
+          snapshot.step === latest.current.step &&
+          snapshot.serialized === latest.current.serialized;
 
-      if (isLatest) {
-        if (result.success) {
-          setStatus("saved");
-          setMessage(null);
-        } else {
-          setStatus("error");
-          setMessage(result.message ?? "Your changes could not be saved yet.");
+        if (isLatest) {
+          if (result.success) {
+            setStatus("saved");
+            setMessage(null);
+          } else {
+            successful = false;
+            setStatus("error");
+            setMessage(result.message ?? "Your changes could not be saved yet.");
+          }
         }
-      }
 
-      if (!isLatest) pending.current = true;
+        if (!isLatest) pending.current = true;
+      }
+    } finally {
+      saving.current = false;
     }
 
-    saving.current = false;
+    return successful;
   }, []);
 
   useEffect(() => {
     latest.current = { pdsVersionId, step, serialized };
     pending.current = true;
-    setStatus("idle");
 
+    const resetStatus = window.setTimeout(() => {
+      if (!saving.current && pending.current) setStatus("idle");
+    }, 0);
     const timeout = window.setTimeout(() => {
       void flush();
     }, 700);
 
-    return () => window.clearTimeout(timeout);
+    return () => {
+      window.clearTimeout(resetStatus);
+      window.clearTimeout(timeout);
+    };
   }, [flush, pdsVersionId, serialized, step]);
 
-  return { status, message };
+  return { flush, status, message };
 }

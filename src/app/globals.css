@@ -79,7 +79,8 @@
   --app-sidebar-width: 17rem;
   --app-header-height: 4.5rem;
   --app-workspace-max: 90rem;
-  --app-font-sans: var(--font-montserrat), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --app-font-sans: var(--font-public-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --app-font-display: var(--font-bricolage-grotesque), ui-sans-serif, system-ui, sans-serif;
   --app-shadow-card: 0 1px 3px rgb(15 23 42 / 7%), 0 1px 2px rgb(15 23 42 / 4%);
   --app-shadow-dropdown: 0 12px 28px rgb(15 23 42 / 12%);
   --app-shadow-modal: 0 24px 60px rgb(15 23 42 / 20%);
@@ -183,6 +184,21 @@ body {
   font-family: var(--app-font-sans);
   -webkit-font-smoothing: antialiased;
   transition: background-color var(--app-motion-normal) var(--app-ease-out), color var(--app-motion-normal) var(--app-ease-out);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+h1.ant-typography,
+h2.ant-typography,
+h3.ant-typography,
+h4.ant-typography,
+h5.ant-typography,
+h6.ant-typography {
+  font-family: var(--app-font-display);
 }
 
 button,

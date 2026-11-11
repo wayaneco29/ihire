@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { UploadFile } from "antd";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FormInput";
+import { FormDatePicker } from "@/components/form/FormDatePicker";
 import { FormSelect } from "@/components/form/FormSelect";
 import { FormUpload } from "@/components/form/FormUpload";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
@@ -15,10 +16,18 @@ import { uploadApplicantDocument } from "../actions";
 
 const ACCEPTED_FILES = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
-type TrainingEntry = { id: string; title: string; hours: number | null };
+type TrainingEntry = {
+  id: string;
+  title: string;
+  hours: number | null;
+  sort_order: number;
+};
 type ReplacementDocument = {
   id: string;
   certificate_title: string | null;
+  certificate_type: string | null;
+  certificate_issuer: string | null;
+  certificate_date: string | null;
   training_hours: number | null;
   pds_learning_development_id: string | null;
 };
@@ -30,6 +39,7 @@ export function DocumentUploadForm({
   onSuccess,
   trainingEntries,
   trainingEntriesUnavailable,
+  onProcessingChange,
   isTranscript = false,
   replacementDocument = null,
   educationEntries = [],
@@ -41,6 +51,7 @@ export function DocumentUploadForm({
   replacementDocument?: ReplacementDocument | null;
   onCancel: () => void;
   onSuccess?: (message: string) => void;
+  onProcessingChange?: (processing: boolean) => void;
   trainingEntries: TrainingEntry[];
   trainingEntriesUnavailable: boolean;
   educationEntries?: {
@@ -59,49 +70,96 @@ export function DocumentUploadForm({
   const [ocrResult, setOcrResult] = useState<DocumentOcrResult | null>(null);
   const [ocrProgress, setOcrProgress] = useState<number | null>(null);
   const [ocrError, setOcrError] = useState<string | null>(null);
+  const [processingFile, setProcessingFile] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const ocrRequestId = useRef(0);
   const hasMetrics = isTrainingCertificate || isTranscript;
+  const busy = pending || processingFile;
   const form = useForm<DocumentUploadValues>({
-    resolver: yupResolver(documentUploadSchema(isTrainingCertificate, isTranscript)),
+    resolver: yupResolver(
+      documentUploadSchema(isTrainingCertificate, isTranscript),
+    ),
     defaultValues: {
       files: [],
       certificateTitle: replacementDocument?.certificate_title ?? "",
       trainingHours: replacementDocument?.training_hours ?? null,
+      certificateType: replacementDocument?.certificate_type ?? "",
+      certificateIssuer: replacementDocument?.certificate_issuer ?? "",
+      certificateDate: replacementDocument?.certificate_date ?? null,
       totalUnits: null,
-      pdsLearningDevelopmentId:
-        trainingEntries.some(
-          (entry) =>
-            entry.id === replacementDocument?.pds_learning_development_id,
-        )
-          ? replacementDocument?.pds_learning_development_id ?? ""
-          : "",
+      pdsLearningDevelopmentId: trainingEntries.some(
+        (entry) =>
+          entry.id === replacementDocument?.pds_learning_development_id,
+      )
+        ? (replacementDocument?.pds_learning_development_id ?? "")
+        : "",
       pdsEducationId: "",
       currentHighestEducationLevel: "",
     },
   });
 
+  useEffect(() => {
+    onProcessingChange?.(busy);
+  }, [busy, onProcessingChange]);
+
+  useEffect(
+    () => () => {
+      onProcessingChange?.(false);
+    },
+    [onProcessingChange],
+  );
+
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl],
+  );
+
   function onSelectedFileChange(file: File | undefined) {
     const requestId = ++ocrRequestId.current;
     setSelectedFile(file ?? null);
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
     setOcrResult(null);
     setOcrProgress(null);
     setOcrError(null);
     if (!replacementDocument) {
+      form.setValue("certificateTitle", "");
       form.setValue("trainingHours", null);
+      form.setValue("certificateType", "");
+      form.setValue("certificateIssuer", "");
+      form.setValue("certificateDate", null);
       form.setValue("totalUnits", null);
     }
-    if (
+    const canReadInBrowser =
       file &&
       hasMetrics &&
       (file.type.startsWith("image/") ||
         file.type === "application/pdf" ||
-        file.name.toLowerCase().endsWith(".pdf"))
-    ) {
-      void runOcr(file, requestId);
+        file.name.toLowerCase().endsWith(".pdf"));
+    if (canReadInBrowser) {
+      void processSelectedFile(file, requestId);
+    } else {
+      setProcessingFile(false);
     }
   }
 
-  async function runOcr(file: File, requestId: number) {
+  async function processSelectedFile(file: File, requestId: number) {
+    setProcessingFile(true);
+    try {
+      await runOcr(file, requestId);
+    } finally {
+      if (requestId === ocrRequestId.current) {
+        setProcessingFile(false);
+        setOcrProgress(null);
+      }
+    }
+  }
+
+  async function runOcr(
+    file: File,
+    requestId: number,
+  ): Promise<DocumentOcrResult | null> {
     setOcrError(null);
     setOcrProgress(0);
     try {
@@ -109,19 +167,40 @@ export function DocumentUploadForm({
       const result = await readDocumentValues(file, (progress) => {
         if (requestId === ocrRequestId.current) setOcrProgress(progress);
       });
-      if (requestId !== ocrRequestId.current) return;
+      if (requestId !== ocrRequestId.current) return null;
       setOcrResult(result);
-      setOcrProgress(null);
-      if (
-        isTrainingCertificate &&
-        result.trainingHours != null &&
-        form.getValues("trainingHours") == null
-      ) {
-        form.setValue("trainingHours", result.trainingHours, {
-          shouldValidate: true,
-        });
-      }
-      if (
+      if (isTrainingCertificate) {
+        const { certificate } = result;
+        if (certificate.type !== "Unknown") {
+          form.setValue("certificateType", certificate.type, {
+            shouldValidate: true,
+          });
+        }
+        if (certificate.issuer) {
+          form.setValue("certificateIssuer", certificate.issuer, {
+            shouldValidate: true,
+          });
+        }
+        if (certificate.date) {
+          form.setValue("certificateDate", certificate.date, {
+            shouldValidate: true,
+          });
+        }
+        if (certificate.activity && !form.getValues("certificateTitle")) {
+          form.setValue("certificateTitle", certificate.activity, {
+            shouldValidate: true,
+          });
+        }
+        if (certificate.hours != null) {
+          form.setValue("trainingHours", certificate.hours, {
+            shouldValidate: true,
+          });
+        } else if (result.trainingHours != null) {
+          form.setValue("trainingHours", result.trainingHours, {
+            shouldValidate: true,
+          });
+        }
+      } else if (
         isTranscript &&
         result.totalUnits != null &&
         form.getValues("totalUnits") == null
@@ -130,18 +209,20 @@ export function DocumentUploadForm({
           shouldValidate: true,
         });
       }
+      return result;
     } catch (error) {
-      if (requestId !== ocrRequestId.current) return;
+      if (requestId !== ocrRequestId.current) return null;
       setOcrError(
         error instanceof Error
           ? error.message
           : "OCR could not read this file. Enter the value manually.",
       );
-      setOcrProgress(null);
+      return null;
     }
   }
 
   function submit(values: DocumentUploadValues) {
+    if (busy) return;
     setMessage(null);
     setUploadSucceeded(false);
     const uploadFile = values.files[0]?.originFileObj as File | undefined;
@@ -171,6 +252,9 @@ export function DocumentUploadForm({
     if (isTrainingCertificate) {
       formData.set("certificate_title", values.certificateTitle ?? "");
       formData.set("training_hours", String(values.trainingHours));
+      formData.set("certificate_type", values.certificateType ?? "");
+      formData.set("certificate_issuer", values.certificateIssuer ?? "");
+      formData.set("certificate_date", values.certificateDate ?? "");
       formData.set(
         "pds_learning_development_id",
         values.pdsLearningDevelopmentId ?? "",
@@ -205,21 +289,29 @@ export function DocumentUploadForm({
         files: [] as UploadFile[],
         certificateTitle: "",
         trainingHours: null,
+        certificateType: "",
+        certificateIssuer: "",
+        certificateDate: null,
         totalUnits: null,
         pdsLearningDevelopmentId: "",
         pdsEducationId: "",
         currentHighestEducationLevel: "",
       });
       setSelectedFile(null);
+      setPreviewUrl(null);
       setOcrResult(null);
       setOcrProgress(null);
-      const successMessage = replacementDocument
+      const pdsSyncMessage = result.pdsSynced
+        ? " The linked PDS training entry was updated in your draft. Submit the updated PDS when ready."
+        : "";
+      const uploadSuccessMessage = replacementDocument
         ? `Certificate file updated. The new version with ${values.trainingHours} hours has been sent for review.`
         : isTrainingCertificate
-        ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
-        : isTranscript
-          ? `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. It has been sent for review.`
-        : `Version ${result.version} uploaded and sent for review.`;
+          ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
+          : isTranscript
+            ? `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. It has been sent for review.`
+            : `Version ${result.version} uploaded and sent for review.`;
+      const successMessage = `${uploadSuccessMessage}${pdsSyncMessage}`;
       if (onSuccess) onSuccess(successMessage);
       else setMessage(successMessage);
       router.refresh();
@@ -229,7 +321,8 @@ export function DocumentUploadForm({
   return (
     <form
       className="border-t border-line-subtle bg-panel-muted/60 px-4 py-4 sm:px-5"
-      onSubmit={form.handleSubmit(submit)}
+      aria-busy={busy}
+      onSubmit={(event) => void form.handleSubmit(submit)(event)}
     >
       {message && (
         <p
@@ -251,13 +344,40 @@ export function DocumentUploadForm({
         label={isTrainingCertificate ? "Certificate file" : "Document file"}
         maxCount={1}
         name="files"
+        disabled={busy}
         onFileChange={onSelectedFileChange}
+        previewAlt={
+          selectedFile ? `Preview of ${selectedFile.name}` : undefined
+        }
+        previewName={selectedFile?.name}
+        previewUrl={selectedFile?.type.startsWith("image/") ? previewUrl : null}
       />
+      {selectedFile &&
+        previewUrl &&
+        !selectedFile.type.startsWith("image/") && (
+          <div className="mt-3 rounded-sm border border-line-subtle bg-panel p-3">
+            <p className="mb-2 truncate text-sm font-medium text-ink">
+              Preview: {selectedFile.name}
+            </p>
+            {selectedFile.type === "application/pdf" ||
+            selectedFile.name.toLowerCase().endsWith(".pdf") ? (
+              <iframe
+                className={`h-80 w-full rounded-sm border-0 ${busy ? "pointer-events-none" : ""}`}
+                src={previewUrl}
+                title={`Preview of ${selectedFile.name}`}
+              />
+            ) : (
+              <p className="text-sm text-muted">
+                A preview is not available for this file type.
+              </p>
+            )}
+          </div>
+        )}
       {isTrainingCertificate && (
         <div className="mt-3">
           <FormInput
             control={form.control}
-            hint="Enter the title or name shown on the certificate."
+            disabled={busy}
             label="Certificate title"
             maxLength={200}
             name="certificateTitle"
@@ -266,82 +386,43 @@ export function DocumentUploadForm({
           />
         </div>
       )}
-      {hasMetrics && (
-        <div className="mt-3 rounded-sm border border-line-subtle bg-panel p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="text-sm font-medium text-ink">Read values from file</p>
-              <p className="mt-0.5 text-xs text-muted">
-                Supported PDFs and images are read automatically in your
-                browser. Review and correct every value before uploading.
-              </p>
-            </div>
-          </div>
-          {ocrProgress !== null && (
-            <p className="mt-2 text-xs text-muted" role="status">
-              Reading document automatically: {ocrProgress}% complete. This
-              may take a little while.
-            </p>
-          )}
-          {ocrError && (
-            <p className="mt-2 text-xs text-danger" role="alert">
-              {ocrError} You can still enter the value manually.
-              {selectedFile && (
-                <button
-                  className="ml-1 font-semibold underline"
-                  onClick={() => {
-                    const requestId = ++ocrRequestId.current;
-                    void runOcr(selectedFile, requestId);
-                  }}
-                  type="button"
-                >
-                  Try OCR again
-                </button>
-              )}
-            </p>
-          )}
-          {ocrResult && (
-            <p className="mt-2 text-xs text-muted" role="status">
-              OCR confidence {ocrResult.confidence}%. Suggested{" "}
-              {isTrainingCertificate
-                ? `${ocrResult.trainingHours ?? "no"} hours`
-                : `${ocrResult.totalUnits ?? "no"} units`}
-              . Verify the document and correct the field below.
-            </p>
-          )}
-        </div>
-      )}
       {isTrainingCertificate && (
         <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
+          <FormInput
+            control={form.control}
+            disabled={busy}
+            label="Certificate type"
+            maxLength={200}
+            name="certificateType"
+            placeholder="e.g. Certificate of Participation"
+          />
+          <FormInput
+            control={form.control}
+            disabled={busy}
+            label="Issuer"
+            maxLength={500}
+            name="certificateIssuer"
+            placeholder="Organization that issued the certificate"
+          />
+          <FormDatePicker
+            control={form.control}
+            disabled={busy}
+            format="MMMM D, YYYY"
+            label="Certificate date"
+            name="certificateDate"
+            valueFormat="YYYY-MM-DD"
+          />
           <div>
             <FormInput
               control={form.control}
-              hint="Hours shown on the certificate. Decimals allowed."
+              disabled={busy}
               placeholder="e.g. 8"
-              label="Hours rendered"
+              label="Certificate hours"
               min={0}
               name="trainingHours"
               required
               step="0.01"
               type="number"
-            />
-          </div>
-          <div>
-            <FormSelect
-              control={form.control}
-              hint="Linking prevents the same PDS training from being counted twice."
-              label="Matching PDS training (optional)"
-              name="pdsLearningDevelopmentId"
-              options={[
-                {
-                  label: "Not listed in my PDS; count as separate training",
-                  value: "",
-                },
-                ...trainingEntries.map((entry) => ({
-                  label: `${entry.title} (${entry.hours ?? 0} PDS hours)`,
-                  value: entry.id,
-                })),
-              ]}
             />
           </div>
         </div>
@@ -350,6 +431,7 @@ export function DocumentUploadForm({
         <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
           <FormSelect
             control={form.control}
+            disabled={busy}
             hint="Choose the highest education level you have attained, using the same levels as your PDS."
             label="Current highest educational attainment"
             name="currentHighestEducationLevel"
@@ -360,6 +442,7 @@ export function DocumentUploadForm({
           <div>
             <FormInput
               control={form.control}
+              disabled={busy}
               hint="Total units shown on the transcript. Decimals allowed."
               placeholder="e.g. 120"
               label="Total units"
@@ -373,6 +456,7 @@ export function DocumentUploadForm({
           <div>
             <FormSelect
               control={form.control}
+              disabled={busy}
               hint="Link the transcript to an education entry in your submitted PDS."
               label="Matching PDS education (optional)"
               name="pdsEducationId"
@@ -382,10 +466,7 @@ export function DocumentUploadForm({
                   value: "",
                 },
                 ...educationEntries.map((entry) => ({
-                  label: [
-                    entry.degreeCourse || entry.level,
-                    entry.schoolName,
-                  ]
+                  label: [entry.degreeCourse || entry.level, entry.schoolName]
                     .filter(Boolean)
                     .join(" · "),
                   value: entry.id,
@@ -409,9 +490,9 @@ export function DocumentUploadForm({
       )}
       <div className="mt-1 flex flex-wrap items-center gap-2">
         <button
-          className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
           disabled={
-            pending || (isTrainingCertificate && trainingEntriesUnavailable)
+            busy || (isTrainingCertificate && trainingEntriesUnavailable)
           }
           type="submit"
         >
@@ -424,7 +505,8 @@ export function DocumentUploadForm({
               : "Upload document"}
         </button>
         <button
-          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-medium text-muted hover:bg-panel"
+          className="inline-flex min-h-11 cursor-pointer items-center rounded-sm px-3 text-sm font-medium text-muted hover:bg-panel"
+          disabled={busy}
           onClick={onCancel}
           type="button"
         >

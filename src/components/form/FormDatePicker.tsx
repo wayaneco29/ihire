@@ -47,7 +47,13 @@ export function FormDatePicker<T extends FieldValues>(
         >
           <DatePicker
             {...pickerProps}
-            aria-describedby={fieldState.error ? `${pickerId}-error` : hint ? `${pickerId}-hint` : undefined}
+            aria-describedby={
+              fieldState.error
+                ? `${pickerId}-error`
+                : hint
+                  ? `${pickerId}-hint`
+                  : undefined
+            }
             aria-invalid={fieldState.invalid}
             aria-labelledby={`${pickerId}-label`}
             aria-required={required}

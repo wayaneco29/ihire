@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Montserrat } from "next/font/google";
+import { Bricolage_Grotesque, Public_Sans } from "next/font/google";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { AppProviders } from "./providers";
 import "./globals.css";
 
-const montserrat = Montserrat({
+const publicSans = Public_Sans({
   subsets: ["latin"],
-  variable: "--font-montserrat",
+  variable: "--font-public-sans",
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage-grotesque",
 });
 
 export const dynamic = "force-dynamic";
@@ -25,7 +30,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className={montserrat.variable}>
+    <html lang="en" className={`${publicSans.variable} ${bricolageGrotesque.variable}`}>
       <body>
         <AntdRegistry>
           <AppProviders>{children}</AppProviders>

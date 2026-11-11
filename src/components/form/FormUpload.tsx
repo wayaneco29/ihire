@@ -3,6 +3,7 @@
 import { Controller, type FieldValues } from "react-hook-form";
 import { Upload } from "antd";
 import type { UploadFile } from "antd";
+import { Image as AntImage } from "antd";
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons";
 import { FieldFrame } from "./FieldFrame";
 import { fieldId, type FormControlProps } from "./field-types";
@@ -14,6 +15,9 @@ type FormUploadProps<T extends FieldValues> = FormControlProps<T> & {
   maxCount?: number;
   multiple?: boolean;
   onFileChange?: (file: File | undefined) => void;
+  previewAlt?: string;
+  previewName?: string;
+  previewUrl?: string | null;
 };
 
 export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
@@ -27,6 +31,9 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
     rules,
     drag,
     onFileChange,
+    previewAlt,
+    previewName,
+    previewUrl,
     ...uploadProps
   } = props;
   const uploadId = fieldId(name, id);
@@ -56,19 +63,36 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                   const file = fileList[0]?.originFileObj;
                   onFileChange?.(file instanceof File ? file : undefined);
                 }}
-                showUploadList
+                showUploadList={!previewUrl}
               >
                 <div className="flex min-h-14 items-center justify-between gap-3 px-2 text-left">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary-light text-primary">
-                      <InboxOutlined />
-                    </span>
+                    {previewUrl ? (
+                      <span className="size-12 shrink-0 overflow-hidden rounded-sm">
+                        <AntImage
+                          alt={previewAlt ?? "Selected file preview"}
+                          className="size-12 object-cover"
+                          height={48}
+                          preview={false}
+                          src={previewUrl}
+                          width={48}
+                        />
+                      </span>
+                    ) : (
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary-light text-primary">
+                        <InboxOutlined />
+                      </span>
+                    )}
                     <span className="min-w-0">
                       <span className="block text-sm font-medium text-ink">
-                        Drop a file or browse
+                        {previewUrl
+                          ? previewName ?? "Selected image"
+                          : "Drop a file or browse"}
                       </span>
                       <span className="mt-0.5 block text-xs text-muted">
-                        PDF, JPG, PNG, DOC or DOCX · up to 50 MB
+                        {previewUrl
+                          ? "Drop another file or choose a replacement"
+                          : "PDF, JPG, PNG, DOC or DOCX · up to 50 MB"}
                       </span>
                     </span>
                   </div>

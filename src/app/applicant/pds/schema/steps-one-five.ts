@@ -208,17 +208,52 @@ export const pdsStepThreeSchema = yup.object({
             },
           ),
           highest_level_units_earned: optionalText(),
-          year_graduated: optionalEducationYear(),
+          year_graduated: optionalEducationYear().test(
+            "graduation-after-start",
+            "Graduation year cannot be earlier than the period start year.",
+            function (value) {
+              return (
+                value == null ||
+                this.parent.period_from == null ||
+                value >= this.parent.period_from
+              );
+            },
+          ),
           honors_received: optionalText(),
         })
         .required(),
     )
-    .min(1, "Add at least one education level.")
-    .max(5, "Add no more than five education levels.")
-    .test("unique-levels", "Each education level can only be added once.", (rows) => {
-      const levels = (rows ?? []).map((row) => row.level);
-      return new Set(levels).size === levels.length;
-    })
+    .max(24, "Add no more than 20 graduate study records.")
+    .test(
+      "has-education",
+      "Enter details for at least one education level.",
+      (rows) =>
+        (rows ?? []).some((row) =>
+          [
+            row.school_name,
+            row.degree_course,
+            row.period_from,
+            row.period_to,
+            row.highest_level_units_earned,
+            row.year_graduated,
+            row.honors_received,
+            row.graduate_degree_type,
+            row.graduate_units_earned,
+          ].some((value) =>
+            typeof value === "string" ? value.trim().length > 0 : value != null,
+          ),
+        ),
+    )
+    .test(
+      "unique-standard-levels",
+      "Elementary, secondary, vocational, and college can each be entered once.",
+      (rows) => {
+        const standardLevels = (rows ?? [])
+          .map((row) => row.level)
+          .filter((level) => level !== "GRADUATE_STUDIES");
+        return new Set(standardLevels).size === standardLevels.length;
+      },
+    )
     .required(),
 });
 

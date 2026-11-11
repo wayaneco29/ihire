@@ -3,7 +3,10 @@ import type { PublicEnums } from '../database-enums';
 export type DocumentsTable = {
     Row: {
         "applicant_id": string;
+        "certificate_date": string | null;
+        "certificate_issuer": string | null;
         "certificate_title": string | null;
+        "certificate_type": string | null;
         "current_highest_education_level": PublicEnums["education_level"] | null;
         "document_type_id": string;
         "file_path": string;
@@ -24,7 +27,10 @@ export type DocumentsTable = {
     ComputedFields: never;
     Insert: {
         "applicant_id": string;
+        "certificate_date"?: string | null;
+        "certificate_issuer"?: string | null;
         "certificate_title"?: string | null;
+        "certificate_type"?: string | null;
         "current_highest_education_level"?: PublicEnums["education_level"] | null;
         "document_type_id": string;
         "file_path"?: string;
@@ -44,7 +50,10 @@ export type DocumentsTable = {
     };
     Update: {
         "applicant_id"?: string;
+        "certificate_date"?: string | null;
+        "certificate_issuer"?: string | null;
         "certificate_title"?: string | null;
+        "certificate_type"?: string | null;
         "current_highest_education_level"?: PublicEnums["education_level"] | null;
         "document_type_id"?: string;
         "file_path"?: string;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, type Resolver } from "react-hook-form";
 import { FormCheckbox, FormInput, FormTextArea } from "@/components/form";
@@ -10,15 +9,18 @@ import { savePdsReferencesStep } from "../../actions/steps-ten-eleven";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
 import { pdsStepTenSchema, type PdsStepTenValues } from "../../schema";
 import { createStepTenDefaults } from "./step-ten-defaults";
+import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
   draftData: Json;
+  onBack: () => void;
   onCompleted: (nextStep: number, stepData: Json) => void;
   pdsVersionId: string;
 };
 
 export function ReferencesStep({
   draftData,
+  onBack,
   onCompleted,
   pdsVersionId,
 }: Props) {
@@ -107,30 +109,22 @@ export function ReferencesStep({
         required
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
-        <p aria-live="polite" className="text-sm text-muted">
-          {autosave.status === "saving"
+      <PdsStepFooter
+        isFirstStep={false}
+        isSaving={autosave.status === "saving"}
+        isSubmitting={isSubmitting}
+        onBack={async () => {
+          if (await autosave.flush()) onBack();
+        }}
+        status={
+          autosave.status === "saving"
             ? "Saving draft…"
             : autosave.status === "saved"
-              ? "Draft saved"
-              : (autosave.message ?? "Your draft saves automatically.")}
-        </p>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-          {submitMessage && (
-            <p className="text-sm text-danger" role="alert">
-              {submitMessage}
-            </p>
-          )}
-          <Button
-            disabled={isSubmitting}
-            htmlType="submit"
-            loading={isSubmitting}
-            type="primary"
-          >
-            Save and continue
-          </Button>
-        </div>
-      </div>
+              ? "All changes saved"
+              : autosave.message ?? "Your draft saves automatically."
+        }
+        submitMessage={submitMessage}
+      />
     </form>
   );
 }

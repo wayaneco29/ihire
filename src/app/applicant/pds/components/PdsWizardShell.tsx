@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Select } from "antd";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import type { Json } from "@/types/database";
 import { setPdsWizardStep } from "../actions/navigation";
 import { PersonalInformationStep } from "./steps/PersonalInformationStep";
@@ -86,7 +85,6 @@ export function PdsWizardShell({
     setCurrentStep(nextStep);
   }
 
-  const activeStepName = STEPS[currentStep - 1] ?? STEPS[0];
   const progressPercent = Math.round(
     (completedSteps.length / STEPS.length) * 100,
   );
@@ -98,219 +96,229 @@ export function PdsWizardShell({
       : [];
 
   return (
-    <SurfaceCard
-      as="section"
-      className="mt-7 rounded-2xl"
-    >
-      <nav
-        aria-label="PDS sections"
-        className="sticky top-header z-10 border-b border-line-subtle bg-panel-muted/95 px-5 py-4 backdrop-blur sm:px-7"
-      >
-        <div className="sm:hidden">
-          <label className="sr-only" htmlFor="pds-mobile-step">
-            Choose a completed PDS step
-          </label>
-          <Select
-            className="w-full"
-            disabled={isPending || !pdsVersionId}
-            id="pds-mobile-step"
-            onChange={openStep}
-            options={STEPS.map((label, index) => {
-              const step = index + 1;
-              return {
-                value: step,
-                label: `${step}. ${label}`,
-                disabled:
-                  step !== currentStep && !completedSteps.includes(step),
-              };
-            })}
-            value={currentStep}
-          />
-        </div>
-        <div className="hidden overflow-x-auto pb-2 sm:block">
-          <ol className="flex min-w-[58rem] items-start">
-            {STEPS.map((label, index) => {
-              const step = index + 1;
-              const completed = completedSteps.includes(step);
-              const active = currentStep === step;
-              const canOpen = completed && !active && Boolean(pdsVersionId);
-              const progressPassed = completed || step < currentStep;
+    <section className="relative -mx-4 -mt-6 min-h-[calc(100vh-4.5rem)] px-4 pb-28 pt-6 sm:-mx-6 sm:px-6 sm:pt-8 lg:-mx-10 lg:px-10">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-7 lg:grid-cols-[15rem_minmax(0,1fr)] xl:gap-10">
+        <aside className="lg:sticky lg:top-24 lg:self-start bg-white rounded-sm p-4">
+          {/* <div className="flex items-start justify-between gap-4 lg:block">
+            <div>
+              <h1 className="text-base font-semibold leading-6 text-ink">
+                Personal Data Sheet
+              </h1>
+              <p className="mt-1 max-w-xs text-xs leading-5 text-muted">
+                Your draft saves as you type. Work through the sections in any
+                order.
+              </p>
+            </div>
+            <p className="shrink-0 rounded-full bg-panel/70 px-2.5 py-1 text-xs font-medium text-muted lg:mt-3 lg:inline-flex">
+              {completedSteps.length} of {STEPS.length} complete
+            </p>
+          </div> */}
 
-              return (
-                <li
-                  aria-current={active ? "step" : undefined}
-                  className="relative flex min-w-0 flex-1 flex-col items-center px-1 text-center"
-                  key={label}
-                >
-                  {index < STEPS.length - 1 && (
-                    <span
-                      aria-hidden="true"
-                      className={`absolute left-1/2 right-[-50%] top-4 h-0.5 ${
-                        progressPassed ? "bg-primary" : "bg-line-strong"
-                      }`}
-                    />
-                  )}
-                  <button
-                    aria-label={`${label}${active ? ", current section" : completed ? ", completed" : ", not yet available"}`}
-                    className={`relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                      active
-                        ? "border-primary bg-primary text-on-primary ring-4 ring-primary-light"
-                        : completed
-                          ? "border-primary bg-primary text-on-primary hover:bg-primary-dark"
-                          : "border-line-strong bg-panel text-muted"
-                    } ${canOpen ? "cursor-pointer" : "cursor-default"}`}
-                    disabled={!canOpen || isPending}
-                    onClick={() => openStep(step)}
-                    type="button"
-                  >
-                    {completed ? (
-                      <CheckIcon aria-hidden="true" className="size-4" />
-                    ) : (
-                      step
-                    )}
-                  </button>
-                  <span
-                    className={`mt-2 max-w-20 text-[10px] leading-4 ${
-                      active
-                        ? "font-semibold text-primary-dark"
-                        : completed
-                          ? "font-medium text-ink"
-                          : "text-muted"
-                    }`}
-                  >
-                    {label}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </nav>
-      {previousSubmittedVersion !== null && (
-        <div className="border-b border-primary/15 bg-primary-light/60 px-5 py-3.5 text-sm leading-6 text-ink sm:px-7">
-          Submitted version {previousSubmittedVersion} remains active for your
-          applications until this update is submitted.
-        </div>
-      )}
-      <header className="px-5 pb-5 pt-6 sm:px-7 sm:pb-6 sm:pt-7">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-muted">
+          <div className="mt-5 lg:hidden">
+            <label className="sr-only" htmlFor="pds-mobile-step">
+              Choose a completed PDS step
+            </label>
+            <Select
+              className="w-full"
+              disabled={isPending || !pdsVersionId}
+              id="pds-mobile-step"
+              onChange={openStep}
+              options={STEPS.map((label, index) => {
+                const step = index + 1;
+                return {
+                  value: step,
+                  label: `${step}. ${label}`,
+                  disabled:
+                    step !== currentStep && !completedSteps.includes(step),
+                };
+              })}
+              value={currentStep}
+            />
+          </div>
+
+          <nav aria-label="PDS sections" className="relative hidden lg:block">
+            <span
+              aria-hidden="true"
+              className="absolute bottom-4 left-[0.8rem] top-4 w-px bg-line-strong"
+            />
+            <ol className="space-y-1">
+              {STEPS.map((label, index) => {
+                const step = index + 1;
+                const completed = completedSteps.includes(step);
+                const active = currentStep === step;
+                const canOpen = completed && !active && Boolean(pdsVersionId);
+
+                return (
+                  <li aria-current={active ? "step" : undefined} key={label}>
+                    <button
+                      aria-label={`${label}${active ? ", current section" : completed ? ", completed" : ", not yet available"}`}
+                      className={`relative flex min-h-8 w-full items-center gap-2.5 rounded-md px-0.5 text-left text-xs leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                        active
+                          ? "font-semibold text-primary-dark"
+                          : completed
+                            ? "font-medium text-ink hover:text-primary-dark"
+                            : "text-muted cursor-not-allowed"
+                      } ${canOpen ? "cursor-pointer" : "cursor-default"}`}
+                      disabled={!canOpen || isPending}
+                      onClick={() => openStep(step)}
+                      type="button"
+                    >
+                      <span
+                        className={`relative z-10 grid size-[1.4rem] shrink-0 place-items-center rounded-full border bg-[#eaf1f1] text-[10px] ${
+                          completed
+                            ? "border-primary bg-primary text-on-primary"
+                            : active
+                              ? "border-primary text-primary-dark ring-2 ring-primary-light"
+                              : "border-line-strong text-muted"
+                        }`}
+                      >
+                        {completed ? (
+                          <CheckIcon
+                            aria-hidden="true"
+                            className="size-3 stroke-2"
+                          />
+                        ) : (
+                          step
+                        )}
+                      </span>
+                      <span className="text-[10px]!">{label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+        </aside>
+
+        <div className="min-w-0">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-medium text-muted">
               Personal Data Sheet · Version {versionNumber}
             </p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-              {activeStepName}
-            </h2>
+            <div
+              aria-label={`${progressPercent}% complete`}
+              aria-valuemax={100}
+              aria-valuemin={0}
+              aria-valuenow={progressPercent}
+              className="h-1.5 w-28 overflow-hidden rounded-full bg-panel/70"
+              role="progressbar"
+            >
+              <div
+                className="h-full rounded-full bg-primary transition-[width]"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
           </div>
-          <p className="text-sm font-medium text-muted">
-            <span className="font-semibold text-primary">
-              {completedSteps.length} of {STEPS.length}
-            </span>{" "}
-            sections complete
-          </p>
+          {previousSubmittedVersion !== null && (
+            <div className="mb-5 rounded-md border border-primary/15 bg-primary-light/70 px-4 py-3 text-xs leading-5 text-ink sm:text-sm">
+              Submitted version {previousSubmittedVersion} remains active for
+              your applications until this update is submitted.
+            </div>
+          )}
+          {message && (
+            <p
+              className="mb-4 rounded-lg border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger"
+              role="alert"
+            >
+              {message}
+            </p>
+          )}
+          <div aria-live="polite" className="min-w-0">
+            {currentStep === 1 && pdsVersionId ? (
+              <PersonalInformationStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 2 && pdsVersionId ? (
+              <FamilyBackgroundStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 3 && pdsVersionId ? (
+              <EducationStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 4 && pdsVersionId ? (
+              <EligibilityStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 5 && pdsVersionId ? (
+              <WorkExperienceStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 6 && pdsVersionId ? (
+              <VoluntaryWorkStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 7 && pdsVersionId ? (
+              <LearningDevelopmentStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 8 && pdsVersionId ? (
+              <OtherInformationStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 9 && pdsVersionId ? (
+              <QuestionnaireStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 10 && pdsVersionId ? (
+              <ReferencesStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onCompleted={completeStep}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : currentStep === 11 && pdsVersionId ? (
+              <ReviewSubmitStep
+                draftData={currentDraftData}
+                onBack={() => openStep(currentStep - 1)}
+                onEditSection={openStep}
+                onSubmitted={() => {
+                  setCompletedSteps((steps) =>
+                    steps.includes(11)
+                      ? steps
+                      : [...steps, 11].sort((a, b) => a - b),
+                  );
+                  router.push("/applicant/dashboard");
+                }}
+                pdsVersionId={pdsVersionId}
+              />
+            ) : (
+              <p className="text-sm leading-6 text-muted">
+                {savedSteps.includes(String(currentStep))
+                  ? "Your latest changes for this section are saved."
+                  : "Your changes for this section will be saved as you work."}
+              </p>
+            )}
+          </div>
         </div>
-        <div
-          aria-label={`${progressPercent}% complete`}
-          aria-valuemax={100}
-          aria-valuemin={0}
-          aria-valuenow={progressPercent}
-          className="mt-5 h-2 overflow-hidden rounded-full bg-panel-muted"
-          role="progressbar"
-        >
-          <div
-            className="h-full rounded-full bg-primary transition-[width]"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </header>
-
-      <div aria-live="polite" className="p-5 sm:p-7">
-        {message && (
-          <p className="mb-4 rounded-lg border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
-            {message}
-          </p>
-        )}
-        {currentStep === 1 && pdsVersionId ? (
-          <PersonalInformationStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 2 && pdsVersionId ? (
-          <FamilyBackgroundStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 3 && pdsVersionId ? (
-          <EducationStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 4 && pdsVersionId ? (
-          <EligibilityStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 5 && pdsVersionId ? (
-          <WorkExperienceStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 6 && pdsVersionId ? (
-          <VoluntaryWorkStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 7 && pdsVersionId ? (
-          <LearningDevelopmentStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 8 && pdsVersionId ? (
-          <OtherInformationStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 9 && pdsVersionId ? (
-          <QuestionnaireStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 10 && pdsVersionId ? (
-          <ReferencesStep
-            draftData={currentDraftData}
-            onCompleted={completeStep}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : currentStep === 11 && pdsVersionId ? (
-          <ReviewSubmitStep
-            draftData={currentDraftData}
-            onSubmitted={() => {
-              setCompletedSteps((steps) =>
-                steps.includes(11)
-                  ? steps
-                  : [...steps, 11].sort((a, b) => a - b),
-              );
-              router.push("/applicant/dashboard");
-            }}
-            pdsVersionId={pdsVersionId}
-          />
-        ) : (
-          <p className="text-sm leading-6 text-muted">
-            {savedSteps.includes(String(currentStep))
-              ? "Your latest changes for this section are saved."
-              : "Your changes for this section will be saved as you work."}
-          </p>
-        )}
       </div>
-    </SurfaceCard>
+    </section>
   );
 }

@@ -15,7 +15,7 @@ export default async function ApplicantDocumentsPage() {
   const applicant = await getApplicantContext();
   if (!applicant) redirect("/login");
 
-  const [typesResult, documentsResult, submittedPdsResult] = await Promise.all([
+  const [typesResult, documentsResult, pdsVersionsResult] = await Promise.all([
     applicant.supabase
       .from("document_types")
       .select("id, name, is_required")
@@ -23,18 +23,16 @@ export default async function ApplicantDocumentsPage() {
     applicant.supabase
       .from("documents")
       .select(
-        "id, document_type_id, file_path, version, status, uploaded_at, certificate_title, training_hours, pds_learning_development_id, total_units, pds_education_id, current_highest_education_level, replaces_document_id",
+        "id, document_type_id, file_path, version, status, uploaded_at, certificate_title, certificate_type, certificate_issuer, certificate_date, training_hours, pds_learning_development_id, total_units, pds_education_id, current_highest_education_level, replaces_document_id",
       )
       .eq("applicant_id", applicant.applicant.id)
       .order("version", { ascending: false }),
     applicant.supabase
       .from("pds_versions")
-      .select("id")
+      .select("id, status, version_no")
       .eq("applicant_id", applicant.applicant.id)
-      .eq("status", "SUBMITTED")
       .order("version_no", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .in("status", ["DRAFT", "SUBMITTED"]),
   ]);
 
   if (typesResult.error || documentsResult.error) {
@@ -55,22 +53,30 @@ export default async function ApplicantDocumentsPage() {
     );
   }
 
-  const [trainingResult, educationResult] = submittedPdsResult.data
+  const submittedPds = pdsVersionsResult.data?.find(
+    (version) => version.status === "SUBMITTED",
+  );
+  const activeTrainingPds =
+    pdsVersionsResult.data?.find((version) => version.status === "DRAFT") ??
+    submittedPds;
+  const [trainingResult, educationResult] = activeTrainingPds
     ? await Promise.all([
         applicant.supabase
           .from("pds_learning_development")
-          .select("id, title, hours")
-          .eq("pds_version_id", submittedPdsResult.data.id)
+          .select("id, title, hours, sort_order")
+          .eq("pds_version_id", activeTrainingPds.id)
           .order("sort_order"),
-        applicant.supabase
-          .from("pds_education")
-          .select("id, level, school_name, degree_course")
-          .eq("pds_version_id", submittedPdsResult.data.id)
-          .order("sort_order"),
+        submittedPds
+          ? applicant.supabase
+              .from("pds_education")
+              .select("id, level, school_name, degree_course")
+              .eq("pds_version_id", submittedPds.id)
+              .order("sort_order")
+          : Promise.resolve({ data: [], error: null }),
       ])
     : [
-        { data: [], error: submittedPdsResult.error },
-        { data: [], error: submittedPdsResult.error },
+        { data: [], error: pdsVersionsResult.error },
+        { data: [], error: pdsVersionsResult.error },
       ];
 
   const documents = documentsResult.data ?? [];
@@ -158,8 +164,15 @@ export default async function ApplicantDocumentsPage() {
       isTranscript={type.name === TRANSCRIPT_DOCUMENT_TYPE}
       key={type.id}
       name={type.name}
-      trainingEntries={trainingResult.data ?? []}
-      trainingEntriesUnavailable={Boolean(trainingResult.error)}
+      trainingEntries={(trainingResult.data ?? []).map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        hours: entry.hours,
+        sort_order: entry.sort_order,
+      }))}
+      trainingEntriesUnavailable={Boolean(
+        pdsVersionsResult.error || trainingResult.error,
+      )}
       educationEntries={(educationResult.data ?? []).map((entry) => ({
         id: entry.id,
         level: entry.level,

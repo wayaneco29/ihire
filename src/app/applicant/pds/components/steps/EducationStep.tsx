@@ -2,24 +2,35 @@
 
 import { useState } from "react";
 import { Button } from "antd";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   useForm,
+  useFieldArray,
   useWatch,
   type Control,
   type Resolver,
 } from "react-hook-form";
-import { FormCheckbox, FormInput, FormSelect } from "@/components/form";
+import {
+  FormCheckbox,
+  FormInput,
+  FormSelect,
+  FormYearPicker,
+} from "@/components/form";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
-import { DynamicRows } from "../DynamicRows";
 import type { Json } from "@/types/database";
 import { savePdsEducationStep } from "../../actions/steps-one-three";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
 import { pdsStepThreeSchema, type PdsStepThreeValues } from "../../schema";
-import { createStepThreeDefaults } from "./step-three-defaults";
+import {
+  createEmptyEducationRow,
+  createStepThreeDefaults,
+} from "./step-three-defaults";
+import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
   draftData: Json;
+  onBack: () => void;
   onCompleted: (nextStep: number, stepData: Json) => void;
   pdsVersionId: string;
 };
@@ -27,31 +38,21 @@ type Props = {
 function EducationFields({
   control,
   index,
+  graduateStudies = false,
 }: {
   control: Control<PdsStepThreeValues>;
   index: number;
+  graduateStudies?: boolean;
 }) {
-  const level = useWatch({
-    control,
-    name: `education.${index}.level`,
-  });
   const degreeCompleted = useWatch({
     control,
     name: `education.${index}.graduate_degree_completed`,
   });
 
   return (
-    <>
-      <FormSelect
-        control={control}
-        label="Level"
-        name={`education.${index}.level`}
-        options={[...EDUCATION_LEVEL_OPTIONS]}
-        placeholder="Choose level"
-        required
-      />
-      {level === "GRADUATE_STUDIES" && (
-        <>
+    <div className="space-y-1">
+      {graduateStudies && (
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
           <FormSelect
             control={control}
             label="Graduate degree type"
@@ -79,75 +80,120 @@ function EducationFields({
               type="number"
             />
           )}
-        </>
+        </div>
       )}
-      <FormInput
-        control={control}
-        label="Name of school"
-        name={`education.${index}.school_name`}
-      />
-      <FormInput
-        control={control}
-        label="Degree / course"
-        name={`education.${index}.degree_course`}
-      />
-      <FormInput
-        control={control}
-        label="Period from (year)"
-        max={new Date().getFullYear()}
-        min={1900}
-        name={`education.${index}.period_from`}
-        type="number"
-      />
-      <FormInput
-        control={control}
-        label="Period to (year)"
-        max={new Date().getFullYear()}
-        min={1900}
-        name={`education.${index}.period_to`}
-        type="number"
-      />
-      {level !== "GRADUATE_STUDIES" && (
+      <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
         <FormInput
           control={control}
-          label="Highest level / units earned"
-          name={`education.${index}.highest_level_units_earned`}
+          label="Name of school"
+          name={`education.${index}.school_name`}
+        />
+        <FormInput
+          control={control}
+          label="Degree or course"
+          name={`education.${index}.degree_course`}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
+        <FormYearPicker
+          control={control}
+          label="Period from (year)"
+          maxYear={new Date().getFullYear()}
+          minYear={1900}
+          name={`education.${index}.period_from`}
+        />
+        <FormYearPicker
+          control={control}
+          label="Period to (year)"
+          maxYear={new Date().getFullYear()}
+          minYear={1900}
+          name={`education.${index}.period_to`}
+        />
+        <GraduationYearField control={control} index={index} />
+      </div>
+      {!graduateStudies && (
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+          <FormInput
+            control={control}
+            label="Highest level or units earned"
+            name={`education.${index}.highest_level_units_earned`}
+          />
+          <FormInput
+            control={control}
+            label="Scholarship or honors received"
+            name={`education.${index}.honors_received`}
+          />
+        </div>
+      )}
+      {graduateStudies && (
+        <FormInput
+          control={control}
+          label="Scholarship or honors received"
+          name={`education.${index}.honors_received`}
         />
       )}
-      <FormInput
-        control={control}
-        label="Year graduated"
-        max={new Date().getFullYear()}
-        min={1900}
-        name={`education.${index}.year_graduated`}
-        type="number"
-      />
-      <FormInput
-        control={control}
-        label="Scholarship / honors received"
-        name={`education.${index}.honors_received`}
-      />
-    </>
+    </div>
+  );
+}
+
+function GraduationYearField({
+  control,
+  index,
+}: {
+  control: Control<PdsStepThreeValues>;
+  index: number;
+}) {
+  const periodFrom = useWatch({
+    control,
+    name: `education.${index}.period_from`,
+  });
+
+  return (
+    <FormYearPicker
+      control={control}
+      disabled={periodFrom == null}
+      hint={
+        periodFrom == null
+          ? "Enter the period start year first."
+          : "Leave blank if you didn’t graduate."
+      }
+      label="Year graduated"
+      maxYear={new Date().getFullYear()}
+      minYear={periodFrom ?? 1900}
+      name={`education.${index}.year_graduated`}
+    />
   );
 }
 
 export function EducationStep({
   draftData,
+  onBack,
   onCompleted,
   pdsVersionId,
 }: Props) {
   const {
     control,
     handleSubmit,
-    watch,
     formState: { isSubmitting },
   } = useForm<PdsStepThreeValues>({
     defaultValues: createStepThreeDefaults(draftData),
     mode: "onBlur",
     resolver: yupResolver(pdsStepThreeSchema) as Resolver<PdsStepThreeValues>,
   });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "education",
+  });
+  const fixedEducationOptions = EDUCATION_LEVEL_OPTIONS.filter(
+    ({ value }) => value !== "GRADUATE_STUDIES",
+  );
+  const graduateStudyIndexes = fields
+    .map((field, index) => ({ field, index }))
+    .filter(({ field }) => field.level === "GRADUATE_STUDIES");
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const values = watch();
+  const [openLevel, setOpenLevel] = useState<string | null>("ELEMENTARY");
+  const values = useWatch({ control });
+  const educationValues = values.education ?? [];
   const autosave = usePdsStepAutosave(
     pdsVersionId,
     3,
@@ -170,65 +216,173 @@ export function EducationStep({
   return (
     <form className="space-y-7" onSubmit={handleSubmit(submitStep)}>
       <div>
-        <h3 className="text-base font-semibold text-ink">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
           Educational background
-        </h3>
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Add each education level you attended, from elementary through graduate studies.
-          You can include up to five levels.
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+          Open each level you attended and fill it in. Skip any level you didn’t
+          attend, and add one entry for every graduate degree.
         </p>
       </div>
 
-      <DynamicRows
-        addLabel="Add education level"
-        control={control}
-        createRow={() => ({
-          level: "" as PdsStepThreeValues["education"][number]["level"],
-          graduate_degree_type: null,
-          graduate_degree_completed: false,
-          graduate_units_earned: null,
-          school_name: "",
-          degree_course: "",
-          period_from: null,
-          period_to: null,
-          highest_level_units_earned: "",
-          year_graduated: null,
-          honors_received: "",
-        })}
-        label="Education level"
-        maxRows={5}
-        name="education"
-        renderRow={(index) => (
-          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
-            <EducationFields control={control} index={index} />
-          </div>
-        )}
-      />
+      <div className="space-y-3">
+        {fixedEducationOptions.map(({ label, value }, index) => {
+          const row = educationValues[index];
+          const title = value === "SECONDARY" ? "High school" : label;
+          const period =
+            row?.period_from != null || row?.period_to != null
+              ? `${row.period_from ?? "?"}–${row.period_to ?? "?"}`
+              : null;
+          const subtitle = [row?.school_name, period]
+            .filter(Boolean)
+            .join(" · ");
+          const hasDetails = Boolean(
+            row &&
+            (row.school_name ||
+              row.degree_course ||
+              row.period_from != null ||
+              row.period_to != null ||
+              row.year_graduated != null ||
+              row.highest_level_units_earned ||
+              row.honors_received),
+          );
+          const graduationPeriodMismatch =
+            row?.year_graduated != null &&
+            row.period_to != null &&
+            row.year_graduated !== row.period_to;
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
-        <p aria-live="polite" className="text-sm text-muted">
-          {autosave.status === "saving"
+          return (
+            <section
+              aria-label={`${title} education`}
+              className="overflow-hidden rounded-sm shadow bg-panel"
+              key={value}
+            >
+              <button
+                aria-controls={`education-${value.toLowerCase()}-content`}
+                aria-expanded={openLevel === value}
+                className="flex min-h-[4.5rem] w-full items-center cursor-pointer justify-between gap-3 px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary active:!transform-none sm:px-5"
+                onClick={() =>
+                  setOpenLevel((current) => (current === value ? null : value))
+                }
+                type="button"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-primary-dark sm:text-base">
+                    {title}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted sm:text-sm">
+                    {subtitle || "Add school and years attended"}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
+                      graduationPeriodMismatch
+                        ? "border-warning/20 bg-warning/10 text-warning"
+                        : "border-line bg-panel-muted text-muted"
+                    }`}
+                  >
+                    {graduationPeriodMismatch
+                      ? "Check years"
+                      : hasDetails
+                        ? "In progress"
+                        : "Not started"}
+                  </span>
+                  <ChevronDownIcon
+                    aria-hidden="true"
+                    className={`size-4 text-muted transition-transform ${
+                      openLevel === value ? "rotate-180" : ""
+                    }`}
+                  />
+                </span>
+              </button>
+              {openLevel === value && (
+                <div
+                  className="border-t border-line-subtle p-4 sm:p-5"
+                  id={`education-${value.toLowerCase()}-content`}
+                >
+                  <EducationFields control={control} index={index} />
+                  {graduationPeriodMismatch && (
+                    <p className="mt-1 rounded-md bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+                      You list graduating in {row.year_graduated}, but your
+                      period ends in {row.period_to}. Check both years.
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
+
+      <section
+        aria-label="Graduate studies"
+        className="rounded-lg border border-dashed border-line-strong px-4 py-4 sm:px-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-primary-dark sm:text-base">
+              Graduate studies
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              Add one entry for each master’s or doctoral program.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={graduateStudyIndexes.length >= 20}
+            className="border border-solid border-primary! text-primary! text-xs! px-6! rounded-sm! py-2.5 cursor-pointer bg-white hover:bg-primary-light transition-colors"
+            onClick={() => append(createEmptyEducationRow("GRADUATE_STUDIES"))}
+          >
+            Add graduate study
+          </button>
+        </div>
+        <div className="mt-4 space-y-3">
+          {graduateStudyIndexes.map(({ field, index }, graduateIndex) => (
+            <div
+              className="rounded-lg border border-line bg-panel p-4 sm:p-5"
+              key={field.id}
+            >
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h4 className="text-sm font-semibold text-ink">
+                  Graduate study {graduateIndex + 1}
+                </h4>
+                <button
+                  className="px-6! text-xs! rounded-sm transition-colors p-2 cursor-pointer hover:bg-red-100 text-red-500 "
+                  onClick={() => remove(index)}
+                  type="button"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-x-4">
+                <EducationFields
+                  control={control}
+                  graduateStudies
+                  index={index}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <PdsStepFooter
+        isFirstStep={false}
+        isSaving={autosave.status === "saving"}
+        isSubmitting={isSubmitting}
+        onBack={async () => {
+          if (await autosave.flush()) onBack();
+        }}
+        status={
+          autosave.status === "saving"
             ? "Saving draft…"
             : autosave.status === "saved"
-              ? "Draft saved"
-              : autosave.message ?? "Your draft saves automatically."}
-        </p>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-          {submitMessage && (
-            <p className="text-sm text-danger" role="alert">
-              {submitMessage}
-            </p>
-          )}
-          <Button
-            disabled={isSubmitting}
-            htmlType="submit"
-            loading={isSubmitting}
-            type="primary"
-          >
-            Save and continue
-          </Button>
-        </div>
-      </div>
+              ? "All changes saved"
+              : (autosave.message ?? "Your draft saves automatically.")
+        }
+        submitMessage={submitMessage}
+      />
     </form>
   );
 }

@@ -20,6 +20,24 @@ const documentUploadSchemaBase = yup.object({
       "Enter up to two decimal places.",
       (value) => value == null || Math.abs(value * 100 - Math.round(value * 100)) < 1e-8,
     ),
+  certificateType: yup
+    .string()
+    .trim()
+    .max(200, "Certificate type must be 200 characters or fewer.")
+    .optional(),
+  certificateIssuer: yup
+    .string()
+    .trim()
+    .max(500, "Issuer must be 500 characters or fewer.")
+    .optional(),
+  certificateDate: yup
+    .string()
+    .nullable()
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/, {
+      message: "Choose a valid certificate date.",
+      excludeEmptyString: true,
+    }),
   totalUnits: yup
     .number()
     .transform((value, originalValue) => originalValue === "" ? null : value)

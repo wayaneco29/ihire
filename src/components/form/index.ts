@@ -7,3 +7,4 @@ export { FormRadioYesNo } from "./FormRadioYesNo";
 export { FormSelect } from "./FormSelect";
 export { FormTextArea } from "./FormTextArea";
 export { FormUpload } from "./FormUpload";
+export { FormYearPicker } from "./FormYearPicker";

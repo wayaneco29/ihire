@@ -313,7 +313,22 @@ export async function savePdsEducationStep(
     };
   }
 
-  const rows = values.education.map((row, index) => ({
+  const completedEducation = values.education.filter((row) =>
+    [
+      row.school_name,
+      row.degree_course,
+      row.period_from,
+      row.period_to,
+      row.highest_level_units_earned,
+      row.year_graduated,
+      row.honors_received,
+      row.graduate_degree_type,
+      row.graduate_units_earned,
+    ].some((value) =>
+      typeof value === "string" ? value.trim().length > 0 : value != null,
+    ),
+  );
+  const rows = completedEducation.map((row, index) => ({
     pds_version_id: pdsVersionId,
     level: row.level,
     graduate_degree_type:

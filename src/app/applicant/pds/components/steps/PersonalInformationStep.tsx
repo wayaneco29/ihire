@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "antd";
 import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, type Resolver } from "react-hook-form";
-import { FormCheckbox, FormDatePicker, FormInput, FormRadio, FormSelect } from "@/components/form";
+import {
+  FormCheckbox,
+  FormDatePicker,
+  FormInput,
+  FormRadio,
+  FormSelect,
+} from "@/components/form";
 import {
   BLOOD_TYPE_OPTIONS,
   CIVIL_STATUS_OPTIONS,
@@ -13,13 +18,19 @@ import {
 } from "@/constants/pds-options";
 import type { Json } from "@/types/database";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
-import { pdsStepOneSchema, type PdsAddressValues, type PdsStepOneValues } from "../../schema";
+import {
+  pdsStepOneSchema,
+  type PdsAddressValues,
+  type PdsStepOneValues,
+} from "../../schema";
 import { savePdsPersonalStep } from "../../actions/steps-one-three";
 import { AddressFields } from "./AddressFields";
 import { createStepOneDefaults } from "./step-one-defaults";
+import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
   draftData: Json;
+  onBack: () => void;
   onCompleted: (nextStep: number, stepData: Json) => void;
   pdsVersionId: string;
 };
@@ -37,6 +48,7 @@ function serializableValues(values: PdsStepOneValues) {
 
 export function PersonalInformationStep({
   draftData,
+  onBack,
   onCompleted,
   pdsVersionId,
 }: Props) {
@@ -68,11 +80,10 @@ export function PersonalInformationStep({
 
   useEffect(() => {
     if (!sameAsResidential || residentialKey === permanentKey) return;
-    setValue(
-      "addresses.permanent",
-      residential as PdsAddressValues,
-      { shouldDirty: true, shouldValidate: true },
-    );
+    setValue("addresses.permanent", residential as PdsAddressValues, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   }, [permanentKey, residential, residentialKey, sameAsResidential, setValue]);
 
   async function submitStep(valuesToSave: PdsStepOneValues) {
@@ -91,14 +102,28 @@ export function PersonalInformationStep({
 
   return (
     <form className="space-y-8" onSubmit={handleSubmit(submitStep)}>
-      <section>
-        <h3 className="mb-4 text-base font-semibold text-ink">
+      <section className="rounded-sm bg-white shadow">
+        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
           Personal details
         </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FormInput control={control} label="Surname" name="personalInfo.surname" required />
-          <FormInput control={control} label="First name" name="personalInfo.first_name" required />
-          <FormInput control={control} label="Middle name" name="personalInfo.middle_name" />
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3  p-4">
+          <FormInput
+            control={control}
+            label="Surname"
+            name="personalInfo.surname"
+            required
+          />
+          <FormInput
+            control={control}
+            label="First name"
+            name="personalInfo.first_name"
+            required
+          />
+          <FormInput
+            control={control}
+            label="Middle name"
+            name="personalInfo.middle_name"
+          />
           <FormInput
             control={control}
             hint="For example, Jr. or Sr."
@@ -173,11 +198,11 @@ export function PersonalInformationStep({
         </div>
       </section>
 
-      <section>
-        <h3 className="mb-4 text-base font-semibold text-ink">
+      <section className="rounded-sm bg-white shadow">
+        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
           Citizenship and identification
         </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
           <FormRadio
             control={control}
             label="Citizenship"
@@ -211,10 +236,26 @@ export function PersonalInformationStep({
               />
             </>
           )}
-          <FormInput control={control} label="UMID No." name="personalInfo.umid_no" />
-          <FormInput control={control} label="Pag-IBIG No." name="personalInfo.pagibig_no" />
-          <FormInput control={control} label="PhilHealth No." name="personalInfo.philhealth_no" />
-          <FormInput control={control} label="PhilSys No." name="personalInfo.philsys_no" />
+          <FormInput
+            control={control}
+            label="UMID No."
+            name="personalInfo.umid_no"
+          />
+          <FormInput
+            control={control}
+            label="Pag-IBIG No."
+            name="personalInfo.pagibig_no"
+          />
+          <FormInput
+            control={control}
+            label="PhilHealth No."
+            name="personalInfo.philhealth_no"
+          />
+          <FormInput
+            control={control}
+            label="PhilSys No."
+            name="personalInfo.philsys_no"
+          />
           <FormInput control={control} label="TIN" name="personalInfo.tin_no" />
           <FormInput
             control={control}
@@ -224,9 +265,11 @@ export function PersonalInformationStep({
         </div>
       </section>
 
-      <section>
-        <h3 className="mb-4 text-base font-semibold text-ink">Contact details</h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="rounded-sm bg-white shadow">
+        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
+          Contact details
+        </h3>
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
           <FormInput
             control={control}
             label="Telephone No."
@@ -249,19 +292,25 @@ export function PersonalInformationStep({
         </div>
       </section>
 
-      <section>
-        <h3 className="mb-4 text-base font-semibold text-ink">Residential address</h3>
+      <section className="rounded-sm bg-white shadow">
+        <h3 className="mb-4 text-base font-semibold border-b border-gray-100 p-4 text-primary-dark">
+          Residential address
+        </h3>
         <AddressFields control={control} prefix="addresses.residential" />
       </section>
 
-      <section>
-        <h3 className="mb-2 text-base font-semibold text-ink">Permanent address</h3>
-        <FormCheckbox
-          control={control}
-          hint="We will use the residential address above for both address records."
-          label="Same as residential address"
-          name="addresses.sameAsResidential"
-        />
+      <section className="rounded-sm bg-white shadow">
+        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
+          Permanent address
+        </h3>
+        <div className="p-4">
+          <FormCheckbox
+            control={control}
+            hint="We will use the residential address above for both address records."
+            label="Same as residential address"
+            name="addresses.sameAsResidential"
+          />
+        </div>
         <AddressFields
           control={control}
           disabled={sameAsResidential}
@@ -269,30 +318,19 @@ export function PersonalInformationStep({
         />
       </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
-        <p aria-live="polite" className="text-sm text-muted">
-          {autosave.status === "saving"
+      <PdsStepFooter
+        isFirstStep
+        isSubmitting={isSubmitting}
+        onBack={onBack}
+        status={
+          autosave.status === "saving"
             ? "Saving draft…"
             : autosave.status === "saved"
-              ? "Draft saved"
-              : autosave.message ?? "Your draft saves automatically."}
-        </p>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-          {submitMessage && (
-            <p className="text-sm text-danger" role="alert">
-              {submitMessage}
-            </p>
-          )}
-          <Button
-            disabled={isSubmitting}
-            htmlType="submit"
-            loading={isSubmitting}
-            type="primary"
-          >
-            Save and continue
-          </Button>
-        </div>
-      </div>
+              ? "All changes saved"
+              : (autosave.message ?? "Your draft saves automatically.")
+        }
+        submitMessage={submitMessage}
+      />
     </form>
   );
 }

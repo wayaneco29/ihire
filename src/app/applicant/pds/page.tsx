@@ -75,11 +75,6 @@ export default async function ApplicantPdsPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Applicant workspace"
-        title="Personal Data Sheet"
-        description="Complete your personal record section by section. Your draft saves as you go."
-      />
       {draft ? (
         <PdsWizardShell
           completedSteps={draft.completed_steps}
@@ -90,35 +85,42 @@ export default async function ApplicantPdsPage() {
           versionNumber={draft.version_no}
         />
       ) : (
-        <SurfaceCard
-          as="section"
-          className="mt-7 overflow-hidden rounded-2xl"
-        >
-          <div className="flex items-start gap-4 p-5 sm:p-7">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-light text-primary">
-              <CheckCircleIcon aria-hidden="true" className="size-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold tracking-tight text-ink">
-                Your PDS is submitted
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-                Version {submitted?.version_no} remains active for your
-                applications. Start an update when you’re ready to make
-                changes.
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <StartPdsUpdateButton className="mt-0" />
-                <Link
-                  className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  href="/applicant/dashboard"
-                >
-                  Go to dashboard
-                </Link>
+        <>
+          <PageHeader
+            eyebrow="Applicant workspace"
+            title="Personal Data Sheet"
+            description="Complete your personal record section by section. Your draft saves as you go."
+          />
+          <SurfaceCard
+            as="section"
+            className="mt-7 overflow-hidden rounded-2xl"
+          >
+            <div className="flex items-start gap-4 p-5 sm:p-7">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-light text-primary">
+                <CheckCircleIcon aria-hidden="true" className="size-6" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold tracking-tight text-ink">
+                  Your PDS is submitted
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                  Version {submitted?.version_no} remains active for your
+                  applications. Start an update when you’re ready to make
+                  changes.
+                </p>
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <StartPdsUpdateButton className="mt-0" />
+                  <Link
+                    className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    href="/applicant/dashboard"
+                  >
+                    Go to dashboard
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </SurfaceCard>
+          </SurfaceCard>
+        </>
       )}
     </>
   );

@@ -16,6 +16,9 @@ export type DocumentRecord = {
   status: string;
   uploaded_at: string;
   certificate_title: string | null;
+  certificate_type: string | null;
+  certificate_issuer: string | null;
+  certificate_date: string | null;
   remarks: string | null;
   training_hours: number | null;
   total_units: number | null;
@@ -44,7 +47,12 @@ export function DocumentTypeCard({
   documents: DocumentRecord[];
   isTrainingCertificate: boolean;
   isTranscript?: boolean;
-  trainingEntries: { id: string; title: string; hours: number | null }[];
+  trainingEntries: {
+    id: string;
+    title: string;
+    hours: number | null;
+    sort_order: number;
+  }[];
   trainingEntriesUnavailable: boolean;
   educationEntries?: {
     id: string;
@@ -56,6 +64,7 @@ export function DocumentTypeCard({
 }) {
   const [messageApi, contextHolder] = message.useMessage();
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadProcessing, setUploadProcessing] = useState(false);
   const [replacementTarget, setReplacementTarget] =
     useState<DocumentRecord | null>(null);
   const [search, setSearch] = useState("");
@@ -83,9 +92,6 @@ export function DocumentTypeCard({
                 : []),
             ]
           : []),
-        ...(documents.length > 1
-          ? [`${documents.length - 1} previous versions`]
-          : []),
       ].join(", ")
     : isTranscript
       ? "No TOR uploaded yet"
@@ -98,7 +104,9 @@ export function DocumentTypeCard({
 
   const filteredDocuments = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return documents.filter((document) => {
+    return documents
+      .filter((document) => document.supersededByVersion === null)
+      .filter((document) => {
       const linkedTraining = document.pds_learning_development_id
         ? (trainingTitles.get(document.pds_learning_development_id) ??
           "Linked PDS training")
@@ -116,7 +124,7 @@ export function DocumentTypeCard({
           )) ||
         document.status === statusFilter;
       return matchesSearch && matchesStatus;
-    });
+      });
   }, [documents, recordLabel, search, statusFilter, trainingTitles]);
 
   const visibleDocuments = showAll
@@ -159,9 +167,11 @@ export function DocumentTypeCard({
       (total, document) => total + (document.training_hours ?? 0),
       0,
     );
-    const closeUpload = () => {
+    const closeUpload = (force = false) => {
+      if (uploadProcessing && !force) return;
       setUploadOpen(false);
       setReplacementTarget(null);
+      setUploadProcessing(false);
     };
 
     return (
@@ -266,6 +276,24 @@ export function DocumentTypeCard({
                         )) ||
                       `${recordLabel} #${document.version}`}
                   </p>
+                  {(document.certificate_type ||
+                    document.certificate_issuer ||
+                    document.certificate_date) && (
+                    <p className="mt-0.5 truncate text-xs text-muted">
+                      {[
+                        document.certificate_type,
+                        document.certificate_issuer,
+                        document.certificate_date
+                          ? formatDate(
+                              document.certificate_date,
+                              "MMM D, YYYY",
+                            )
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
                   <p className="mt-0.5 text-xs text-muted">
                     Uploaded {formatDate(document.uploaded_at, "MMM D, YYYY")}
                   </p>
@@ -277,13 +305,7 @@ export function DocumentTypeCard({
                   hrs
                 </span>
                 <div className="col-span-2 col-start-2 flex items-center justify-end gap-2 sm:contents">
-                  {document.supersededByVersion !== null ? (
-                    <span className="whitespace-nowrap rounded-full bg-panel-muted px-2.5 py-1 text-xs text-muted">
-                      Replaced by v{document.supersededByVersion}
-                    </span>
-                  ) : (
-                    <WorkflowStatusTag status={document.status} />
-                  )}
+                  <WorkflowStatusTag status={document.status} />
                   <div className="flex items-center gap-2">
                     <button
                       className="inline-flex min-h-9 items-center rounded-sm px-2 text-xs! cursor-pointer font-semibold text-primary hover:underline disabled:opacity-60"
@@ -293,15 +315,13 @@ export function DocumentTypeCard({
                     >
                       {pendingId === document.id ? "Preparing…" : "View"}
                     </button>
-                    {document.supersededByVersion === null && (
-                      <button
-                        className="inline-flex min-h-8 items-center rounded-full bg-primary-light px-5 text-xs! cursor-pointer font-semibold text-primary border border-transparent hover:border-primary"
-                        onClick={() => setReplacementTarget(document)}
-                        type="button"
-                      >
-                        Replace
-                      </button>
-                    )}
+                    <button
+                      className="inline-flex min-h-8 items-center rounded-full bg-primary-light px-5 text-xs! cursor-pointer font-semibold text-primary border border-transparent hover:border-primary"
+                      onClick={() => setReplacementTarget(document)}
+                      type="button"
+                    >
+                      Replace
+                    </button>
                   </div>
                 </div>
               </div>
@@ -345,9 +365,12 @@ export function DocumentTypeCard({
           </a>
         )}
         <Modal
+          closable={!uploadProcessing}
           destroyOnHidden
           footer={null}
-          onCancel={closeUpload}
+          onCancel={() => closeUpload()}
+          keyboard={!uploadProcessing}
+          maskClosable={!uploadProcessing}
           open={uploadOpen || replacementTarget !== null}
           title={
             replacementTarget ? "Update certificate file" : "Add a certificate"
@@ -364,14 +387,11 @@ export function DocumentTypeCard({
             isTrainingCertificate={isTrainingCertificate}
             isTranscript={isTranscript}
             onCancel={closeUpload}
-            onSuccess={
-              replacementTarget
-                ? (successMessage) => {
-                    closeUpload();
-                    messageApi.success(successMessage);
-                  }
-                : undefined
-            }
+            onProcessingChange={setUploadProcessing}
+            onSuccess={(successMessage) => {
+              closeUpload(true);
+              messageApi.success(successMessage);
+            }}
             replacementDocument={replacementTarget}
             trainingEntries={trainingEntries}
             trainingEntriesUnavailable={trainingEntriesUnavailable}
@@ -447,9 +467,17 @@ export function DocumentTypeCard({
       </div>
       {contextHolder}
       <Modal
+        closable={!uploadProcessing}
         destroyOnHidden
         footer={null}
-        onCancel={() => setUploadOpen(false)}
+        onCancel={() => {
+          if (!uploadProcessing) {
+            setUploadOpen(false);
+            setUploadProcessing(false);
+          }
+        }}
+        keyboard={!uploadProcessing}
+        maskClosable={!uploadProcessing}
         open={uploadOpen}
         title={
           isTranscript
@@ -473,8 +501,15 @@ export function DocumentTypeCard({
           documentTypeId={id}
           isTrainingCertificate={false}
           isTranscript={isTranscript}
-          onCancel={() => setUploadOpen(false)}
+          onCancel={() => {
+            if (!uploadProcessing) {
+              setUploadOpen(false);
+              setUploadProcessing(false);
+            }
+          }}
+          onProcessingChange={setUploadProcessing}
           onSuccess={(successMessage) => {
+            setUploadProcessing(false);
             setUploadOpen(false);
             messageApi.success(successMessage);
           }}

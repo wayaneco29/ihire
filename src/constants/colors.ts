@@ -21,7 +21,7 @@ export const DESIGN_TOKENS = {
     normal: "200ms",
     easing: "cubic-bezier(0.16, 1, 0.3, 1)",
   },
-  fontFamily: "var(--font-montserrat), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  fontFamily: "var(--font-public-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 } as const;
 
 export const THEME_PALETTES = {
