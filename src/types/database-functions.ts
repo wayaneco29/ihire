@@ -1,6 +1,37 @@
 import type { PublicEnums } from "./database-enums";
 
 export type PublicFunctions = {
+    "education_points": {
+        Args: {
+            "p_applicant_level": number;
+            "p_position_id": string;
+        };
+        Returns: number | null;
+    };
+    "education_equivalent_points": {
+        Args: {
+            "p_applicant_level": number;
+            "p_maximum_points": number;
+            "p_position_id": string;
+        };
+        Returns: number | null;
+    };
+    "training_equivalent_points": {
+        Args: {
+            "p_maximum_points": number;
+            "p_position_id": string;
+            "p_training_hours": number;
+        };
+        Returns: number | null;
+    };
+    "experience_equivalent_points": {
+        Args: {
+            "p_applicant_level": number;
+            "p_maximum_points": number;
+            "p_position_id": string;
+        };
+        Returns: number | null;
+    };
     "apply_to_job": {
         Args: {
             "p_job_id": string;

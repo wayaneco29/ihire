@@ -38,9 +38,7 @@ export default async function ApplicantPdsPage() {
     .eq("applicant_id", applicant.applicant.id)
     .order("version_no", { ascending: false });
 
-  if (error) {
-    return <PdsUnavailable />;
-  }
+  if (error) return <PdsUnavailable />;
 
   let draft = versions?.find((version) => version.status === "DRAFT") ?? null;
   const submitted = versions?.find((version) => version.status === "SUBMITTED");

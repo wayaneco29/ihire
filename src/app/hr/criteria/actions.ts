@@ -6,7 +6,9 @@ import { ValidationError } from "yup";
 import { getHrContext } from "@/lib/auth/server";
 import {
   positionSchema,
+  positionScoringStandardsSchema,
   positionWeightsSchema,
+  type PositionScoringStandardsValues,
   type PositionValues,
 } from "./schema";
 
@@ -123,4 +125,72 @@ export async function savePositionWeights(
   revalidatePath("/hr/criteria");
   revalidatePath("/hr/postings");
   return { success: true, message: "Weight profile saved and versioned." };
+}
+
+export async function savePositionScoringStandards(
+  positionId: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const hr = await getHrContext();
+  if (!hr) return { success: false, message: "HR access is required." };
+  if (!/^[0-9a-f-]{36}$/i.test(positionId)) {
+    return { success: false, message: "This position is unavailable." };
+  }
+
+  let values: PositionScoringStandardsValues;
+  try {
+    values = await positionScoringStandardsSchema.validate(input, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof ValidationError
+          ? error.errors[0] ??
+            "Choose valid Education and Training standards."
+          : "Choose valid Education and Training standards.",
+    };
+  }
+
+  const educationLevel = values.baseQualificationLevel
+    ? Number(values.baseQualificationLevel)
+    : null;
+  const trainingLevel = values.baseTrainingIncrementLevel
+    ? Number(values.baseTrainingIncrementLevel)
+    : null;
+  const experienceLevel = values.baseExperienceIncrementLevel
+    ? Number(values.baseExperienceIncrementLevel)
+    : null;
+  const { data, error } = await hr.supabase
+    .from("positions")
+    .update({
+      base_qualification_level: educationLevel,
+      base_training_increment_level: trainingLevel,
+      base_experience_increment_level: experienceLevel,
+    })
+    .eq("id", positionId)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return {
+      success: false,
+      message: "The scoring standards could not be saved. Refresh and try again.",
+    };
+  }
+
+  revalidatePath("/hr/criteria");
+  revalidatePath("/hr/postings");
+  revalidatePath("/hr/postings/new");
+  return {
+    success: true,
+    message:
+      educationLevel === null &&
+      trainingLevel === null &&
+      experienceLevel === null
+        ? "Position Education, Training, and Experience standards cleared."
+        : "Position Education, Training, and Experience standards saved.",
+  };
 }

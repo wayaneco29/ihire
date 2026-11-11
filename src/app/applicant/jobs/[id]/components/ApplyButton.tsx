@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Alert, Button } from "antd";
 import { useForm, useWatch } from "react-hook-form";
 import { FormSelect } from "@/components/form";
-import { calculateTrainingPoints } from "@/utils/calculate-training-points";
+import { formatExperienceMonths } from "@/utils/calculate-public-teaching-experience";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { applyToJob } from "../../actions";
 import { applicationSchema, type ApplicationValues } from "../../schema";
@@ -15,6 +15,12 @@ type PositionOption = {
   id: string;
   title: string;
   application_type: { name: string } | null;
+  educationPoints: number | null;
+  trainingPoints: number | null;
+  experiencePoints: number | null;
+  qualifyingExperienceMonths: number;
+  experienceIncrementLevel: number;
+  base_experience_increment_level: number | null;
   criteria: Array<{
     id: string;
     key: string;
@@ -27,11 +33,9 @@ type PositionOption = {
 export function ApplyButton({
   jobId,
   positions,
-  trainingHours,
 }: {
   jobId: string;
   positions: PositionOption[];
-  trainingHours: number;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -46,13 +50,6 @@ export function ApplyButton({
   const selectedPosition = positions.find(
     (position) => position.id === selectedPositionId,
   );
-  const trainingCriterion = selectedPosition?.criteria.find(
-    (criterion) => criterion.key === "TRAINING",
-  );
-  const estimatedTrainingPoints = trainingCriterion
-    ? calculateTrainingPoints(trainingHours, trainingCriterion.points)
-    : null;
-
   async function submit(values: ApplicationValues) {
     setError(null);
     const result = await applyToJob(jobId, values.positionId);
@@ -93,6 +90,14 @@ export function ApplyButton({
           <h2 className="text-sm font-semibold text-ink">
             Maximum points / Your points
           </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Education level differences map to equivalent points using the
+            configured Education weight. Training hours map to 8-hour
+            increments, then use the position’s minimum Training level and
+            configured weight. Public teaching experience uses government
+            service entries with teaching-related titles, merged to avoid
+            double-counting overlaps. Differences below 2 earn 0 points.
+          </p>
           <ul className="mt-3 divide-y divide-line-subtle">
             {selectedPosition.criteria.map((criterion) => (
               <li
@@ -102,16 +107,35 @@ export function ApplyButton({
                 <span className="font-medium text-ink">{criterion.title}</span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 font-semibold tabular-nums text-primary">
                   <span>
-                    {criterion.key === "TRAINING" &&
-                    estimatedTrainingPoints !== null
-                      ? estimatedTrainingPoints.toFixed(2)
-                      : "—"}
+                    {criterion.key === "EDUCATION" &&
+                    selectedPosition.educationPoints !== null
+                      ? selectedPosition.educationPoints.toFixed(2)
+                      : criterion.key === "TRAINING" &&
+                        selectedPosition.trainingPoints !== null
+                        ? selectedPosition.trainingPoints.toFixed(2)
+                        : criterion.key === "EXPERIENCE" &&
+                            selectedPosition.experiencePoints !== null
+                          ? selectedPosition.experiencePoints.toFixed(2)
+                        : "—"}
                   </span>
                   <span aria-hidden="true" className="text-primary/60">
                     /
                   </span>
                   <span>{criterion.points}</span>
                 </span>
+                {criterion.key === "EXPERIENCE" && (
+                  <p className="basis-full text-xs leading-5 text-muted">
+                    {formatExperienceMonths(
+                      selectedPosition.qualifyingExperienceMonths,
+                    )}{" "}
+                    qualifying public teaching experience (Level{" "}
+                    {selectedPosition.experienceIncrementLevel}
+                    {selectedPosition.base_experience_increment_level === null
+                      ? "; position minimum not set"
+                      : `; minimum Level ${selectedPosition.base_experience_increment_level}`}
+                    ).
+                  </p>
+                )}
               </li>
             ))}
           </ul>

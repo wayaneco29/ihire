@@ -5,6 +5,83 @@ import { getEvaluatorContext } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { APPLICATION_EVALUATION_RESULTS } from "./schema";
 
+export async function scheduleApplicationAssessment(input: {
+  applicationId: string;
+  scheduledAt: string;
+}): Promise<{ success: boolean; message: string }> {
+  if (
+    !input ||
+    typeof input !== "object" ||
+    typeof input.applicationId !== "string" ||
+    !/^[0-9a-f-]{36}$/i.test(input.applicationId) ||
+    typeof input.scheduledAt !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(input.scheduledAt) ||
+    !Number.isFinite(Date.parse(input.scheduledAt)) ||
+    Date.parse(input.scheduledAt) <= Date.now()
+  ) {
+    return {
+      success: false,
+      message: "Choose a valid future assessment date and time.",
+    };
+  }
+
+  const evaluator = await getEvaluatorContext();
+  if (!evaluator) {
+    return { success: false, message: "Evaluator access is required." };
+  }
+
+  const { data: application, error: applicationError } =
+    await evaluator.supabase
+      .from("v_anonymized_applicants")
+      .select("application_id, application_status")
+      .eq("application_id", input.applicationId)
+      .maybeSingle();
+  if (applicationError || !application) {
+    return {
+      success: false,
+      message: "This application is no longer available for review.",
+    };
+  }
+  if (["HIRED", "REJECTED"].includes(application.application_status)) {
+    return {
+      success: false,
+      message: "This application already has a final hiring decision.",
+    };
+  }
+
+  const admin = createAdminClient();
+  const { data: updatedApplication, error: updateError } = await admin
+    .from("applications")
+    .update({
+      scheduled_assessment_at: input.scheduledAt,
+      status: "ASSESSMENT_SCHEDULED",
+    })
+    .eq("id", input.applicationId)
+    .in("status", [
+      "SUBMITTED",
+      "UNDER_EVALUATION",
+      "ASSESSMENT_SCHEDULED",
+      "QUALIFIED",
+      "NOT_QUALIFIED",
+    ])
+    .select("id")
+    .maybeSingle();
+  if (updateError || !updatedApplication) {
+    return {
+      success: false,
+      message: "The assessment could not be scheduled. Refresh and try again.",
+    };
+  }
+
+  revalidatePath(`/evaluator/applications/${input.applicationId}`);
+  revalidatePath("/evaluator/reviews");
+  revalidatePath(`/applicant/applications/${input.applicationId}`);
+  revalidatePath("/applicant/applications");
+  revalidatePath("/applicant/dashboard");
+  revalidatePath("/hr/dashboard");
+  return { success: true, message: "Assessment schedule saved." };
+}
+
 export async function submitApplicationEvaluation(input: {
   applicationId: string;
   result: string;

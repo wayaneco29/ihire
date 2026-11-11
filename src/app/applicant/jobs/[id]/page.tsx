@@ -11,6 +11,7 @@ import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
+import { calculatePublicTeachingExperience } from "@/utils/calculate-public-teaching-experience";
 import { calculateApplicantTrainingHours } from "@/utils/calculate-applicant-training-hours";
 import { ApplyButton } from "./components/ApplyButton";
 
@@ -63,7 +64,9 @@ export default async function ApplicantJobDetailPage({
   const positionsResult = positionIds.length
     ? await applicant.supabase
         .from("positions")
-        .select("id, title, application_type(name)")
+        .select(
+          "id, title, base_qualification_level, base_training_increment_level, base_experience_increment_level, application_type(name)",
+        )
         .in("id", positionIds)
         .order("title")
     : { data: [], error: null };
@@ -105,7 +108,7 @@ export default async function ApplicantJobDetailPage({
   const criteriaResult = criterionIds.length
     ? await applicant.supabase
         .from("position_criteria")
-      .select("id, criterion_key, title, display_order")
+        .select("id, criterion_key, title, display_order")
         .in("id", criterionIds)
         .order("display_order")
     : { data: [], error: null };
@@ -199,28 +202,70 @@ export default async function ApplicantJobDetailPage({
     );
   }
 
-  const [learningResult, certificatesResult] = await Promise.all([
-    submittedPds
-      ? applicant.supabase
-          .from("pds_learning_development")
-          .select("id, hours")
-          .eq("pds_version_id", submittedPds.id)
-      : Promise.resolve({ data: [], error: null }),
-    applicant.supabase
-      .from("documents")
-      .select(
-        "id, training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
-      )
-      .eq("applicant_id", applicant.applicant.id)
-      .eq("document_type_id", certificateType.id)
-      .not("training_hours", "is", null)
-      .order("uploaded_at", { ascending: false })
-      .order("version", { ascending: false }),
-  ]);
-  if (learningResult.error || certificatesResult.error) {
+  const [
+    learningResult,
+    certificatesResult,
+    educationResult,
+    workExperienceResult,
+  ] =
+    await Promise.all([
+      submittedPds
+        ? applicant.supabase
+            .from("pds_learning_development")
+            .select("id, hours")
+            .eq("pds_version_id", submittedPds.id)
+        : Promise.resolve({ data: [], error: null }),
+      applicant.supabase
+        .from("documents")
+        .select(
+          "id, training_hours, ocr_training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
+        )
+        .eq("applicant_id", applicant.applicant.id)
+        .eq("document_type_id", certificateType.id)
+        .order("uploaded_at", { ascending: false })
+        .order("version", { ascending: false }),
+      submittedPds
+        ? applicant.supabase
+            .from("pds_education")
+            .select("qualification_level")
+            .eq("pds_version_id", submittedPds.id)
+        : Promise.resolve({ data: [], error: null }),
+      submittedPds
+        ? applicant.supabase
+            .from("pds_work_experience")
+            .select("date_from, date_to, is_gov_service, position_title")
+            .eq("pds_version_id", submittedPds.id)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+  if (
+    learningResult.error ||
+    certificatesResult.error ||
+    educationResult.error ||
+    workExperienceResult.error
+  ) {
     return (
       <EmptyState
-        description="Refresh the page to try loading your training records."
+        description="Refresh the page to try loading your PDS and scoring information."
+        title="Application points unavailable"
+      />
+    );
+  }
+
+  const certificateIds = (certificatesResult.data ?? []).map(
+    (certificate) => certificate.id,
+  );
+  const trainingReviewsResult = certificateIds.length
+    ? await applicant.supabase
+        .from("document_reviews")
+        .select("id, document_id, status, confirmed_training_hours, reviewed_at")
+        .in("document_id", certificateIds)
+        .order("reviewed_at", { ascending: false })
+        .order("id", { ascending: false })
+    : { data: [], error: null };
+  if (trainingReviewsResult.error) {
+    return (
+      <EmptyState
+        description="Refresh the page to try loading evaluator-confirmed training hours."
         title="Training points unavailable"
       />
     );
@@ -229,7 +274,104 @@ export default async function ApplicantJobDetailPage({
   const trainingHours = calculateApplicantTrainingHours(
     learningResult.data ?? [],
     certificatesResult.data ?? [],
+    trainingReviewsResult.data ?? [],
   );
+  const applicantQualificationLevel = (educationResult.data ?? []).reduce<
+    number | null
+  >(
+    (highest, education) =>
+      education.qualification_level !== null &&
+      (highest === null || education.qualification_level > highest)
+        ? education.qualification_level
+        : highest,
+    null,
+  );
+  const publicTeachingExperience = calculatePublicTeachingExperience(
+    workExperienceResult.data ?? [],
+  );
+  const positionsWithScoringPoints = await Promise.all(
+    positions.map(async (position) => {
+      const educationCriterion = position.criteria.find(
+        (criterion) => criterion.key === "EDUCATION",
+      );
+      const trainingCriterion = position.criteria.find(
+        (criterion) => criterion.key === "TRAINING",
+      );
+      const experienceCriterion = position.criteria.find(
+        (criterion) => criterion.key === "EXPERIENCE",
+      );
+      const trainingPointsResult =
+        trainingCriterion && position.base_training_increment_level !== null
+          ? await applicant.supabase.rpc("training_equivalent_points", {
+              p_position_id: position.id,
+              p_training_hours: trainingHours,
+              p_maximum_points: trainingCriterion.points,
+            })
+          : { data: null, error: null };
+      const experiencePointsResult =
+        experienceCriterion &&
+        position.base_experience_increment_level !== null
+          ? await applicant.supabase.rpc("experience_equivalent_points", {
+              p_position_id: position.id,
+              p_applicant_level: publicTeachingExperience.incrementLevel,
+              p_maximum_points: experienceCriterion.points,
+            })
+          : { data: null, error: null };
+      if (
+        !educationCriterion ||
+        position.base_qualification_level === null ||
+        applicantQualificationLevel === null
+      ) {
+        return {
+          ...position,
+          educationPoints: null,
+          educationPointsError: false,
+          trainingPoints: trainingPointsResult.data,
+          trainingPointsError: Boolean(trainingPointsResult.error),
+          experiencePoints: experiencePointsResult.data,
+          experiencePointsError: Boolean(experiencePointsResult.error),
+          qualifyingExperienceMonths:
+            publicTeachingExperience.qualifyingMonths,
+          experienceIncrementLevel: publicTeachingExperience.incrementLevel,
+        };
+      }
+
+      const result = await applicant.supabase.rpc(
+        "education_equivalent_points",
+        {
+          p_position_id: position.id,
+          p_applicant_level: applicantQualificationLevel,
+          p_maximum_points: educationCriterion.points,
+        },
+      );
+      return {
+        ...position,
+        educationPoints: result.data,
+        educationPointsError: Boolean(result.error),
+        trainingPoints: trainingPointsResult.data,
+        trainingPointsError: Boolean(trainingPointsResult.error),
+        experiencePoints: experiencePointsResult.data,
+        experiencePointsError: Boolean(experiencePointsResult.error),
+        qualifyingExperienceMonths: publicTeachingExperience.qualifyingMonths,
+        experienceIncrementLevel: publicTeachingExperience.incrementLevel,
+      };
+    }),
+  );
+  if (
+    positionsWithScoringPoints.some(
+      (position) =>
+        position.educationPointsError ||
+        position.trainingPointsError ||
+        position.experiencePointsError,
+    )
+  ) {
+    return (
+      <EmptyState
+        description="Refresh the page to try loading your scoring information."
+        title="Application points unavailable"
+      />
+    );
+  }
 
   const selectedPosition = positions.find(
     (position) => position.id === application?.position_id,
@@ -314,10 +456,6 @@ export default async function ApplicantJobDetailPage({
           )}
 
           <section className="flex flex-col gap-5 border-t border-line-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-xl text-sm leading-6 text-muted">
-              Your latest submitted PDS will be attached to this application. HR
-              and evaluators see your applicant number and assessment data.
-            </p>
             {application ? (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <p className="text-sm text-muted">
@@ -345,8 +483,7 @@ export default async function ApplicantJobDetailPage({
               positions.length ? (
                 <ApplyButton
                   jobId={job.id}
-                  positions={positions}
-                  trainingHours={trainingHours}
+                  positions={positionsWithScoringPoints}
                 />
               ) : (
                 <p className="max-w-sm text-sm text-muted">

@@ -82,6 +82,7 @@ export function PostingApplicants({
             <option value="ALL">All applicants</option>
             <option value="SUBMITTED">Submitted</option>
             <option value="UNDER_EVALUATION">Under evaluation</option>
+            <option value="ASSESSMENT_SCHEDULED">Assessment scheduled</option>
             <option value="QUALIFIED">Qualified</option>
             <option value="NOT_QUALIFIED">Not qualified</option>
             <option value="HIRED">Hired</option>

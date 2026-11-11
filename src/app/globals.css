@@ -249,6 +249,10 @@ button:not(:disabled):active,
   box-shadow: var(--app-shadow-dropdown);
 }
 
+.assessment-schedule-picker-dropdown .ant-picker-time-panel .ant-picker-content {
+  height: 168px !important;
+}
+
 .ant-modal .ant-modal-content {
   border: 1px solid var(--app-line);
   border-radius: var(--app-radius-lg);

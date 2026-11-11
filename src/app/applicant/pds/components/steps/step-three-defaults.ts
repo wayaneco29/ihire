@@ -30,6 +30,16 @@ export function createStepThreeDefaults(draftData: Json): PdsStepThreeValues {
       const row = asRecord(value);
       return {
         level: asString(row.level) as PdsStepThreeValues["education"][number]["level"],
+        graduate_degree_type:
+          row.graduate_degree_type === "MASTERS" ||
+          row.graduate_degree_type === "DOCTORATE"
+            ? row.graduate_degree_type
+            : null,
+        graduate_degree_completed:
+          typeof row.graduate_degree_completed === "boolean"
+            ? row.graduate_degree_completed
+            : false,
+        graduate_units_earned: asYear(row.graduate_units_earned),
         school_name: asString(row.school_name),
         degree_course: asString(row.degree_course),
         period_from: asYear(row.period_from),

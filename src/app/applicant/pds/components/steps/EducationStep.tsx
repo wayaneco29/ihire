@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { Button } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm, type Resolver } from "react-hook-form";
-import { FormInput, FormSelect } from "@/components/form";
+import {
+  useForm,
+  useWatch,
+  type Control,
+  type Resolver,
+} from "react-hook-form";
+import { FormCheckbox, FormInput, FormSelect } from "@/components/form";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { DynamicRows } from "../DynamicRows";
 import type { Json } from "@/types/database";
@@ -19,7 +24,118 @@ type Props = {
   pdsVersionId: string;
 };
 
-export function EducationStep({ draftData, onCompleted, pdsVersionId }: Props) {
+function EducationFields({
+  control,
+  index,
+}: {
+  control: Control<PdsStepThreeValues>;
+  index: number;
+}) {
+  const level = useWatch({
+    control,
+    name: `education.${index}.level`,
+  });
+  const degreeCompleted = useWatch({
+    control,
+    name: `education.${index}.graduate_degree_completed`,
+  });
+
+  return (
+    <>
+      <FormSelect
+        control={control}
+        label="Level"
+        name={`education.${index}.level`}
+        options={[...EDUCATION_LEVEL_OPTIONS]}
+        placeholder="Choose level"
+        required
+      />
+      {level === "GRADUATE_STUDIES" && (
+        <>
+          <FormSelect
+            control={control}
+            label="Graduate degree type"
+            name={`education.${index}.graduate_degree_type`}
+            options={[
+              { label: "Master's", value: "MASTERS" },
+              { label: "Doctorate", value: "DOCTORATE" },
+            ]}
+            placeholder="Choose degree type"
+            required
+          />
+          <FormCheckbox
+            control={control}
+            label="I completed this degree"
+            name={`education.${index}.graduate_degree_completed`}
+            required
+          />
+          {!degreeCompleted && (
+            <FormInput
+              control={control}
+              hint="Enter the total graduate units earned. Points use the highest completed unit threshold."
+              label="Current units earned"
+              min={0}
+              name={`education.${index}.graduate_units_earned`}
+              type="number"
+            />
+          )}
+        </>
+      )}
+      <FormInput
+        control={control}
+        label="Name of school"
+        name={`education.${index}.school_name`}
+      />
+      <FormInput
+        control={control}
+        label="Degree / course"
+        name={`education.${index}.degree_course`}
+      />
+      <FormInput
+        control={control}
+        label="Period from (year)"
+        max={new Date().getFullYear()}
+        min={1900}
+        name={`education.${index}.period_from`}
+        type="number"
+      />
+      <FormInput
+        control={control}
+        label="Period to (year)"
+        max={new Date().getFullYear()}
+        min={1900}
+        name={`education.${index}.period_to`}
+        type="number"
+      />
+      {level !== "GRADUATE_STUDIES" && (
+        <FormInput
+          control={control}
+          label="Highest level / units earned"
+          name={`education.${index}.highest_level_units_earned`}
+        />
+      )}
+      <FormInput
+        control={control}
+        label="Year graduated"
+        max={new Date().getFullYear()}
+        min={1900}
+        name={`education.${index}.year_graduated`}
+        type="number"
+      />
+      <FormInput
+        control={control}
+        label="Scholarship / honors received"
+        name={`education.${index}.honors_received`}
+      />
+    </>
+  );
+}
+
+export function EducationStep({
+  draftData,
+  onCompleted,
+  pdsVersionId,
+}: Props) {
   const {
     control,
     handleSubmit,
@@ -68,6 +184,9 @@ export function EducationStep({ draftData, onCompleted, pdsVersionId }: Props) {
         control={control}
         createRow={() => ({
           level: "" as PdsStepThreeValues["education"][number]["level"],
+          graduate_degree_type: null,
+          graduate_degree_completed: false,
+          graduate_units_earned: null,
           school_name: "",
           degree_course: "",
           period_from: null,
@@ -81,58 +200,7 @@ export function EducationStep({ draftData, onCompleted, pdsVersionId }: Props) {
         name="education"
         renderRow={(index) => (
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
-            <FormSelect
-              control={control}
-              label="Level"
-              name={`education.${index}.level`}
-              options={[...EDUCATION_LEVEL_OPTIONS]}
-              placeholder="Choose level"
-              required
-            />
-            <FormInput
-              control={control}
-              label="Name of school"
-              name={`education.${index}.school_name`}
-            />
-            <FormInput
-              control={control}
-              label="Degree / course"
-              name={`education.${index}.degree_course`}
-            />
-            <FormInput
-              control={control}
-              label="Period from (year)"
-              max={new Date().getFullYear()}
-              min={1900}
-              name={`education.${index}.period_from`}
-              type="number"
-            />
-            <FormInput
-              control={control}
-              label="Period to (year)"
-              max={new Date().getFullYear()}
-              min={1900}
-              name={`education.${index}.period_to`}
-              type="number"
-            />
-            <FormInput
-              control={control}
-              label="Highest level / units earned"
-              name={`education.${index}.highest_level_units_earned`}
-            />
-            <FormInput
-              control={control}
-              label="Year graduated"
-              max={new Date().getFullYear()}
-              min={1900}
-              name={`education.${index}.year_graduated`}
-              type="number"
-            />
-            <FormInput
-              control={control}
-              label="Scholarship / honors received"
-              name={`education.${index}.honors_received`}
-            />
+            <EducationFields control={control} index={index} />
           </div>
         )}
       />

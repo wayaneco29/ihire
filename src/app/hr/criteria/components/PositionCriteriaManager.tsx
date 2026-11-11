@@ -9,11 +9,17 @@ import { FormInput, FormSelect } from "@/components/form";
 import { StatusTag } from "@/components/ui/StatusTag";
 import {
   positionSchema,
+  positionScoringStandardsSchema,
   positionWeightFormSchema,
+  type PositionScoringStandardsValues,
   type PositionValues,
   type PositionWeightValues,
 } from "../schema";
-import { createPosition, savePositionWeights } from "../actions";
+import {
+  createPosition,
+  savePositionScoringStandards,
+  savePositionWeights,
+} from "../actions";
 
 type Criterion = {
   id: string;
@@ -26,7 +32,212 @@ type Position = {
   id: string;
   title: string;
   applicationType: string;
+  base_qualification_level: number | null;
+  base_training_increment_level: number | null;
+  base_experience_increment_level: number | null;
 };
+
+type EducationLevel = {
+  qualification_level: number;
+  description: string;
+};
+
+const TRAINING_INCREMENT_OPTIONS = Array.from({ length: 31 }, (_, index) => {
+  const level = index + 1;
+  const lowerHours = index * 8;
+  const range =
+    level === 31
+      ? `${lowerHours}+ hours`
+      : `${lowerHours} to <${lowerHours + 8} hours`;
+  return {
+    label: `Level ${level} · ${range}`,
+    value: level.toString(),
+  };
+});
+
+function formatExperienceMonths(months: number) {
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  return [
+    years ? `${years} year${years === 1 ? "" : "s"}` : "",
+    remainingMonths
+      ? `${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+const EXPERIENCE_INCREMENT_OPTIONS = Array.from({ length: 31 }, (_, index) => {
+  const level = index + 1;
+  const lowerMonths = index * 6;
+  const upperMonths = lowerMonths + 6;
+  const range =
+    level === 1
+      ? "<6 months"
+      : level === 31
+        ? "15+ years"
+        : `${formatExperienceMonths(lowerMonths)} to <${formatExperienceMonths(upperMonths)}`;
+  return {
+    label: `Level ${level} · ${range}`,
+    value: level.toString(),
+  };
+});
+
+function PositionScoringStandardsEditor({
+  position,
+  educationLevels,
+}: {
+  position: Position;
+  educationLevels: EducationLevel[];
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState<{
+    text: string;
+    isError: boolean;
+  } | null>(null);
+  const form = useForm<PositionScoringStandardsValues>({
+    resolver: yupResolver(
+      positionScoringStandardsSchema,
+    ) as Resolver<PositionScoringStandardsValues>,
+    defaultValues: {
+      baseQualificationLevel:
+        position.base_qualification_level?.toString() ?? "",
+      baseTrainingIncrementLevel:
+        position.base_training_increment_level?.toString() ?? "",
+      baseExperienceIncrementLevel:
+        position.base_experience_increment_level?.toString() ?? "",
+    },
+  });
+
+  async function submit(values: PositionScoringStandardsValues) {
+    setMessage(null);
+    const result = await savePositionScoringStandards(position.id, values);
+    setMessage({ text: result.message, isError: !result.success });
+    if (result.success) {
+      setOpen(false);
+      router.refresh();
+    }
+  }
+
+  const currentLevel = educationLevels.find(
+    (level) => level.qualification_level === position.base_qualification_level,
+  );
+  const currentTrainingLevel = TRAINING_INCREMENT_OPTIONS.find(
+    (option) => Number(option.value) === position.base_training_increment_level,
+  );
+  const currentExperienceLevel = EXPERIENCE_INCREMENT_OPTIONS.find(
+    (option) =>
+      Number(option.value) === position.base_experience_increment_level,
+  );
+
+  return (
+    <>
+      <div>
+        <p className="text-sm text-ink">
+          Education: {currentLevel?.description ?? "Not set"}
+        </p>
+        <p className="mt-1 text-sm text-ink">
+          Training: {currentTrainingLevel?.label ?? "Not set"}
+        </p>
+        <p className="mt-1 text-sm text-ink">
+          Experience: {currentExperienceLevel?.label ?? "Not set"}
+        </p>
+        <Button
+          className="mt-1 px-0"
+          onClick={() => {
+            form.reset({
+              baseQualificationLevel:
+                position.base_qualification_level?.toString() ?? "",
+              baseTrainingIncrementLevel:
+                position.base_training_increment_level?.toString() ?? "",
+              baseExperienceIncrementLevel:
+                position.base_experience_increment_level?.toString() ?? "",
+            });
+            setMessage(null);
+            setOpen(true);
+          }}
+          type="link"
+        >
+          {currentLevel || currentTrainingLevel || currentExperienceLevel
+            ? "Update standards"
+            : "Set standards"}
+        </Button>
+      </div>
+      <Modal
+        centered
+        destroyOnHidden
+        footer={null}
+        onCancel={() => {
+          if (!form.formState.isSubmitting) setOpen(false);
+        }}
+        open={open}
+        title={`Set ${position.title} scoring standards`}
+      >
+        <p className="mb-5 text-sm leading-6 text-muted">
+          Set the minimum Education, Training, and Experience standards for this
+          position. Training increments use 8-hour ranges; Experience uses
+          6-month ranges.
+        </p>
+        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
+          <FormSelect
+            control={form.control}
+            label="Base education standard"
+            name="baseQualificationLevel"
+            options={[
+              { label: "Not set", value: "" },
+              ...educationLevels.map((level) => ({
+                label: `${level.qualification_level}. ${level.description}`,
+                value: level.qualification_level.toString(),
+              })),
+            ]}
+          />
+          <FormSelect
+            control={form.control}
+            label="Minimum training increment level"
+            name="baseTrainingIncrementLevel"
+            options={[
+              { label: "Not set", value: "" },
+              ...TRAINING_INCREMENT_OPTIONS,
+            ]}
+          />
+          <FormSelect
+            control={form.control}
+            label="Minimum experience increment level"
+            name="baseExperienceIncrementLevel"
+            options={[
+              { label: "Not set", value: "" },
+              ...EXPERIENCE_INCREMENT_OPTIONS,
+            ]}
+          />
+          {message && (
+            <Alert
+              message={message.text}
+              showIcon
+              type={message.isError ? "error" : "success"}
+            />
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              disabled={form.formState.isSubmitting}
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              htmlType="submit"
+              loading={form.formState.isSubmitting}
+              type="primary"
+            >
+              Save standards
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </>
+  );
+}
 
 function CreatePositionForm({
   open,
@@ -291,10 +502,12 @@ function PositionWeightEditor({
 export function PositionCriteriaManager({
   positions,
   criteria,
+  educationLevels,
   profileByPosition,
 }: {
   positions: Position[];
   criteria: Criterion[];
+  educationLevels: EducationLevel[];
   profileByPosition: Record<
     string,
     { version: number; weights: Record<string, number> }
@@ -345,11 +558,14 @@ export function PositionCriteriaManager({
           <table className="w-full min-w-[36rem] border-collapse text-left">
             <thead>
               <tr className="border-b border-line bg-panel-muted text-xs font-semibold text-muted">
-                <th className="px-5 py-3" scope="col">
+                <th className="px-5 py-3 w-30" scope="col">
                   Hiring type
                 </th>
                 <th className="px-5 py-3" scope="col">
                   Position
+                </th>
+                <th className="px-5 py-3" scope="col">
+                  Minimum standards
                 </th>
                 <th className="px-5 py-3" scope="col">
                   Criteria profile
@@ -366,7 +582,7 @@ export function PositionCriteriaManager({
                     <tr className="border-y border-line-subtle bg-panel-muted/70">
                       <th
                         className="px-5 py-3 text-sm font-semibold text-ink"
-                        colSpan={4}
+                        colSpan={5}
                         scope="rowgroup"
                       >
                         <span className="flex flex-wrap items-center justify-between gap-2">
@@ -387,7 +603,8 @@ export function PositionCriteriaManager({
                         const profile = profileByPosition[position.id];
                         const positionCriteria = criteria
                           .filter(
-                            (criterion) => criterion.position_id === position.id,
+                            (criterion) =>
+                              criterion.position_id === position.id,
                           )
                           .sort(
                             (left, right) =>
@@ -396,15 +613,19 @@ export function PositionCriteriaManager({
                         return (
                           <Fragment key={position.id}>
                             <tr className="border-b border-line-subtle">
-                              <td className="px-5 py-4 align-top text-sm text-muted">
-                                {group.title}
-                              </td>
+                              <td className="px-5 py-4 align-top text-sm text-muted" />
                               <th
                                 className="px-5 py-4 text-left align-top text-sm font-semibold text-ink"
                                 scope="row"
                               >
                                 {position.title}
                               </th>
+                              <td className="px-5 py-4 align-top">
+                                <PositionScoringStandardsEditor
+                                  educationLevels={educationLevels}
+                                  position={position}
+                                />
+                              </td>
                               <td className="px-5 py-4 align-top">
                                 {profile ? (
                                   <StatusTag className="border-primary/20 bg-primary-light text-primary-dark">
@@ -432,7 +653,7 @@ export function PositionCriteriaManager({
                       <tr className="border-b border-line">
                         <td
                           className="px-5 py-5 text-sm text-muted"
-                          colSpan={4}
+                          colSpan={5}
                         >
                           No {group.title.toLowerCase()} positions yet. Use Add
                           position to create one and set its criteria.

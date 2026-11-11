@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   TRAINING_CERTIFICATE_DOCUMENT_TYPE,
   TRANSCRIPT_DOCUMENT_TYPE,
+  groupSupportingDocuments,
 } from "@/constants/documents";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
@@ -31,8 +32,33 @@ type EducationRecord = {
   period_from: number | null;
   period_to: number | null;
   highest_level_units_earned: string | null;
+  graduate_degree_type: string | null;
+  graduate_degree_completed: boolean | null;
+  graduate_units_earned: number | null;
   year_graduated: number | null;
   honors_received: string | null;
+};
+
+type EducationPoints = {
+  applicant_qualification_level: number | null;
+  base_qualification_level: number | null;
+  education_points: number | null;
+};
+
+type TrainingPoints = {
+  applicant_training_increment_level: number | null;
+  maximum_training_points: number | null;
+  minimum_training_increment_level: number | null;
+  training_hours: number | null;
+  training_points: number | null;
+};
+
+type ExperiencePoints = {
+  applicant_experience_increment_level: number;
+  qualifying_experience_months: number;
+  minimum_experience_increment_level: number | null;
+  maximum_experience_points: number | null;
+  experience_points: number | null;
 };
 
 type WorkExperienceRecord = {
@@ -49,11 +75,17 @@ type WorkExperienceRecord = {
 export function AnonymizedApplicantReview({
   applicationId,
   applicantNumber,
-  applicationStatus,
   experienceYears,
   trainingHours,
   skills,
   education,
+  educationPoints,
+  educationPointsUnavailable,
+  trainingPoints,
+  trainingPointsUnavailable,
+  experiencePoints,
+  experiencePointsUnavailable,
+  qualifyingExperienceLabel,
   workExperience,
   educationUnavailable,
   workExperienceUnavailable,
@@ -62,11 +94,17 @@ export function AnonymizedApplicantReview({
 }: {
   applicationId: string;
   applicantNumber: string;
-  applicationStatus: string;
   experienceYears: number | null;
   trainingHours: number | null;
   skills: string[] | null;
   education: EducationRecord[];
+  educationPoints: EducationPoints | null;
+  educationPointsUnavailable: boolean;
+  trainingPoints: TrainingPoints | null;
+  trainingPointsUnavailable: boolean;
+  experiencePoints: ExperiencePoints;
+  experiencePointsUnavailable: boolean;
+  qualifyingExperienceLabel: string;
   workExperience: WorkExperienceRecord[];
   educationUnavailable: boolean;
   workExperienceUnavailable: boolean;
@@ -86,6 +124,7 @@ export function AnonymizedApplicantReview({
     "preview" | "verify" | null
   >(null);
   const [isPending, startTransition] = useTransition();
+  const documentGroups = groupSupportingDocuments(documents);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -154,6 +193,19 @@ export function AnonymizedApplicantReview({
           <p className="mt-2 text-sm font-semibold text-ink">
             {trainingHours ?? 0}
           </p>
+          <p className="mt-2 text-xs leading-5 text-muted">
+            {trainingPointsUnavailable
+              ? "Training score unavailable."
+              : trainingPoints?.training_points !== null &&
+                  trainingPoints?.training_points !== undefined &&
+                  trainingPoints.maximum_training_points !== null &&
+                  trainingPoints.minimum_training_increment_level !== null &&
+                  trainingPoints.applicant_training_increment_level !== null
+                ? `${trainingPoints.training_points} / ${trainingPoints.maximum_training_points} points · increment ${trainingPoints.applicant_training_increment_level} (minimum ${trainingPoints.minimum_training_increment_level})`
+                : trainingPoints?.minimum_training_increment_level === null
+                  ? "Position minimum training increment is not set."
+                  : "Training points not available yet."}
+          </p>
         </section>
       </div>
 
@@ -165,7 +217,6 @@ export function AnonymizedApplicantReview({
               Applicant credibility information
             </p>
           </div>
-          <WorkflowStatusTag status={applicationStatus} />
         </div>
         {skills?.length ? (
           <ul className="mt-4 flex flex-wrap gap-2">
@@ -195,6 +246,23 @@ export function AnonymizedApplicantReview({
             <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
               {education.length} record{education.length === 1 ? "" : "s"}
             </span>
+          </div>
+          <div className="mt-4 rounded-sm border border-primary/20 bg-primary-light/40 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary-dark">
+              Education points
+            </p>
+            <p className="mt-1 text-sm font-medium text-ink">
+              {educationPointsUnavailable
+                ? "Score unavailable. Refresh the page to try again."
+                : educationPoints?.education_points !== null &&
+                    educationPoints?.education_points !== undefined &&
+                    educationPoints.applicant_qualification_level !== null &&
+                    educationPoints.base_qualification_level !== null
+                  ? `${educationPoints.education_points} points (education ${educationPoints.applicant_qualification_level} − position standard ${educationPoints.base_qualification_level})`
+                  : educationPoints?.base_qualification_level === null
+                    ? "The position education standard has not been set."
+                    : "Not scored yet. Check the submitted PDS qualification level."}
+            </p>
           </div>
           {educationUnavailable ? (
             <p className="mt-5 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
@@ -232,12 +300,29 @@ export function AnonymizedApplicantReview({
                       label="Year graduated"
                       value={item.year_graduated?.toString()}
                     />
-                    {item.highest_level_units_earned && (
+                    {item.level === "GRADUATE_STUDIES" && (
+                      <DetailValue
+                        label="Graduate studies"
+                        value={
+                          item.graduate_degree_type === "MASTERS"
+                            ? item.graduate_degree_completed
+                              ? "Master's degree completed"
+                              : `Master's studies · ${item.graduate_units_earned ?? 0} units earned`
+                            : item.graduate_degree_type === "DOCTORATE"
+                              ? item.graduate_degree_completed
+                                ? "Doctorate completed"
+                                : `Doctorate studies · ${item.graduate_units_earned ?? 0} units earned`
+                              : "Not provided"
+                        }
+                      />
+                    )}
+                    {item.level !== "GRADUATE_STUDIES" &&
+                      item.highest_level_units_earned && (
                       <DetailValue
                         label="Units earned"
                         value={item.highest_level_units_earned}
                       />
-                    )}
+                      )}
                     {item.honors_received && (
                       <DetailValue
                         label="Honors"
@@ -266,6 +351,30 @@ export function AnonymizedApplicantReview({
             <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
               {Number(experienceYears ?? 0).toFixed(1)} years total
             </span>
+          </div>
+          <div className="mt-4 rounded-sm border border-primary/20 bg-primary-light/40 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary-dark">
+              Qualifying public teaching experience
+            </p>
+            <p className="mt-1 text-sm font-medium text-ink">
+              {qualifyingExperienceLabel} · Level{" "}
+              {experiencePoints.applicant_experience_increment_level}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              {experiencePointsUnavailable
+                ? "Experience score unavailable. Refresh the page to try again."
+                : experiencePoints.experience_points !== null &&
+                    experiencePoints.maximum_experience_points !== null &&
+                    experiencePoints.minimum_experience_increment_level !== null
+                  ? `${experiencePoints.experience_points} / ${experiencePoints.maximum_experience_points} points · position minimum Level ${experiencePoints.minimum_experience_increment_level}`
+                  : experiencePoints.minimum_experience_increment_level === null
+                    ? "The position minimum Experience level has not been set."
+                    : "Experience points are not available yet."}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Counts Government Service entries with Teacher, Instructor, or
+              Educator in the position title. Overlapping periods count once.
+            </p>
           </div>
           {workExperienceUnavailable ? (
             <p className="mt-5 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
@@ -333,7 +442,7 @@ export function AnonymizedApplicantReview({
             </p>
           </div>
           <span className="text-sm text-muted">
-            {documents.length} document types
+            {documents.length} documents
           </span>
         </div>
         {documentsUnavailable ? (
@@ -342,32 +451,47 @@ export function AnonymizedApplicantReview({
             again.
           </p>
         ) : documents.length ? (
-          <ul className="mt-4 divide-y divide-line-subtle">
-            {documents.map((document) => (
+          <ul className="mt-4 space-y-3">
+            {documentGroups.map((group) => (
               <li
-                className="flex flex-wrap items-center justify-between gap-3 py-4"
-                key={document.document_id}
+                className="rounded-sm border border-line-subtle bg-panel-muted p-4 sm:p-5"
+                key={group.label}
               >
-                <div className="min-w-0">
-                  <p className="font-medium text-ink">
-                    {document.document_type}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
-                    Uploaded{" "}
-                    {formatDate(document.uploaded_at, "MMM D, YYYY · h:mm A")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <WorkflowStatusTag status={document.document_status} />
-                  <button
-                    className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark disabled:opacity-60"
-                    disabled={isPending}
-                    onClick={() => viewDocument(document)}
-                    type="button"
-                  >
-                    View
-                  </button>
-                </div>
+                <h3 className="border-b border-line-subtle pb-3 text-sm font-semibold text-ink">
+                  {group.label}
+                </h3>
+                <ul className="mt-1 divide-y divide-line-subtle">
+                  {group.documents.map((document) => (
+                    <li
+                      className="flex flex-wrap items-center justify-between gap-3 py-4 last:pb-0"
+                      key={document.document_id}
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-ink">
+                          {document.document_type}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">
+                          Uploaded{" "}
+                          {formatDate(
+                            document.uploaded_at,
+                            "MMM D, YYYY · h:mm A",
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <WorkflowStatusTag status={document.document_status} />
+                        <button
+                          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark disabled:opacity-60"
+                          disabled={isPending}
+                          onClick={() => viewDocument(document)}
+                          type="button"
+                        >
+                          View
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
           </ul>

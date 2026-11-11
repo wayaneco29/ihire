@@ -51,7 +51,49 @@ export const positionWeightFormSchema = yup.object({
   weights: positionWeightsSchema,
 });
 
+export const positionScoringStandardsSchema = yup.object({
+  baseQualificationLevel: yup
+    .string()
+    .defined()
+    .test(
+      "valid-qualification-level",
+      "Choose a valid education standard.",
+      (value) =>
+        value === "" ||
+        (/^\d+$/.test(value) &&
+          Number(value) >= 1 &&
+          Number(value) <= 31),
+    ),
+  baseTrainingIncrementLevel: yup
+    .string()
+    .defined()
+    .test(
+      "valid-training-increment-level",
+      "Choose a valid minimum training increment level.",
+      (value) =>
+        value === "" ||
+        (/^\d+$/.test(value) &&
+          Number(value) >= 1 &&
+          Number(value) <= 31),
+    ),
+  baseExperienceIncrementLevel: yup
+    .string()
+    .defined()
+    .test(
+      "valid-experience-increment-level",
+      "Choose a valid minimum Experience increment level.",
+      (value) =>
+        value === "" ||
+        (/^\d+$/.test(value) &&
+          Number(value) >= 1 &&
+          Number(value) <= 31),
+    ),
+});
+
 export type PositionValues = yup.InferType<typeof positionSchema>;
 export type PositionWeightValues = yup.InferType<
   typeof positionWeightFormSchema
+>;
+export type PositionScoringStandardsValues = yup.InferType<
+  typeof positionScoringStandardsSchema
 >;

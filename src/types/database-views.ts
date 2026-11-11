@@ -69,11 +69,16 @@ export type PublicViews = {
             "application_id": string;
             "degree_course": string | null;
             "education_id": string;
+            "graduate_degree_completed": boolean | null;
+            "graduate_degree_type": string | null;
+            "graduate_units_earned": number | null;
             "highest_level_units_earned": string | null;
             "honors_received": string | null;
             "level": string;
             "period_from": number | null;
             "period_to": number | null;
+            "qualification_description": string | null;
+            "qualification_level": number | null;
             "school_name": string | null;
             "sort_order": number;
             "year_graduated": number | null;
@@ -81,6 +86,37 @@ export type PublicViews = {
         ComputedFields: never;
         Relationships: [
         ];
+    };
+    "v_anonymized_application_education_points": {
+        Row: {
+            "applicant_qualification_level": number | null;
+            "application_id": string;
+            "base_qualification_level": number | null;
+            "education_points": number | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+        ];
+    };
+    "v_anonymized_application_training_points": {
+        Row: {
+            "applicant_training_increment_level": number | null;
+            "application_id": string;
+            "maximum_training_points": number | null;
+            "minimum_training_increment_level": number | null;
+            "training_hours": number | null;
+            "training_points": number | null;
+        };
+        Relationships: [];
+    };
+    "v_anonymized_application_experience_standards": {
+        Row: {
+            "application_id": string;
+            "maximum_experience_points": number | null;
+            "minimum_experience_increment_level": number | null;
+            "position_id": string | null;
+        };
+        Relationships: [];
     };
     "v_anonymized_questionnaire": {
         Row: {

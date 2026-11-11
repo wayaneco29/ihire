@@ -6,6 +6,7 @@ export type ApplicantsTable = {
         "created_at": string;
         "id": string;
         "profile_id": string;
+        "qualification_level": number | null;
     };
     ComputedFields: never;
     Insert: {
@@ -13,12 +14,14 @@ export type ApplicantsTable = {
         "created_at"?: string;
         "id"?: string;
         "profile_id": string;
+        "qualification_level"?: number | null;
     };
     Update: {
         "applicant_number"?: string;
         "created_at"?: string;
         "id"?: string;
         "profile_id"?: string;
+        "qualification_level"?: number | null;
     };
     Relationships: [
         {
@@ -30,6 +33,17 @@ export type ApplicantsTable = {
             referencedRelation: "profiles";
             referencedColumns: [
                 "id"
+            ];
+        },
+        {
+            foreignKeyName: "applicants_qualification_level_fkey";
+            columns: [
+                "qualification_level"
+            ];
+            isOneToOne: false;
+            referencedRelation: "education_levels";
+            referencedColumns: [
+                "qualification_level"
             ];
         }
     ];
@@ -156,6 +170,7 @@ export type ApplicationsTable = {
         "job_id": string;
         "pds_version_id": string;
         "position_id": string | null;
+        "scheduled_assessment_at": string | null;
         "status": PublicEnums["application_status"];
     };
     ComputedFields: never;
@@ -166,6 +181,7 @@ export type ApplicationsTable = {
         "job_id": string;
         "pds_version_id": string;
         "position_id"?: string | null;
+        "scheduled_assessment_at"?: string | null;
         "status"?: PublicEnums["application_status"];
     };
     Update: {
@@ -175,6 +191,7 @@ export type ApplicationsTable = {
         "job_id"?: string;
         "pds_version_id"?: string;
         "position_id"?: string | null;
+        "scheduled_assessment_at"?: string | null;
         "status"?: PublicEnums["application_status"];
     };
     Relationships: [

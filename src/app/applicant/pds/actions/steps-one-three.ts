@@ -316,11 +316,23 @@ export async function savePdsEducationStep(
   const rows = values.education.map((row, index) => ({
     pds_version_id: pdsVersionId,
     level: row.level,
+    graduate_degree_type:
+      row.level === "GRADUATE_STUDIES" ? row.graduate_degree_type : null,
+    graduate_degree_completed:
+      row.level === "GRADUATE_STUDIES" ? row.graduate_degree_completed : null,
+    graduate_units_earned:
+      row.level === "GRADUATE_STUDIES" &&
+      row.graduate_degree_completed === false
+        ? row.graduate_units_earned
+        : null,
     school_name: row.school_name ?? null,
     degree_course: row.degree_course ?? null,
     period_from: row.period_from ?? null,
     period_to: row.period_to ?? null,
-    highest_level_units_earned: row.highest_level_units_earned ?? null,
+    highest_level_units_earned:
+      row.level === "GRADUATE_STUDIES"
+        ? null
+        : row.highest_level_units_earned ?? null,
     year_graduated: row.year_graduated ?? null,
     honors_received: row.honors_received ?? null,
     sort_order: index + 1,

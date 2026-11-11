@@ -4,6 +4,7 @@ const statusStyles: Record<string, string> = {
   DRAFT: "border-line bg-panel-muted text-muted",
   SUBMITTED: "border-info/20 bg-info/10 text-info",
   UNDER_EVALUATION: "border-warning/30 bg-warning/10 text-warning",
+  ASSESSMENT_SCHEDULED: "border-warning/30 bg-warning/10 text-warning",
   FOR_REVIEW: "border-warning/30 bg-warning/10 text-warning",
   PENDING: "border-line bg-panel-muted text-muted",
   FOR_RESUBMISSION: "border-warning/30 bg-warning/10 text-warning",

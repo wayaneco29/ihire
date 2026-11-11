@@ -330,8 +330,37 @@ export type NotificationsTable = {
 
 export type DatabaseTables02 = {
   "documents": DocumentsTable;
+  "education_levels": EducationLevelsTable;
   "hiring_decisions": HiringDecisionsTable;
   "invitations": InvitationsTable;
   "job_postings": JobPostingsTable;
   "notifications": NotificationsTable;
+};
+
+export type EducationLevelsTable = {
+  Row: {
+    attainment_status: string | null;
+    qualification_level: number;
+    description: string;
+    graduate_degree_type: string | null;
+    maximum_units: number | null;
+    minimum_units: number | null;
+  };
+  Insert: {
+    attainment_status?: string | null;
+    qualification_level: number;
+    description: string;
+    graduate_degree_type?: string | null;
+    maximum_units?: number | null;
+    minimum_units?: number | null;
+  };
+  Update: {
+    attainment_status?: string | null;
+    qualification_level?: number;
+    description?: string;
+    graduate_degree_type?: string | null;
+    maximum_units?: number | null;
+    minimum_units?: number | null;
+  };
+  Relationships: [];
 };

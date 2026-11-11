@@ -148,7 +148,9 @@ export default async function ApplicantDashboardPage() {
           ? `Your application for ${latestApplication.jobTitle} was not qualified.`
           : latestApplication.status === "REJECTED"
             ? `Your application for ${latestApplication.jobTitle} was not selected.`
-            : `Your application for ${latestApplication.jobTitle} is in progress.`;
+                : latestApplication.status === "ASSESSMENT_SCHEDULED"
+                  ? `Your assessment for ${latestApplication.jobTitle} is scheduled.`
+                  : `Your application for ${latestApplication.jobTitle} is in progress.`;
   const secondaryApplication = secondaryApplications[0];
   const secondaryStatusLabel = secondaryApplication
     ? ({
@@ -156,6 +158,7 @@ export default async function ApplicantDashboardPage() {
         QUALIFIED: "Qualified",
         NOT_QUALIFIED: "Not qualified",
         REJECTED: "Not selected",
+        ASSESSMENT_SCHEDULED: "Assessment scheduled",
         UNDER_EVALUATION: "Under evaluation",
         SUBMITTED: "Submitted",
       }[secondaryApplication.status] ?? "In progress")

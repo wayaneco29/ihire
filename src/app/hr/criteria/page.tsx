@@ -8,11 +8,18 @@ export default async function HrPositionCriteriaPage() {
   const hr = await getHrContext();
   if (!hr) redirect("/login");
 
-  const [positionsResult, criteriaResult, applicationTypesResult] =
+  const [
+    positionsResult,
+    criteriaResult,
+    applicationTypesResult,
+    educationLevelsResult,
+  ] =
     await Promise.all([
       hr.supabase
         .from("positions")
-        .select("id, title, application_type_id")
+        .select(
+          "id, title, application_type_id, base_qualification_level, base_training_increment_level, base_experience_increment_level",
+        )
         .order("title"),
       hr.supabase
         .from("position_criteria")
@@ -20,12 +27,17 @@ export default async function HrPositionCriteriaPage() {
         .order("position_id")
         .order("display_order"),
       hr.supabase.from("application_type").select("id, name"),
+      hr.supabase
+        .from("education_levels")
+        .select("qualification_level, description")
+        .order("qualification_level"),
     ]);
 
   if (
     positionsResult.error ||
     criteriaResult.error ||
-    applicationTypesResult.error
+    applicationTypesResult.error ||
+    educationLevelsResult.error
   ) {
     return (
       <>
@@ -50,10 +62,42 @@ export default async function HrPositionCriteriaPage() {
       applicationType.name,
     ]),
   );
+  const teachingOrder = [
+    "teacher i",
+    "teacher ii",
+    "teacher iii",
+    "teacher iv",
+    "teacher v",
+    "teacher vi",
+    "teacher vii",
+    "master teacher i",
+    "master teacher ii",
+    "master teacher iii",
+    "master teacher iv",
+    "master teacher v",
+  ];
   const positions = (positionsResult.data ?? []).map((position) => ({
     ...position,
     applicationType: applicationTypeNames.get(position.application_type_id) ?? "",
-  }));
+  })).sort((first, second) => {
+    const firstIsTeaching = first.applicationType === "teaching";
+    const secondIsTeaching = second.applicationType === "teaching";
+    if (firstIsTeaching !== secondIsTeaching) return firstIsTeaching ? -1 : 1;
+    if (!firstIsTeaching) return first.title.localeCompare(second.title);
+
+    const firstTitle = first.title.trim().toLocaleLowerCase();
+    const secondTitle = second.title.trim().toLocaleLowerCase();
+    const firstRank = teachingOrder.indexOf(firstTitle);
+    const secondRank = teachingOrder.indexOf(secondTitle);
+
+    if (firstRank >= 0 || secondRank >= 0) {
+      if (firstRank < 0) return 1;
+      if (secondRank < 0) return -1;
+      return firstRank - secondRank;
+    }
+
+    return first.title.localeCompare(second.title);
+  });
   const { data: currentProfiles, error: profilesError } = positions.length
     ? await hr.supabase
         .from("position_weight_profiles")
@@ -143,6 +187,7 @@ export default async function HrPositionCriteriaPage() {
       />
       <PositionCriteriaManager
         criteria={criteriaResult.data ?? []}
+        educationLevels={educationLevelsResult.data ?? []}
         positions={positions}
         profileByPosition={profileByPosition}
       />

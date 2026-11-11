@@ -42,7 +42,7 @@ async function HrDashboardContent() {
 
   const applications = applicationsResult.data ?? [];
   const pendingCount = applications.filter((application) =>
-    ["SUBMITTED", "UNDER_EVALUATION"].includes(application.application_status),
+    ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED"].includes(application.application_status),
   ).length;
   const hiredCount = applications.filter(
     (application) => application.application_status === "HIRED",

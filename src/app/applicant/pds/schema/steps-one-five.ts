@@ -162,6 +162,37 @@ export const pdsStepThreeSchema = yup.object({
               "Choose an education level.",
             )
             .required("Education level is required."),
+          graduate_degree_type: yup
+            .mixed<"MASTERS" | "DOCTORATE">()
+            .oneOf(["MASTERS", "DOCTORATE"])
+            .nullable()
+            .when("level", {
+              is: "GRADUATE_STUDIES",
+              then: (schema) =>
+                schema.required("Choose a graduate degree type."),
+            }),
+          graduate_degree_completed: yup
+            .boolean()
+            .nullable()
+            .when("level", {
+              is: "GRADUATE_STUDIES",
+              then: (schema) =>
+                schema.required("Indicate whether you completed the degree."),
+            }),
+          graduate_units_earned: yup
+            .number()
+            .transform((value, originalValue) =>
+              originalValue === "" || originalValue == null ? null : value,
+            )
+            .nullable()
+            .integer()
+            .min(0)
+            .when(["level", "graduate_degree_completed"], {
+              is: (level: string, completed: boolean | null) =>
+                level === "GRADUATE_STUDIES" && completed === false,
+              then: (schema) =>
+                schema.required("Enter your current units earned."),
+            }),
           school_name: optionalText(),
           degree_course: optionalText(),
           period_from: optionalEducationYear(),
@@ -359,6 +390,9 @@ export type PdsStepThreeValues = {
       | "COLLEGE"
       | "GRADUATE_STUDIES"
       | "";
+    graduate_degree_type: "MASTERS" | "DOCTORATE" | null;
+    graduate_degree_completed: boolean | null;
+    graduate_units_earned: number | null;
     school_name: string;
     degree_course: string;
     period_from: number | null;

@@ -2,11 +2,13 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
+import { formatPhilippineDateTime } from "@/utils/philippine-time";
 
 export type ApplicantApplication = {
   id: string;
   status: string;
   applied_at: string;
+  scheduled_assessment_at: string | null;
   jobTitle: string;
   positionLabel: string;
 };
@@ -21,7 +23,7 @@ function ApplicationSummary({
     {
       label: "In review",
       value: applications.filter((application) =>
-        ["SUBMITTED", "UNDER_EVALUATION"].includes(application.status),
+        ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED"].includes(application.status),
       ).length,
     },
     {
@@ -114,6 +116,14 @@ export function ApplicationList({
               </div>
               <div>
                 <WorkflowStatusTag status={application.status} />
+                {application.scheduled_assessment_at && (
+                  <p className="mt-1 text-xs text-muted">
+                    Assessment:{" "}
+                    {formatPhilippineDateTime(
+                      application.scheduled_assessment_at,
+                    )}
+                  </p>
+                )}
               </div>
               <Link
                 className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary transition hover:bg-primary-light sm:justify-self-end"

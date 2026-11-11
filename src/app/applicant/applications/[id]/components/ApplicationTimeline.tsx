@@ -1,5 +1,6 @@
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
+import { formatPhilippineDateTime } from "@/utils/philippine-time";
 
 export type ApplicationEvent = {
   id: string;
@@ -42,7 +43,9 @@ export function ApplicationTimeline({
                 className="mt-1.5 block text-xs text-muted"
                 dateTime={event.date}
               >
-                {formatDate(event.date, "MMM D, YYYY · h:mm A")}
+                {event.status === "ASSESSMENT_SCHEDULED"
+                  ? formatPhilippineDateTime(event.date)
+                  : formatDate(event.date, "MMM D, YYYY · h:mm A")}
               </time>
             )}
             {event.remarks && (

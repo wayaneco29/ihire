@@ -2,14 +2,18 @@
 
 import { Controller, type FieldValues } from "react-hook-form";
 import { DatePicker } from "antd";
-import type { Dayjs } from "dayjs";
+import type { DatePickerProps } from "antd";
+import dayjs, { type Dayjs } from "dayjs";
 import { FieldFrame } from "./FieldFrame";
 import { fieldId, type FormControlProps } from "./field-types";
 
 type FormDatePickerProps<T extends FieldValues> = FormControlProps<T> & {
   format?: string;
+  showTime?: DatePickerProps["showTime"];
   placeholder?: string;
   disabled?: boolean;
+  valueFormat?: string;
+  popupClassName?: string;
 };
 
 export function FormDatePicker<T extends FieldValues>(
@@ -23,6 +27,7 @@ export function FormDatePicker<T extends FieldValues>(
     hint,
     required,
     rules,
+    valueFormat,
     ...pickerProps
   } = props;
   const pickerId = fieldId(name, id);
@@ -48,10 +53,20 @@ export function FormDatePicker<T extends FieldValues>(
             aria-required={required}
             className="w-full"
             id={pickerId}
+            onChange={(value) =>
+              field.onChange(
+                valueFormat && value ? value.format(valueFormat) : value,
+              )
+            }
             onBlur={field.onBlur}
-            onChange={field.onChange}
             ref={field.ref}
-            value={field.value as Dayjs | null | undefined}
+            value={
+              valueFormat && typeof field.value === "string"
+                ? field.value
+                  ? dayjs(field.value)
+                  : null
+                : (field.value as Dayjs | null | undefined)
+            }
           />
         </FieldFrame>
       )}

@@ -43,7 +43,7 @@ export function buildReviewQueueItems(
     const isReReview =
       applicant.application_status === "UNDER_EVALUATION" ||
       (needsDocumentReview && ["QUALIFIED", "NOT_QUALIFIED"].includes(applicant.application_status));
-    const pendingApplication = ["SUBMITTED", "UNDER_EVALUATION"].includes(applicant.application_status);
+    const pendingApplication = ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED"].includes(applicant.application_status);
     if (isTerminal || !(needsDocumentReview || pendingApplication)) return [];
 
     return [{

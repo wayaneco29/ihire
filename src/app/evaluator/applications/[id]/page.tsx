@@ -2,9 +2,16 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getEvaluatorContext } from "@/lib/auth/server";
+import {
+  calculatePublicTeachingExperience,
+  formatExperienceMonths,
+} from "@/utils/calculate-public-teaching-experience";
 import { formatPositionLabel } from "@/utils/format-position-track";
+import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
+import { ApplicationAssessmentScheduleForm } from "../components/ApplicationAssessmentScheduleForm";
 import { buildReviewQueueItems } from "../../reviews/queue";
 import { AnonymizedApplicantReview } from "./components/AnonymizedApplicantReview";
 
@@ -46,10 +53,20 @@ export default async function EvaluatorApplicationReviewPage({
   }
   if (!application) notFound();
 
+  const { data: schedule, error: scheduleError } = await evaluator.supabase
+    .from("applications")
+    .select("scheduled_assessment_at")
+    .eq("id", id)
+    .maybeSingle();
+
   const [
     jobResult,
+    requiredTypesResult,
     documentsResult,
     educationResult,
+    educationPointsResult,
+    trainingPointsResult,
+    experienceStandardsResult,
     experienceResult,
     evaluationResult,
     queueApplicantsResult,
@@ -60,6 +77,10 @@ export default async function EvaluatorApplicationReviewPage({
       .eq("id", application.job_id)
       .maybeSingle(),
     evaluator.supabase
+      .from("document_types")
+      .select("name")
+      .eq("is_required", true),
+    evaluator.supabase
       .from("v_anonymized_documents")
       .select("document_id, document_type, document_status, uploaded_at")
       .eq("application_id", id)
@@ -67,10 +88,31 @@ export default async function EvaluatorApplicationReviewPage({
     evaluator.supabase
       .from("v_anonymized_education")
       .select(
-        "education_id, level, school_name, degree_course, period_from, period_to, highest_level_units_earned, year_graduated, honors_received",
+        "education_id, level, school_name, degree_course, period_from, period_to, highest_level_units_earned, graduate_degree_type, graduate_degree_completed, graduate_units_earned, year_graduated, honors_received",
       )
       .eq("application_id", id)
       .order("sort_order"),
+    evaluator.supabase
+      .from("v_anonymized_application_education_points")
+      .select(
+        "applicant_qualification_level, base_qualification_level, education_points",
+      )
+      .eq("application_id", id)
+      .maybeSingle(),
+    evaluator.supabase
+      .from("v_anonymized_application_training_points")
+      .select(
+        "training_hours, applicant_training_increment_level, minimum_training_increment_level, training_points, maximum_training_points",
+      )
+      .eq("application_id", id)
+      .maybeSingle(),
+    evaluator.supabase
+      .from("v_anonymized_application_experience_standards")
+      .select(
+        "position_id, minimum_experience_increment_level, maximum_experience_points",
+      )
+      .eq("application_id", id)
+      .maybeSingle(),
     evaluator.supabase
       .from("v_anonymized_work_experience")
       .select(
@@ -96,6 +138,57 @@ export default async function EvaluatorApplicationReviewPage({
           .order("applied_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  const latestDocumentStatusByType = new Map<string, string>();
+  for (const document of documentsResult.data ?? []) {
+    if (!latestDocumentStatusByType.has(document.document_type)) {
+      latestDocumentStatusByType.set(
+        document.document_type,
+        document.document_status,
+      );
+    }
+  }
+  const requiredDocumentsVerified =
+    !requiredTypesResult.error &&
+    !documentsResult.error &&
+    (requiredTypesResult.data ?? []).every(
+      (documentType) =>
+        latestDocumentStatusByType.get(documentType.name) === "VERIFIED",
+    );
+  const readyForAssessment =
+    application.application_status === "ASSESSMENT_SCHEDULED" &&
+    Boolean(schedule?.scheduled_assessment_at) &&
+    requiredDocumentsVerified;
+
+  const publicTeachingExperience = calculatePublicTeachingExperience(
+    experienceResult.data ?? [],
+  );
+  const experienceStandards = experienceStandardsResult.data;
+  const experiencePointsResult =
+    experienceStandards?.position_id &&
+    experienceStandards.minimum_experience_increment_level !== null &&
+    experienceStandards.maximum_experience_points !== null
+      ? await evaluator.supabase.rpc("experience_equivalent_points", {
+          p_position_id: experienceStandards.position_id,
+          p_applicant_level: publicTeachingExperience.incrementLevel,
+          p_maximum_points: experienceStandards.maximum_experience_points,
+        })
+      : { data: null, error: null };
+  const experiencePointsUnavailable = Boolean(
+    experienceResult.error ||
+      experienceStandardsResult.error ||
+      experiencePointsResult.error,
+  );
+  const experiencePoints = {
+    applicant_experience_increment_level:
+      publicTeachingExperience.incrementLevel,
+    qualifying_experience_months: publicTeachingExperience.qualifyingMonths,
+    minimum_experience_increment_level:
+      experienceStandards?.minimum_experience_increment_level ?? null,
+    maximum_experience_points:
+      experienceStandards?.maximum_experience_points ?? null,
+    experience_points: experiencePointsResult.data,
+  };
 
   const queueApplicationIds = (queueApplicantsResult.data ?? []).map(
     (item) => item.application_id,
@@ -160,6 +253,24 @@ export default async function EvaluatorApplicationReviewPage({
         eyebrow="Anonymized applicant review"
         title={application.applicant_number}
       />
+      <section
+        aria-label="Application status"
+        className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-primary/30 bg-primary-light p-4 sm:p-5"
+      >
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            Application status
+          </p>
+          {application.application_status === "ASSESSMENT_SCHEDULED" &&
+            schedule?.scheduled_assessment_at && (
+              <p className="mt-1 text-sm font-medium text-ink">
+                Assessment:{" "}
+                {formatPhilippineDateTime(schedule.scheduled_assessment_at)}
+              </p>
+            )}
+        </div>
+        <WorkflowStatusTag status={application.application_status} />
+      </section>
       {jobId === application.job_id && (
         <nav
           aria-label="Applicant review sequence"
@@ -207,11 +318,19 @@ export default async function EvaluatorApplicationReviewPage({
       <AnonymizedApplicantReview
         applicationId={id}
         applicantNumber={application.applicant_number}
-        applicationStatus={application.application_status}
         documentsUnavailable={Boolean(documentsResult.error)}
         documents={documentsResult.data ?? []}
         educationUnavailable={Boolean(educationResult.error)}
         education={educationResult.data ?? []}
+        educationPoints={educationPointsResult.data}
+        educationPointsUnavailable={Boolean(educationPointsResult.error)}
+        trainingPoints={trainingPointsResult.data}
+        trainingPointsUnavailable={Boolean(trainingPointsResult.error)}
+        experiencePoints={experiencePoints}
+        experiencePointsUnavailable={experiencePointsUnavailable}
+        qualifyingExperienceLabel={formatExperienceMonths(
+          publicTeachingExperience.qualifyingMonths,
+        )}
         experienceYears={application.experience_years}
         workExperienceUnavailable={Boolean(experienceResult.error)}
         workExperience={experienceResult.data ?? []}
@@ -219,12 +338,27 @@ export default async function EvaluatorApplicationReviewPage({
         trainingHours={application.training_hours}
       />
       <div className="mt-5">
-        <ApplicationEvaluationPanel
+        <ApplicationAssessmentScheduleForm
           applicationId={id}
           applicationStatus={application.application_status}
-          previousEvaluation={evaluationResult.data ?? null}
+          scheduleUnavailable={Boolean(scheduleError || !schedule)}
+          scheduledAt={schedule?.scheduled_assessment_at ?? null}
         />
       </div>
+      {readyForAssessment || evaluationResult.data ? (
+        <div className="mt-5">
+          <ApplicationEvaluationPanel
+            applicationId={id}
+            applicationStatus={application.application_status}
+            previousEvaluation={evaluationResult.data ?? null}
+          />
+        </div>
+      ) : (
+        <p className="mt-5 rounded-sm border border-line bg-panel-muted p-4 text-sm text-muted">
+          The evaluation panel will appear after all required documents are
+          verified and an assessment has been scheduled.
+        </p>
+      )}
       <Link
         className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
         href={

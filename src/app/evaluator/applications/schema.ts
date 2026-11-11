@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { isFuturePhilippineDateTime } from "@/utils/philippine-time";
 
 export const APPLICATION_EVALUATION_RESULTS = [
   "QUALIFIED",
@@ -14,6 +15,26 @@ export const applicationEvaluationSchema = yup.object({
 });
 
 export type ApplicationEvaluationValues = yup.InferType<typeof applicationEvaluationSchema>;
+
+export const applicationAssessmentScheduleSchema = yup.object({
+  scheduledAt: yup
+    .string()
+    .required("Choose the assessment date and time.")
+    .test(
+      "valid-date",
+      "Choose a valid assessment date and time.",
+      (value) => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value ?? ""),
+    )
+    .test(
+      "future-date",
+      "The assessment must be scheduled for a future date and time.",
+      (value) => !value || isFuturePhilippineDateTime(value),
+    ),
+});
+
+export type ApplicationAssessmentScheduleValues = yup.InferType<
+  typeof applicationAssessmentScheduleSchema
+>;
 
 export type ManualScoringCriterion = {
   id: string;

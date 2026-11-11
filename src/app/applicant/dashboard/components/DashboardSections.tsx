@@ -30,6 +30,7 @@ type NotificationItem = {
 const APPLICATION_STAGES = [
   "Submitted",
   "Under evaluation",
+  "Assessment scheduled",
   "Qualified",
   "Hired",
 ];
@@ -38,13 +39,15 @@ function getApplicationStage(status: string) {
   switch (status) {
     case "UNDER_EVALUATION":
       return 1;
-    case "QUALIFIED":
+    case "ASSESSMENT_SCHEDULED":
       return 2;
-    case "HIRED":
+    case "QUALIFIED":
       return 3;
+    case "HIRED":
+      return 4;
     case "NOT_QUALIFIED":
     case "REJECTED":
-      return 2;
+      return 3;
     default:
       return 0;
   }
@@ -67,7 +70,7 @@ function ApplicationProgress({ status }: { status: string }) {
       className="mt-3"
       role="group"
     >
-      <div className="grid grid-cols-4 gap-1">
+      <div className="grid grid-cols-5 gap-1">
         {stages.map((stage, index) => {
           const isCurrent = index === activeStage;
           const isComplete = index < activeStage || status === "HIRED";
@@ -86,7 +89,7 @@ function ApplicationProgress({ status }: { status: string }) {
           );
         })}
       </div>
-      <div className="mt-1.5 grid grid-cols-4 gap-1">
+      <div className="mt-1.5 grid grid-cols-5 gap-1">
         {stages.map((stage, index) => (
           <span
             className={`text-[10px] leading-4 ${

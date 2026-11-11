@@ -94,6 +94,9 @@ export type PdsChildrenTable = {
 export type PdsEducationTable = {
     Row: {
         "degree_course": string | null;
+        "graduate_degree_completed": boolean | null;
+        "graduate_degree_type": string | null;
+        "graduate_units_earned": number | null;
         "highest_level_units_earned": string | null;
         "honors_received": string | null;
         "id": string;
@@ -101,6 +104,7 @@ export type PdsEducationTable = {
         "pds_version_id": string;
         "period_from": number | null;
         "period_to": number | null;
+        "qualification_level": number | null;
         "school_name": string | null;
         "sort_order": number;
         "year_graduated": number | null;
@@ -108,6 +112,9 @@ export type PdsEducationTable = {
     ComputedFields: never;
     Insert: {
         "degree_course"?: string | null;
+        "graduate_degree_completed"?: boolean | null;
+        "graduate_degree_type"?: string | null;
+        "graduate_units_earned"?: number | null;
         "highest_level_units_earned"?: string | null;
         "honors_received"?: string | null;
         "id"?: string;
@@ -115,12 +122,16 @@ export type PdsEducationTable = {
         "pds_version_id": string;
         "period_from"?: number | null;
         "period_to"?: number | null;
+        "qualification_level"?: number | null;
         "school_name"?: string | null;
         "sort_order": number;
         "year_graduated"?: number | null;
     };
     Update: {
         "degree_course"?: string | null;
+        "graduate_degree_completed"?: boolean | null;
+        "graduate_degree_type"?: string | null;
+        "graduate_units_earned"?: number | null;
         "highest_level_units_earned"?: string | null;
         "honors_received"?: string | null;
         "id"?: string;
@@ -128,6 +139,7 @@ export type PdsEducationTable = {
         "pds_version_id"?: string;
         "period_from"?: number | null;
         "period_to"?: number | null;
+        "qualification_level"?: number | null;
         "school_name"?: string | null;
         "sort_order"?: number;
         "year_graduated"?: number | null;
@@ -142,6 +154,17 @@ export type PdsEducationTable = {
             referencedRelation: "pds_versions";
             referencedColumns: [
                 "id"
+            ];
+        },
+        {
+            foreignKeyName: "pds_education_qualification_level_fkey";
+            columns: [
+                "qualification_level"
+            ];
+            isOneToOne: false;
+            referencedRelation: "education_levels";
+            referencedColumns: [
+                "qualification_level"
             ];
         }
     ];

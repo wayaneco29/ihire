@@ -171,16 +171,25 @@ export type PositionWeightProfilesTable = {
 export type PositionsTable = {
   Row: {
     application_type_id: string;
+    base_qualification_level: number | null;
+    base_training_increment_level: number | null;
+    base_experience_increment_level: number | null;
     id: string;
     title: string;
   };
   Insert: {
     application_type_id: string;
+    base_qualification_level?: number | null;
+    base_training_increment_level?: number | null;
+    base_experience_increment_level?: number | null;
     id?: string;
     title: string;
   };
   Update: {
     application_type_id?: string;
+    base_qualification_level?: number | null;
+    base_training_increment_level?: number | null;
+    base_experience_increment_level?: number | null;
     id?: string;
     title?: string;
   };
@@ -191,6 +200,13 @@ export type PositionsTable = {
       isOneToOne: false;
       referencedRelation: "application_type";
       referencedColumns: ["id"];
+    },
+    {
+      foreignKeyName: "positions_base_qualification_level_fkey";
+      columns: ["base_qualification_level"];
+      isOneToOne: false;
+      referencedRelation: "education_levels";
+      referencedColumns: ["qualification_level"];
     },
   ];
 };
