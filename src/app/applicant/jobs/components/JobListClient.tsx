@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Input, Select } from "antd";
+import { Button } from "@/components/ui/Button";
 import {
   CalendarDaysIcon,
   CheckIcon,
@@ -121,16 +122,17 @@ export function JobListClient({
           {filteredJobs.length === 1 ? "posting" : "postings"} found
         </p>
         {filteredJobs.length > 0 && (search || deadlineFilter !== "ALL") && (
-          <button
-            className="min-h-10 rounded-lg px-3 text-sm font-medium text-primary hover:bg-primary-light hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          <Button
+            className="!h-10 !rounded-lg !px-3 !text-sm"
             onClick={() => {
               setSearch("");
               setDeadlineFilter("ALL");
             }}
             type="button"
+            variant="ghost"
           >
             Clear filters
-          </button>
+          </Button>
         )}
       </div>
 
@@ -225,16 +227,17 @@ export function JobListClient({
         <div className="mt-3">
           <EmptyState
             action={
-              <button
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              <Button
+                className="!rounded-lg !border-line-strong !px-4 !text-sm !text-ink hover:!bg-panel-muted"
                 onClick={() => {
                   setSearch("");
                   setDeadlineFilter("ALL");
                 }}
                 type="button"
+                variant="bordered"
               >
                 Clear filters
-              </button>
+              </Button>
             }
             description="Try another search or clear the selected filters."
             title="No postings match"

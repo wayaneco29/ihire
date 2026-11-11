@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { useNotifications } from "@/context/NotificationContext";
 import { formatDate } from "@/utils/format-date";
 import {
@@ -138,7 +139,7 @@ export function NotificationList({
         <ul className="flex flex-wrap gap-2">
           {filterOptions.map((option) => (
             <li key={option.id}>
-              <button
+              <Button
                 aria-pressed={activeFilter === option.id}
                 className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   activeFilter === option.id
@@ -147,10 +148,11 @@ export function NotificationList({
                 }`}
                 onClick={() => setActiveFilter(option.id)}
                 type="button"
+                variant="unstyled"
               >
                 {option.label}
                 <span>{option.count}</span>
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -247,16 +249,17 @@ export function NotificationList({
                             content
                           )}
                           {!notification.is_read && (
-                            <button
-                              className="mt-1 min-h-8 rounded-sm text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+                            <Button
+                              className="!mt-1 !h-8 !rounded-sm !px-0 !text-xs hover:!bg-transparent"
                               disabled={busyId === notification.id}
                               onClick={() => void markRead(notification.id)}
                               type="button"
+                              variant="ghost"
                             >
                               {busyId === notification.id
                                 ? "Saving…"
                                 : "Mark read"}
-                            </button>
+                            </Button>
                           )}
                         </div>
                         <time

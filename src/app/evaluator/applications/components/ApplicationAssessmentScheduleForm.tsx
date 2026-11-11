@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormDatePicker } from "@/components/form/FormDatePicker";
+import { Button } from "@/components/ui/Button";
 import {
   formatPhilippineDateTime,
   formatPhilippineDateTimeInput,
@@ -88,17 +89,17 @@ export function ApplicationAssessmentScheduleForm({
             showTime={{ format: "h:mm A", use12Hours: true }}
             valueFormat="YYYY-MM-DDTHH:mm"
           />
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          <Button
             disabled={pending}
             type="submit"
+            variant="filled"
           >
             {pending
               ? "Saving schedule…"
               : scheduledAt
                 ? "Update schedule"
                 : "Schedule assessment"}
-          </button>
+          </Button>
           {message && (
             <p
               className={`text-sm ${message === "Assessment schedule saved." ? "text-primary" : "text-danger"}`}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button } from "antd";
+import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { createPdsUpdateDraft } from "../actions/versioning";
 
@@ -31,7 +31,7 @@ export function StartPdsUpdateButton({
 
   return (
     <div className={className}>
-      <Button loading={isPending} onClick={startUpdate} type="primary">
+      <Button loading={isPending} onClick={startUpdate} variant="filled">
         Update PDS
       </Button>
       {message && (

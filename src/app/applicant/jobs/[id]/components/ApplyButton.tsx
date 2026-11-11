@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import { useForm, useWatch } from "react-hook-form";
 import { FormSelect } from "@/components/form";
+import { Button } from "@/components/ui/Button";
 import { formatExperienceMonths } from "@/utils/calculate-public-teaching-experience";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { applyToJob } from "../../actions";
@@ -144,9 +145,9 @@ export function ApplyButton({
       {error && <Alert message={error} showIcon type="error" />}
       <Button
         className="min-h-11 w-full sm:w-auto"
-        htmlType="submit"
+        type="submit"
         loading={form.formState.isSubmitting}
-        type="primary"
+        variant="filled"
       >
         Submit application
       </Button>

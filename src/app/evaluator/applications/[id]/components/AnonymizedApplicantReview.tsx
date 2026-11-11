@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import {
   TRAINING_CERTIFICATE_DOCUMENT_TYPE,
   TRANSCRIPT_DOCUMENT_TYPE,
@@ -480,14 +481,15 @@ export function AnonymizedApplicantReview({
                       </div>
                       <div className="flex items-center gap-3">
                         <WorkflowStatusTag status={document.document_status} />
-                        <button
-                          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark disabled:opacity-60"
+                        <Button
+                          className="!rounded-sm !px-3 !text-sm"
                           disabled={isPending}
                           onClick={() => viewDocument(document)}
                           type="button"
+                          variant="ghost"
                         >
                           View
-                        </button>
+                        </Button>
                       </div>
                     </li>
                   ))}
@@ -532,14 +534,15 @@ export function AnonymizedApplicantReview({
                   )}
                 </p>
               </div>
-              <button
+              <Button
                 aria-label="Close document preview"
-                className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                className="!h-10 !rounded-sm !border-line-strong !px-3 !text-sm !text-ink hover:!bg-panel-muted"
                 onClick={() => setSelectedDocument(null)}
                 type="button"
+                variant="bordered"
               >
                 Close
-              </button>
+              </Button>
             </div>
             <div className="min-h-0 flex-1 overflow-auto bg-panel-muted p-3 sm:p-5">
               {previewUrl ? (
@@ -630,16 +633,16 @@ export function AnonymizedApplicantReview({
                       TRAINING_CERTIFICATE_DOCUMENT_TYPE &&
                       selectedDocument.document_type !==
                         TRANSCRIPT_DOCUMENT_TYPE && (
-                        <button
-                          className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+                        <Button
                           disabled={!previewUrl || isPending}
                           onClick={verifyDocument}
                           type="button"
+                          variant="filled"
                         >
                           {pendingAction === "verify"
                             ? "Verifying…"
                             : "Mark as verified"}
-                        </button>
+                        </Button>
                       )}
                   </>
                 ) : (

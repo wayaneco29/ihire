@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form/FormInput";
+import { Button } from "@/components/ui/Button";
 import { submitApplicationCriterionScores } from "../actions";
 import {
   applicationCriterionScoresSchema,
@@ -102,13 +103,13 @@ export function ApplicationCriterionScoresForm({
               />
             ))}
           </div>
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          <Button
             disabled={pending || isFinal}
             type="submit"
+            variant="filled"
           >
             {pending ? "Saving points…" : "Save points"}
-          </button>
+          </Button>
           {isFinal && (
             <p className="text-sm text-muted">
               This application has a final hiring decision and can no longer be

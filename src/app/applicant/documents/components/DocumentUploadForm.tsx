@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { UploadFile } from "antd";
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FormInput";
 import { FormDatePicker } from "@/components/form/FormDatePicker";
@@ -489,12 +490,12 @@ export function DocumentUploadForm({
         </p>
       )}
       <div className="mt-1 flex flex-wrap items-center gap-2">
-        <button
-          className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+        <Button
           disabled={
             busy || (isTrainingCertificate && trainingEntriesUnavailable)
           }
           type="submit"
+          variant="filled"
         >
           {pending
             ? "Uploading…"
@@ -503,15 +504,16 @@ export function DocumentUploadForm({
                 ? "Update certificate file"
                 : "Upload certificate"
               : "Upload document"}
-        </button>
-        <button
-          className="inline-flex min-h-11 cursor-pointer items-center rounded-sm px-3 text-sm font-medium text-muted hover:bg-panel"
+        </Button>
+        <Button
+          className="!px-3"
           disabled={busy}
           onClick={onCancel}
           type="button"
+          variant="ghost"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

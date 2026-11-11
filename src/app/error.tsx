@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "antd";
+import { Button } from "@/components/ui/Button";
 
 export default function AppError({
   retry,
@@ -20,7 +20,7 @@ export default function AppError({
       <p className="mt-2 text-sm leading-6 text-muted">
         Your information is still saved. Try loading the page again.
       </p>
-      <Button className="mt-5" onClick={retry} type="primary">
+      <Button className="mt-5" onClick={retry} variant="filled">
         Try again
       </Button>
     </section>

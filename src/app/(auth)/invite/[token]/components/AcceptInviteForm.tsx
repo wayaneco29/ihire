@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
+import { Button } from "@/components/ui/Button";
 import { acceptInvitation } from "../actions";
 import { acceptInviteSchema, type AcceptInviteValues } from "../schema";
 
@@ -75,7 +76,7 @@ export function AcceptInviteForm({
             required
             type="password"
           />
-          <Button block htmlType="submit" loading={isSubmitting} type="primary">
+          <Button block loading={isSubmitting} type="submit" variant="filled">
             Accept invitation
           </Button>
         </form>

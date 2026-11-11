@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Select } from "antd";
+import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import type { Json } from "@/types/database";
@@ -150,7 +151,7 @@ export function PdsWizardShell({
 
                 return (
                   <li aria-current={active ? "step" : undefined} key={label}>
-                    <button
+                    <Button
                       aria-label={`${label}${active ? ", current section" : completed ? ", completed" : ", not yet available"}`}
                       className={`relative flex min-h-8 w-full items-center gap-2.5 rounded-md px-0.5 text-left text-xs leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                         active
@@ -162,6 +163,7 @@ export function PdsWizardShell({
                       disabled={!canOpen || isPending}
                       onClick={() => openStep(step)}
                       type="button"
+                      variant="unstyled"
                     >
                       <span
                         className={`relative z-10 grid size-[1.4rem] shrink-0 place-items-center rounded-full border bg-[#eaf1f1] text-[10px] ${
@@ -182,7 +184,7 @@ export function PdsWizardShell({
                         )}
                       </span>
                       <span className="text-[10px]!">{label}</span>
-                    </button>
+                    </Button>
                   </li>
                 );
               })}

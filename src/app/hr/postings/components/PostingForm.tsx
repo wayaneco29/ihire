@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import {
   FormCheckboxGroup,
@@ -11,6 +11,7 @@ import {
   FormSelect,
   FormTextArea,
 } from "@/components/form";
+import { Button } from "@/components/ui/Button";
 import { createJobPosting, updateJobPosting } from "../actions";
 import { HIRING_TRACKS, postingSchema, type PostingValues } from "../schema";
 
@@ -281,17 +282,18 @@ export function PostingForm({
 
       <div className="flex flex-col-reverse gap-3 border-t border-line-subtle bg-panel-muted px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
         <Button
-          className="min-h-11"
           disabled={isSubmitting}
-          href={posting ? `/hr/postings/${posting.id}` : "/hr/postings"}
+          onClick={() =>
+            router.push(posting ? `/hr/postings/${posting.id}` : "/hr/postings")
+          }
+          variant="bordered"
         >
           Cancel
         </Button>
         <Button
-          className="min-h-11"
-          htmlType="submit"
+          type="submit"
           loading={isSubmitting}
-          type="primary"
+          variant="filled"
         >
           {posting ? "Save changes" : "Create posting"}
         </Button>

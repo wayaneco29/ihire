@@ -1,10 +1,11 @@
 "use client";
 
 import { DesktopOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
-import { Button, Dropdown } from "antd";
+import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import type { ReactNode } from "react";
 import type { ThemePreference } from "@/constants/colors";
+import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
 
 const THEME_OPTIONS: {
@@ -34,6 +35,7 @@ export function ThemeSwitcher() {
         className="!grid !size-11 !place-items-center !p-0 border-0! hover:bg-panel-muted!"
         icon={activeOption.icon}
         title={`Color theme: ${activeOption.label}`}
+        variant="unstyled"
       />
     </Dropdown>
   );

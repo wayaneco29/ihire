@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "antd";
+import { Button } from "@/components/ui/Button";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -63,16 +63,16 @@ export function PdsStepFooter({
               disabled={isSubmitting || isSaving || isGoingBack}
               loading={isGoingBack}
               onClick={handleBack}
-              type="default"
+              variant="ghost"
             >
               Back
             </Button>
           )}
           <Button
             disabled={isSubmitting || submitDisabled}
-            htmlType="submit"
+            type="submit"
             loading={isSubmitting}
-            type="primary"
+            variant="filled"
           >
             {submitLabel}
           </Button>

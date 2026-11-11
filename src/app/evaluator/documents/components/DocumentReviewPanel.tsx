@@ -12,6 +12,7 @@ import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { FormInput } from "@/components/form/FormInput";
 import { FormSelect } from "@/components/form/FormSelect";
 import { FormTextArea } from "@/components/form/FormTextArea";
+import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { createClient } from "@/lib/supabase/client";
 import { submitDocumentReview } from "../actions";
@@ -136,14 +137,15 @@ export function DocumentReviewPanel({
         The stored object uses an opaque key. The applicant’s original filename
         is not shown here.
       </p>
-      <button
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-sm border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary-light disabled:opacity-60"
+      <Button
+        className="mt-4 !rounded-sm !px-4 !text-sm"
         disabled={viewing || pending}
         onClick={viewFile}
         type="button"
+        variant="bordered"
       >
         {viewing ? "Creating secure link…" : "Open document"}
-      </button>
+      </Button>
       {fileError && (
         <p className="mt-2 text-sm text-danger" role="alert">
           {fileError}
@@ -236,13 +238,13 @@ export function DocumentReviewPanel({
             rows={4}
             showCount
           />
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          <Button
             disabled={pending}
             type="submit"
+            variant="filled"
           >
             {pending ? "Saving review…" : "Save review"}
-          </button>
+          </Button>
           {message && (
             <p
               className={`text-sm ${reviewSucceeded ? "text-primary" : "text-danger"}`}

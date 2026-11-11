@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BellOutlined } from "@ant-design/icons";
 import { Badge, Empty, Popover } from "antd";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { useNotifications } from "@/context/NotificationContext";
 import { formatNotificationText } from "@/utils/format-notification-text";
 
@@ -61,14 +62,16 @@ export function NotificationBell() {
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted">{unreadCount} unread</span>
           {unreadCount > 0 && (
-            <button
-              className="text-xs font-semibold text-primary hover:text-primary-dark disabled:opacity-60"
+            <Button
+              className="!h-auto !px-0 !text-xs hover:!bg-transparent"
               disabled={markingAllAsRead}
               onClick={() => void markAllNotificationsAsRead()}
+              size="sm"
               type="button"
+              variant="ghost"
             >
               {markingAllAsRead ? "Marking…" : "Mark all as read"}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -102,12 +105,13 @@ export function NotificationBell() {
           <ul className="divide-y divide-line-subtle">
             {notifications.map((notification) => (
               <li key={notification.id}>
-                <button
+                <Button
                   className={`min-h-11 w-full px-4 py-3 text-left transition hover:bg-panel-muted ${notification.is_read ? "" : "bg-primary-light/40"}`}
                   onClick={() =>
                     void openNotification(notification.id, notification.link)
                   }
                   type="button"
+                  variant="unstyled"
                 >
                   <span className="flex items-start gap-2">
                     {!notification.is_read && (
@@ -134,7 +138,7 @@ export function NotificationBell() {
                       </time>
                     </span>
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -151,11 +155,12 @@ export function NotificationBell() {
       placement="bottomRight"
       trigger="click"
     >
-      <button
+      <Button
         aria-expanded={open}
         aria-label={`Notifications, ${unreadCount} unread`}
         className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-panel-muted"
         type="button"
+        variant="unstyled"
       >
         <Badge
           count={unreadCount}
@@ -165,7 +170,7 @@ export function NotificationBell() {
         >
           <BellOutlined className="text-md" />
         </Badge>
-      </button>
+      </Button>
     </Popover>
   );
 }

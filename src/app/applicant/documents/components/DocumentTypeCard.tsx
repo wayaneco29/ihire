@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { Input, message, Modal } from "antd";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/Button";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
@@ -76,9 +77,9 @@ export function DocumentTypeCard({
   const [pending, startTransition] = useTransition();
   const latest = documents[0];
   const highestEducationLabel = latest?.current_highest_education_level
-    ? EDUCATION_LEVEL_OPTIONS.find(
+    ? (EDUCATION_LEVEL_OPTIONS.find(
         ({ value }) => value === latest.current_highest_education_level,
-      )?.label ?? latest.current_highest_education_level
+      )?.label ?? latest.current_highest_education_level)
     : null;
   const latestSummary = latest
     ? [
@@ -107,23 +108,23 @@ export function DocumentTypeCard({
     return documents
       .filter((document) => document.supersededByVersion === null)
       .filter((document) => {
-      const linkedTraining = document.pds_learning_development_id
-        ? (trainingTitles.get(document.pds_learning_development_id) ??
-          "Linked PDS training")
-        : "Not listed in PDS";
-      const matchesSearch =
-        !query ||
-        `${document.certificate_title ?? ""} ${recordLabel.toLocaleLowerCase()} ${document.version} ${linkedTraining} ${document.training_hours ?? ""} ${formatDate(document.uploaded_at)}`
-          .toLocaleLowerCase()
-          .includes(query);
-      const matchesStatus =
-        statusFilter === "ALL" ||
-        (statusFilter === "FOR_REVIEW" &&
-          ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(
-            document.status,
-          )) ||
-        document.status === statusFilter;
-      return matchesSearch && matchesStatus;
+        const linkedTraining = document.pds_learning_development_id
+          ? (trainingTitles.get(document.pds_learning_development_id) ??
+            "Linked PDS training")
+          : "Not listed in PDS";
+        const matchesSearch =
+          !query ||
+          `${document.certificate_title ?? ""} ${recordLabel.toLocaleLowerCase()} ${document.version} ${linkedTraining} ${document.training_hours ?? ""} ${formatDate(document.uploaded_at)}`
+            .toLocaleLowerCase()
+            .includes(query);
+        const matchesStatus =
+          statusFilter === "ALL" ||
+          (statusFilter === "FOR_REVIEW" &&
+            ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(
+              document.status,
+            )) ||
+          document.status === statusFilter;
+        return matchesSearch && matchesStatus;
       });
   }, [documents, recordLabel, search, statusFilter, trainingTitles]);
 
@@ -183,13 +184,14 @@ export function DocumentTypeCard({
               Optional. Hours count toward your Training score.
             </p>
           </div>
-          <button
-            className="inline-flex min-h-10 items-center rounded-sm bg-primary px-6 cursor-pointer text-sm! font-medium! text-on-primary transition hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          <Button
+            className="!h-10 !rounded-sm !px-6 !text-sm"
             onClick={() => setUploadOpen(!uploadOpen)}
             type="button"
+            variant="filled"
           >
             Add certificate
-          </button>
+          </Button>
         </div>
 
         <dl className="grid grid-cols-3 gap-3 border-b border-line-subtle py-4">
@@ -243,7 +245,7 @@ export function DocumentTypeCard({
               },
               { key: "VERIFIED", label: <span>Verified</span> },
             ].map((filter) => (
-              <button
+              <Button
                 aria-pressed={statusFilter === filter.key}
                 className={`min-h-8 px-5 rounded-full cursor-pointer border text-xs! font-medium transition ${
                   statusFilter === filter.key
@@ -256,9 +258,10 @@ export function DocumentTypeCard({
                   setShowAll(false);
                 }}
                 type="button"
+                variant="unstyled"
               >
                 {filter.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -284,10 +287,7 @@ export function DocumentTypeCard({
                         document.certificate_type,
                         document.certificate_issuer,
                         document.certificate_date
-                          ? formatDate(
-                              document.certificate_date,
-                              "MMM D, YYYY",
-                            )
+                          ? formatDate(document.certificate_date, "MMM D, YYYY")
                           : null,
                       ]
                         .filter(Boolean)
@@ -307,21 +307,23 @@ export function DocumentTypeCard({
                 <div className="col-span-2 col-start-2 flex items-center justify-end gap-2 sm:contents">
                   <WorkflowStatusTag status={document.status} />
                   <div className="flex items-center gap-2">
-                    <button
-                      className="inline-flex min-h-9 items-center rounded-sm px-2 text-xs! cursor-pointer font-semibold text-primary hover:underline disabled:opacity-60"
+                    <Button
+                      className="!h-9 !rounded-sm !px-2 !text-xs"
                       disabled={pending}
                       onClick={() => openDocument(document)}
                       type="button"
+                      variant="ghost"
                     >
                       {pendingId === document.id ? "Preparing…" : "View"}
-                    </button>
-                    <button
-                      className="inline-flex min-h-8 items-center rounded-full bg-primary-light px-5 text-xs! cursor-pointer font-semibold text-primary border border-transparent hover:border-primary"
+                    </Button>
+                    <Button
+                      className="!h-8 !px-5 !text-xs"
                       onClick={() => setReplacementTarget(document)}
                       type="button"
+                      variant="filled"
                     >
                       Replace
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -339,13 +341,14 @@ export function DocumentTypeCard({
             <span>
               Showing {visibleDocuments.length} of {filteredDocuments.length}
             </span>
-            <button
-              className="min-h-9 px-2 font-semibold text-primary hover:underline"
+            <Button
+              className="!h-9 !px-2"
               onClick={() => setShowAll(!showAll)}
               type="button"
+              variant="ghost"
             >
               {showAll ? "Show fewer" : "Show more"}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -414,9 +417,7 @@ export function DocumentTypeCard({
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">{name}</p>
-        <p className="mt-0.5 text-xs text-muted">
-          {latestSummary}
-        </p>
+        <p className="mt-0.5 text-xs text-muted">{latestSummary}</p>
         {openError && (
           <p className="mt-1 text-xs text-danger" role="alert">
             {openError}
@@ -440,30 +441,28 @@ export function DocumentTypeCard({
           <span className="text-xs text-muted">Not submitted</span>
         )}
         {latest && (
-          <button
-            className="inline-flex min-h-8 items-center rounded-sm px-2 text-xs! font-semibold text-primary hover:underline disabled:opacity-60"
+          <Button
+            className="!h-8 !rounded-sm !px-2 !text-xs"
             disabled={pending}
             onClick={() => openDocument(latest)}
             type="button"
+            variant="ghost"
           >
             {pendingId === latest.id ? "Preparing…" : "View"}
-          </button>
+          </Button>
         )}
-        <button
-          className={`inline-flex min-h-8 items-center rounded-full px-5 bg-primary-light text-primary cursor-pointer text-xs! font-semibold ${
-            latest?.status === "FOR_RESUBMISSION"
-              ? ""
-              : "border-line bg-panel text-ink hover:border-primary hover:text-primary"
-          }`}
+        <Button
+          className="!h-8 !px-5 !text-xs"
           onClick={() => setUploadOpen(!uploadOpen)}
           type="button"
+          variant="filled"
         >
           {!latest
             ? "Upload"
             : latest.status === "FOR_RESUBMISSION"
               ? "Replace"
               : "Replace"}
-        </button>
+        </Button>
       </div>
       {contextHolder}
       <Modal

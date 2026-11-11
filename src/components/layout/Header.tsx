@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuOutlined } from "@ant-design/icons";
+import { Button } from "@/components/ui/Button";
 import { useAppShell } from "@/context/AppShellContext";
 import { useAuth } from "@/context/AuthContext";
 import { BrandMark } from "./BrandMark";
@@ -20,14 +21,15 @@ export function Header() {
         Skip to content
       </a>
       <div className="flex min-w-0 items-center gap-3">
-        <button
+        <Button
           aria-label="Open navigation menu"
           className="grid size-11 shrink-0 place-items-center rounded-sm text-muted transition hover:bg-panel-muted lg:hidden"
           onClick={() => setMobileNavOpen(true)}
           type="button"
+          variant="unstyled"
         >
           <MenuOutlined />
-        </button>
+        </Button>
         <div className="lg:hidden">
           <BrandMark compact />
         </div>

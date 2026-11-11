@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
+import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
 import { isUserRole, ROLE_HOME } from "@/lib/auth/role-routing";
 import { AuthPageFrame } from "../../components/AuthPageFrame";
@@ -96,9 +97,9 @@ export function LoginForm() {
           <Button
             block
             className="mt-2"
-            htmlType="submit"
+            type="submit"
             loading={isSubmitting}
-            type="primary"
+            variant="filled"
           >
             Sign in
           </Button>

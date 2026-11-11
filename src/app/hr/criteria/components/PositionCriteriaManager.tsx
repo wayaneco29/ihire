@@ -1,12 +1,13 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { Alert, Button, Modal } from "antd";
+import { Alert, Modal } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
 import { StatusTag } from "@/components/ui/StatusTag";
+import { Button } from "@/components/ui/Button";
 import {
   positionSchema,
   positionScoringStandardsSchema,
@@ -145,7 +146,7 @@ function PositionScoringStandardsEditor({
           Experience: {currentExperienceLevel?.label ?? "Not set"}
         </p>
         <Button
-          className="mt-1 px-0"
+          className="mt-1 !h-auto !px-0"
           onClick={() => {
             form.reset({
               baseQualificationLevel:
@@ -158,7 +159,7 @@ function PositionScoringStandardsEditor({
             setMessage(null);
             setOpen(true);
           }}
-          type="link"
+          variant="ghost"
         >
           {currentLevel || currentTrainingLevel || currentExperienceLevel
             ? "Update standards"
@@ -222,13 +223,14 @@ function PositionScoringStandardsEditor({
             <Button
               disabled={form.formState.isSubmitting}
               onClick={() => setOpen(false)}
+              variant="bordered"
             >
               Cancel
             </Button>
             <Button
-              htmlType="submit"
+              type="submit"
               loading={form.formState.isSubmitting}
-              type="primary"
+              variant="filled"
             >
               Save standards
             </Button>
@@ -316,13 +318,13 @@ function CreatePositionForm({
           />
         )}
         <div className="flex justify-end gap-3 pt-2">
-          <Button disabled={form.formState.isSubmitting} onClick={close}>
+          <Button disabled={form.formState.isSubmitting} onClick={close} variant="bordered">
             Cancel
           </Button>
           <Button
-            htmlType="submit"
+            type="submit"
             loading={form.formState.isSubmitting}
-            type="primary"
+            variant="filled"
           >
             Add position
           </Button>
@@ -390,7 +392,7 @@ function PositionWeightEditor({
           setMessage(null);
           setOpen(true);
         }}
-        type="link"
+        variant="ghost"
       >
         Update
       </Button>
@@ -477,6 +479,7 @@ function PositionWeightEditor({
             <Button
               disabled={form.formState.isSubmitting}
               onClick={() => setOpen(false)}
+              variant="bordered"
             >
               Cancel
             </Button>
@@ -486,9 +489,9 @@ function PositionWeightEditor({
                 !hasValidTotal ||
                 form.formState.isSubmitting
               }
-              htmlType="submit"
+              type="submit"
               loading={form.formState.isSubmitting}
-              type="primary"
+              variant="filled"
             >
               Save changes
             </Button>
@@ -542,7 +545,7 @@ export function PositionCriteriaManager({
             Each position has its own criteria and a separate 100-point profile.
           </p>
         </div>
-        <Button onClick={() => setIsAddingPosition(true)} type="primary">
+        <Button onClick={() => setIsAddingPosition(true)} variant="filled">
           Add position
         </Button>
       </div>

@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Button, Tag } from "antd";
+import { Alert, Tag } from "antd";
 import { useForm } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
+import { Button } from "@/components/ui/Button";
 import type { Tables } from "@/types/database";
 import {
   createInvitation,
@@ -127,9 +128,9 @@ export function InvitationManager({
           />
           <Button
             block
-            htmlType="submit"
+            type="submit"
             loading={isSubmitting || isWorking}
-            type="primary"
+            variant="filled"
           >
             Create one-time link
           </Button>
@@ -143,7 +144,7 @@ export function InvitationManager({
         {inviteUrl && (
           <div className="mt-4 rounded-sm border border-primary/15 bg-primary-light/50 p-3">
             <p className="break-all text-xs leading-5 text-ink">{inviteUrl}</p>
-            <Button className="mt-3" onClick={copyInvite} size="small">
+            <Button className="mt-3" onClick={copyInvite} size="sm" variant="bordered">
               Copy link
             </Button>
           </div>
@@ -184,18 +185,19 @@ export function InvitationManager({
                           onClick={() =>
                             runRowAction(resendInvitation, invitation.id)
                           }
-                          size="small"
+                          size="sm"
+                          variant="bordered"
                         >
                           Resend link
                         </Button>
                         {status === "Pending" && (
                           <Button
-                            danger
                             disabled={isWorking}
                             onClick={() =>
                               runRowAction(revokeInvitation, invitation.id)
                             }
-                            size="small"
+                            size="sm"
+                            variant="danger"
                           >
                             Revoke
                           </Button>

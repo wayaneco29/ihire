@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form/FormInput";
+import { Button } from "@/components/ui/Button";
 import {
   applicantNumberLookupSchema,
   type ApplicantNumberLookupValues,
@@ -47,13 +48,13 @@ export function ApplicantNumberLookup({
           required
         />
       </div>
-      <button
-        className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+      <Button
         disabled={pending}
         type="submit"
+        variant="filled"
       >
         {pending ? "Searching…" : "Find applicant"}
-      </button>
+      </Button>
     </form>
   );
 }

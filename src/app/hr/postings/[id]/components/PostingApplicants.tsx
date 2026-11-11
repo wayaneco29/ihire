@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { Alert, Button, Popconfirm } from "antd";
+import { Alert, Popconfirm } from "antd";
+import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { recordHiringDecision } from "../actions";
@@ -174,7 +175,7 @@ export function PostingApplicants({
                         <Button
                           disabled={slotsFull || pending}
                           loading={pending}
-                          type="primary"
+                          variant="filled"
                         >
                           Hire {applicant.applicant_number}
                         </Button>
@@ -186,7 +187,7 @@ export function PostingApplicants({
                         title={`Reject ${applicant.applicant_number}?`}
                         description="This records a final rejection decision."
                       >
-                        <Button danger disabled={pending} loading={pending}>
+                        <Button disabled={pending} loading={pending} variant="danger">
                           Reject {applicant.applicant_number}
                         </Button>
                       </Popconfirm>

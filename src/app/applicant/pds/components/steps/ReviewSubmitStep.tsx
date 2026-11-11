@@ -6,6 +6,7 @@ import { CheckCircleIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { FormCheckbox } from "@/components/form";
+import { Button } from "@/components/ui/Button";
 import type { Json } from "@/types/database";
 import { COUNTRY_OPTIONS } from "@/constants/pds-options";
 import { PDS_QUESTIONNAIRE_ITEMS } from "@/constants/pds-questionnaire";
@@ -799,13 +800,14 @@ export function ReviewSubmitStep({
                   key={notice.id}
                 >
                   <span>{notice.text}</span>
-                  <button
+                  <Button
                     className="shrink-0 rounded-sm px-1 py-1 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     onClick={() => reviewSection(notice.step)}
                     type="button"
+                    variant="unstyled"
                   >
                     Review
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -827,15 +829,16 @@ export function ReviewSubmitStep({
           >
             Show fields I left blank
           </Checkbox>
-          <button
+          <Button
             className="rounded-sm px-1 py-1 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={toggleAllSections}
             type="button"
+            variant="unstyled"
           >
             {openSections.size === REVIEW_SECTIONS.length
               ? "Collapse all"
               : "Expand all"}
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-hidden rounded-lg border border-line bg-panel">
@@ -861,12 +864,13 @@ export function ReviewSubmitStep({
                 id={id}
                 key={id}
               >
-                <button
+                <Button
                   aria-controls={`${id}-body`}
                   aria-expanded={open}
                   className="flex w-full items-center cursor-pointer gap-3 px-4 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary sm:px-5"
                   onClick={() => toggleSection(step)}
                   type="button"
+                  variant="unstyled"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block text-base font-semibold text-ink sm:text-lg">
@@ -887,7 +891,7 @@ export function ReviewSubmitStep({
                       open ? "rotate-180" : ""
                     }`}
                   />
-                </button>
+                </Button>
                 {open && (
                   <div
                     className="px-4 pb-4 pl-4 sm:px-5 sm:pb-5"
@@ -916,13 +920,14 @@ export function ReviewSubmitStep({
                             } hidden`
                           : ""}
                       </p>
-                      <button
+                      <Button
                         className="rounded-sm px-1 py-1 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         onClick={() => onEditSection(step)}
                         type="button"
+                        variant="unstyled"
                       >
                         Edit {title.toLowerCase()}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}

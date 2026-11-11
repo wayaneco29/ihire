@@ -2,6 +2,7 @@
 
 import { CloseOutlined } from "@ant-design/icons";
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/Button";
 import { useAppShell } from "@/context/AppShellContext";
 import { Sidebar } from "./Sidebar";
 
@@ -70,11 +71,12 @@ export function MobileDrawer() {
 
   return (
     <div className="fixed inset-0 z-40 lg:hidden">
-      <button
+      <Button
         aria-label="Close navigation menu"
         className="absolute inset-0 bg-ink/45"
         onClick={() => setMobileNavOpen(false)}
         type="button"
+        variant="unstyled"
       />
       <section
         aria-labelledby="mobile-navigation-title"
@@ -88,15 +90,16 @@ export function MobileDrawer() {
           <h2 className="sr-only" id="mobile-navigation-title">
             Navigation
           </h2>
-          <button
+          <Button
             aria-label="Close navigation menu"
             className="grid size-11 place-items-center rounded-sm text-muted hover:bg-panel-muted"
             onClick={() => setMobileNavOpen(false)}
             ref={closeButtonRef}
             type="button"
+            variant="unstyled"
           >
             <CloseOutlined />
-          </button>
+          </Button>
         </div>
         <Sidebar />
       </section>

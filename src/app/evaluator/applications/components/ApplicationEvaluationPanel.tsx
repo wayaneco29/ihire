@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormSelect } from "@/components/form/FormSelect";
 import { FormTextArea } from "@/components/form/FormTextArea";
+import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
 import { submitApplicationEvaluation } from "../actions";
@@ -115,13 +116,13 @@ export function ApplicationEvaluationPanel({
             rows={4}
             showCount
           />
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          <Button
             disabled={pending}
             type="submit"
+            variant="filled"
           >
             {pending ? "Saving assessment…" : "Save assessment"}
-          </button>
+          </Button>
           {message && (
             <p
               className={`text-sm ${message === "Application evaluation saved." ? "text-primary" : "text-danger"}`}

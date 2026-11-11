@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/form";
+import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
 import { AuthPageFrame } from "../../components/AuthPageFrame";
 import { registerSchema, type RegisterValues } from "../schema";
@@ -101,9 +102,9 @@ export function RegisterForm() {
           <Button
             block
             className="mt-2"
-            htmlType="submit"
+            type="submit"
             loading={isSubmitting}
-            type="primary"
+            variant="filled"
           >
             Create applicant account
           </Button>

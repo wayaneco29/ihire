@@ -1,8 +1,12 @@
 "use client";
 
-import { Button } from "antd";
 import { PrinterOutlined } from "@ant-design/icons";
+import { Button } from "@/components/ui/Button";
 
 export function PdsPrintButton() {
-  return <Button icon={<PrinterOutlined />} onClick={() => window.print()} type="primary">Print PDS</Button>;
+  return (
+    <Button icon={<PrinterOutlined />} onClick={() => window.print()} variant="filled">
+      Print PDS
+    </Button>
+  );
 }

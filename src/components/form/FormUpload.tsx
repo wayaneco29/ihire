@@ -4,6 +4,7 @@ import { Controller, type FieldValues } from "react-hook-form";
 import { Upload } from "antd";
 import type { UploadFile } from "antd";
 import { Image as AntImage } from "antd";
+import { Button } from "@/components/ui/Button";
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons";
 import { FieldFrame } from "./FieldFrame";
 import { fieldId, type FormControlProps } from "./field-types";
@@ -112,7 +113,7 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                   onFileChange?.(file instanceof File ? file : undefined);
                 }}
               >
-                <button
+                <Button
                   aria-describedby={
                     fieldState.error
                       ? `${uploadId}-error`
@@ -121,13 +122,14 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                         : undefined
                   }
                   aria-label={`${label}${required ? ", required" : ""}`}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line-strong bg-panel px-3 text-sm font-medium text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-11 rounded-sm px-3 text-sm font-medium"
                   disabled={uploadProps.disabled}
                   type="button"
+                  variant="bordered"
                 >
                   <UploadOutlined />
                   Choose file
-                </button>
+                </Button>
               </Upload>
             )}
           </div>

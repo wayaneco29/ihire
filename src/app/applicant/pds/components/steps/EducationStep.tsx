@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "antd";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
@@ -11,6 +10,7 @@ import {
   type Control,
   type Resolver,
 } from "react-hook-form";
+import { Button } from "@/components/ui/Button";
 import {
   FormCheckbox,
   FormInput,
@@ -257,7 +257,7 @@ export function EducationStep({
               className="overflow-hidden rounded-sm shadow bg-panel"
               key={value}
             >
-              <button
+              <Button
                 aria-controls={`education-${value.toLowerCase()}-content`}
                 aria-expanded={openLevel === value}
                 className="flex min-h-[4.5rem] w-full items-center cursor-pointer justify-between gap-3 px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary active:!transform-none sm:px-5"
@@ -265,6 +265,7 @@ export function EducationStep({
                   setOpenLevel((current) => (current === value ? null : value))
                 }
                 type="button"
+                variant="unstyled"
               >
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold text-primary-dark sm:text-base">
@@ -295,7 +296,7 @@ export function EducationStep({
                     }`}
                   />
                 </span>
-              </button>
+              </Button>
               {openLevel === value && (
                 <div
                   className="border-t border-line-subtle p-4 sm:p-5"
@@ -328,14 +329,15 @@ export function EducationStep({
               Add one entry for each master’s or doctoral program.
             </p>
           </div>
-          <button
+          <Button
             type="button"
             disabled={graduateStudyIndexes.length >= 20}
-            className="border border-solid border-primary! text-primary! text-xs! px-6! rounded-sm! py-2.5 cursor-pointer bg-white hover:bg-primary-light transition-colors"
+            className="!h-auto !rounded-sm !px-6 !py-2.5 !text-xs"
             onClick={() => append(createEmptyEducationRow("GRADUATE_STUDIES"))}
+            variant="bordered"
           >
             Add graduate study
-          </button>
+          </Button>
         </div>
         <div className="mt-4 space-y-3">
           {graduateStudyIndexes.map(({ field, index }, graduateIndex) => (
@@ -347,13 +349,14 @@ export function EducationStep({
                 <h4 className="text-sm font-semibold text-ink">
                   Graduate study {graduateIndex + 1}
                 </h4>
-                <button
-                  className="px-6! text-xs! rounded-sm transition-colors p-2 cursor-pointer hover:bg-red-100 text-red-500 "
+                <Button
+                  className="!h-auto !rounded-sm !px-6 !py-2 !text-xs"
                   onClick={() => remove(index)}
                   type="button"
+                  variant="danger"
                 >
                   Remove
-                </button>
+                </Button>
               </div>
               <div className="grid grid-cols-1 gap-x-4">
                 <EducationFields

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "antd";
 import {
   ArrowRightStartOnRectangleIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
 import { BrandMark } from "./BrandMark";
+import { Button } from "@/components/ui/Button";
 import { useAppShell } from "@/context/AppShellContext";
 import { useAuth } from "@/context/AuthContext";
 import { getNavigation } from "@/constants/navigation";
@@ -126,6 +126,7 @@ export function Sidebar() {
               disabled={loading}
               icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
               onClick={handleSignOut}
+              variant="unstyled"
             >
               Sign out
             </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Button } from "antd";
+import { Button } from "@/components/ui/Button";
 import {
   useFieldArray,
   type Control,
@@ -55,11 +55,11 @@ export function DynamicRows<
               {label} {index + 1}
             </h3>
             <Button
-              danger
+              className="!text-danger enabled:hover:!bg-danger/10"
               disabled={fields.length <= minRows}
               onClick={() => remove(index)}
-              size="small"
-              type="text"
+              size="sm"
+              variant="ghost"
             >
               Remove
             </Button>
@@ -71,7 +71,7 @@ export function DynamicRows<
       <Button
         disabled={!canAdd}
         onClick={() => append(createRow())}
-        type="dashed"
+        variant="bordered"
       >
         {addLabel}
       </Button>
