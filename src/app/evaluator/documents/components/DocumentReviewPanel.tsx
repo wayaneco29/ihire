@@ -8,6 +8,7 @@ import {
   TRAINING_CERTIFICATE_DOCUMENT_TYPE,
   TRANSCRIPT_DOCUMENT_TYPE,
 } from "@/constants/documents";
+import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { FormInput } from "@/components/form/FormInput";
 import { FormSelect } from "@/components/form/FormSelect";
 import { FormTextArea } from "@/components/form/FormTextArea";
@@ -33,6 +34,7 @@ export function DocumentReviewPanel({
   documentType,
   trainingHours,
   totalUnits,
+  currentHighestEducationLevel,
   ocrTrainingHours,
   ocrTotalUnits,
   ocrConfidence,
@@ -45,6 +47,7 @@ export function DocumentReviewPanel({
   documentType: string;
   trainingHours: number | null;
   totalUnits: number | null;
+  currentHighestEducationLevel: string | null;
   ocrTrainingHours: number | null;
   ocrTotalUnits: number | null;
   ocrConfidence: number | null;
@@ -191,6 +194,9 @@ export function DocumentReviewPanel({
                 {includesTrainingHours
                   ? `Applicant entered ${trainingHours ?? "no"} hours.`
                   : `Applicant entered ${totalUnits ?? "no"} units.`}
+                {includesTotalUnits &&
+                  currentHighestEducationLevel &&
+                  ` Applicant indicated ${EDUCATION_LEVEL_OPTIONS.find(({ value }) => value === currentHighestEducationLevel)?.label ?? currentHighestEducationLevel} as their current highest educational attainment.`}
                 {(ocrConfidence != null ||
                   ocrTrainingHours != null ||
                   ocrTotalUnits != null) &&

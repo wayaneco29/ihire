@@ -1,5 +1,6 @@
 import * as yup from "yup";
 import type { UploadFile } from "antd";
+import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 
 const documentUploadSchemaBase = yup.object({
   files: yup
@@ -33,9 +34,13 @@ const documentUploadSchemaBase = yup.object({
     ),
   pdsLearningDevelopmentId: yup.string().optional(),
   pdsEducationId: yup.string().optional(),
+  currentHighestEducationLevel: yup.string().optional(),
 });
 
-export const documentUploadSchema = (isTrainingCertificate: boolean) =>
+export const documentUploadSchema = (
+  isTrainingCertificate: boolean,
+  isTranscript: boolean,
+) =>
   documentUploadSchemaBase.shape({
     certificateTitle: isTrainingCertificate
       ? yup
@@ -43,6 +48,15 @@ export const documentUploadSchema = (isTrainingCertificate: boolean) =>
           .trim()
           .required("Enter the certificate title.")
           .max(200, "Certificate titles must be 200 characters or fewer.")
+      : yup.string().optional(),
+    currentHighestEducationLevel: isTranscript
+      ? yup
+          .string()
+          .oneOf(
+            EDUCATION_LEVEL_OPTIONS.map(({ value }) => value),
+            "Choose your current highest educational attainment.",
+          )
+          .required("Choose your current highest educational attainment.")
       : yup.string().optional(),
   });
 

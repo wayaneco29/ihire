@@ -18,7 +18,13 @@ export default async function ApplicantNotificationsPage({
   const page =
     Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const pageSize = 50;
-  const [notificationsResult, countResult] = await Promise.all([
+  const [
+    notificationsResult,
+    countResult,
+    applicationCountResult,
+    documentCountResult,
+    resubmissionCountResult,
+  ] = await Promise.all([
     applicant.supabase
       .from("notifications")
       .select("id, user_id, type, title, body, link, is_read, created_at")
@@ -29,17 +35,37 @@ export default async function ApplicantNotificationsPage({
       .from("notifications")
       .select("id", { count: "exact", head: true })
       .eq("user_id", applicant.user.id),
+    applicant.supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", applicant.user.id)
+      .eq("type", "APPLICATION_STATUS"),
+    applicant.supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", applicant.user.id)
+      .eq("type", "DOCUMENT_STATUS"),
+    applicant.supabase
+      .from("documents")
+      .select("id", { count: "exact", head: true })
+      .eq("applicant_id", applicant.applicant.id)
+      .eq("status", "FOR_RESUBMISSION"),
   ]);
   const totalCount = countResult.count ?? 0;
+  const countsUnavailable = Boolean(
+    countResult.error ||
+      applicationCountResult.error ||
+      documentCountResult.error ||
+      resubmissionCountResult.error,
+  );
 
   return (
-    <>
+    <div className="mx-auto max-w-3xl">
       <PageHeader
         description="Updates about your PDS, documents, and applications."
-        eyebrow="Applicant workspace"
         title="Notifications"
       />
-      {notificationsResult.error || countResult.error ? (
+      {notificationsResult.error || countsUnavailable ? (
         <div className="mt-7">
           <EmptyState
             description="Refresh the page to try loading your notifications again."
@@ -55,35 +81,39 @@ export default async function ApplicantNotificationsPage({
               )
               .join("|")}
             notifications={notificationsResult.data ?? []}
-            totalCount={totalCount}
+            counts={{
+              all: totalCount,
+              applications: applicationCountResult.count ?? 0,
+              documents: documentCountResult.count ?? 0,
+              documentsNeedingResubmission:
+                resubmissionCountResult.count ?? 0,
+            }}
           />
           {totalCount > pageSize && (
             <nav
               aria-label="Notification pages"
-              className="mt-3 flex justify-between"
+              className="mt-8 flex justify-center gap-3"
             >
-              {page > 1 ? (
+              {page > 1 && (
                 <Link
-                  className="inline-flex min-h-10 items-center rounded-sm border border-line-strong bg-panel px-3 text-sm font-medium text-ink hover:bg-panel-muted"
+                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-line px-5 text-sm font-semibold text-primary hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/notifications?page=${page - 1}`}
                 >
                   Newer notifications
                 </Link>
-              ) : (
-                <span />
               )}
               {page * pageSize < totalCount && (
                 <Link
-                  className="inline-flex min-h-10 items-center rounded-sm border border-line-strong bg-panel px-3 text-sm font-medium text-ink hover:bg-panel-muted"
+                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-line px-5 text-sm font-semibold text-primary hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/notifications?page=${page + 1}`}
                 >
-                  Older notifications
+                  Show older notifications
                 </Link>
               )}
             </nav>
           )}
         </>
       )}
-    </>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { ApplicationProgress } from "@/components/ui/ApplicationProgress";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
+import { formatNotificationText } from "@/utils/format-notification-text";
 
 type ApplicationItem = {
   id: string;
@@ -177,10 +178,10 @@ export function DashboardSections({
                   />
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold text-ink">
-                      {notification.title}
+                      {formatNotificationText(notification.title)}
                     </p>
                     <p className="mt-0.5 truncate text-[11px] text-muted">
-                      {notification.body}
+                      {formatNotificationText(notification.body)}
                     </p>
                   </div>
                 </div>

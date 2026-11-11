@@ -5,18 +5,32 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useNotifications } from "@/context/NotificationContext";
 import { formatDate } from "@/utils/format-date";
+import {
+  formatNotificationText,
+  getNotificationStatusMessage,
+} from "@/utils/format-notification-text";
 import type { Tables } from "@/types/database";
+
+type NotificationFilter = "all" | "applications" | "documents";
+
+type NotificationCounts = {
+  all: number;
+  applications: number;
+  documents: number;
+  documentsNeedingResubmission: number;
+};
 
 export function NotificationList({
   notifications: initialNotifications,
-  totalCount,
+  counts,
 }: {
   notifications: Tables<"notifications">[];
-  totalCount: number;
+  counts: NotificationCounts;
 }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<NotificationFilter>("all");
   const router = useRouter();
   const { markAsRead, refreshNotifications } = useNotifications();
 
@@ -42,7 +56,42 @@ export function NotificationList({
     return true;
   }
 
-  if (notifications.length === 0) {
+  const filterOptions: {
+    id: NotificationFilter;
+    label: string;
+    count: number;
+  }[] = [
+    { id: "all", label: "All", count: counts.all },
+    {
+      id: "applications",
+      label: "Applications",
+      count: counts.applications,
+    },
+    { id: "documents", label: "Documents", count: counts.documents },
+  ];
+  const filteredNotifications = notifications.filter((notification) => {
+    if (activeFilter === "applications") {
+      return notification.type === "APPLICATION_STATUS";
+    }
+    if (activeFilter === "documents") {
+      return notification.type === "DOCUMENT_STATUS";
+    }
+    return true;
+  });
+  const notificationGroups = filteredNotifications.reduce<
+    { date: string; items: Tables<"notifications">[] }[]
+  >((groups, notification) => {
+    const date = formatDate(notification.created_at, "YYYY-MM-DD");
+    const existingGroup = groups.at(-1);
+    if (existingGroup?.date === date) {
+      existingGroup.items.push(notification);
+    } else {
+      groups.push({ date, items: [notification] });
+    }
+    return groups;
+  }, []);
+
+  if (counts.all === 0) {
     return (
       <div className="mt-5 rounded-sm border border-dashed border-line-strong bg-panel p-6 text-center">
         <h2 className="font-semibold text-ink">You’re all caught up</h2>
@@ -55,67 +104,176 @@ export function NotificationList({
 
   return (
     <>
-      <p className="mt-4 text-sm text-muted">{totalCount} notifications</p>
       {error && (
         <p className="mt-2 text-sm text-danger" role="alert">
           {error}
         </p>
       )}
-      <ul className="mt-2 divide-y divide-line-subtle rounded-sm border border-line bg-panel px-3 sm:px-4">
-        {notifications.map((notification) => {
-          const internalLink =
-            notification.link?.startsWith("/") &&
-            !notification.link.startsWith("//")
-              ? notification.link
-              : null;
-          return (
-            <li className="flex items-start gap-2.5 py-3" key={notification.id}>
-              <span
-                className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.is_read ? "bg-line" : "bg-primary"}`}
-              />
-              <div className="min-w-0 flex-1">
-                {internalLink ? (
-                  <Link
-                    className="inline-flex min-h-9 items-center rounded-sm font-medium text-ink hover:text-primary"
-                    href={internalLink}
-                    onClick={(event) => {
-                      if (!notification.is_read) {
-                        event.preventDefault();
-                        void markRead(notification.id).then((success) => {
-                          if (success) router.push(internalLink);
-                        });
-                      }
-                    }}
-                  >
-                    {notification.title}
-                  </Link>
-                ) : (
-                  <h2 className="font-medium text-ink">{notification.title}</h2>
-                )}
-                <p className="mt-0.5 text-sm leading-5 text-muted">
-                  {notification.body}
-                </p>
-                <time
-                  className="mt-1.5 block text-xs text-muted"
-                  dateTime={notification.created_at}
-                >
-                  {formatDate(notification.created_at, "MMM D, YYYY · h:mm A")}
-                </time>
-              </div>
-              {!notification.is_read && (
-                <button
-                  className="min-h-9 shrink-0 rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light disabled:opacity-60"
-                  disabled={busyId === notification.id}
-                  onClick={() => void markRead(notification.id)}
-                  type="button"
-                >
-                  {busyId === notification.id ? "Saving…" : "Mark read"}
-                </button>
-              )}
+      {counts.documentsNeedingResubmission > 0 && (
+        <section
+          aria-label="Documents needing resubmission"
+          className="mt-6 flex flex-col gap-3 rounded-sm border border-warning/20 border-l-4 border-l-warning bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+        >
+          <div>
+            <h2 className="text-sm font-semibold text-warning">
+              {counts.documentsNeedingResubmission}{" "}
+              {counts.documentsNeedingResubmission === 1
+                ? "document needs"
+                : "documents need"}{" "}
+              resubmission
+            </h2>
+            <p className="mt-0.5 text-sm text-ink">
+              Upload a new copy so review can continue.
+            </p>
+          </div>
+          <Link
+            className="inline-flex min-h-9 shrink-0 items-center font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
+            href="/applicant/documents"
+          >
+            Go to documents
+          </Link>
+        </section>
+      )}
+      <nav aria-label="Filter notifications" className="mt-5">
+        <ul className="flex flex-wrap gap-2">
+          {filterOptions.map((option) => (
+            <li key={option.id}>
+              <button
+                aria-pressed={activeFilter === option.id}
+                className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  activeFilter === option.id
+                    ? "border-primary bg-primary text-on-primary"
+                    : "border-line bg-panel text-muted hover:bg-panel-muted"
+                }`}
+                onClick={() => setActiveFilter(option.id)}
+                type="button"
+              >
+                {option.label}
+                <span>{option.count}</span>
+              </button>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      </nav>
+      {notificationGroups.length === 0 ? (
+        <p className="mt-6 text-sm text-muted">
+          No {activeFilter === "applications" ? "application" : "document"}{" "}
+          notifications on this page.
+        </p>
+      ) : (
+        <div className="mt-6">
+          {notificationGroups.map((group) => (
+            <section
+              aria-label={formatDate(group.date, "dddd, MMM D")}
+              key={group.date}
+            >
+              <h2 className="border-b border-line-subtle pb-2 text-xs font-semibold text-muted">
+                {formatDate(group.date, "dddd, MMM D")}
+              </h2>
+              <ul>
+                {group.items.map((notification) => {
+                  const internalLink =
+                    notification.link?.startsWith("/") &&
+                    !notification.link.startsWith("//")
+                      ? notification.link
+                      : null;
+                  const statusMessage = getNotificationStatusMessage(
+                    notification.type,
+                    notification.body,
+                  );
+                  const content = statusMessage ? (
+                    <p
+                      className={`text-sm leading-5 ${notification.type === "APPLICATION_STATUS" ? "font-semibold text-ink" : "text-muted"}`}
+                    >
+                      {statusMessage.prefix}{" "}
+                      <strong
+                        className={
+                          statusMessage.status === "Needs resubmission"
+                            ? "font-semibold text-warning"
+                            : "font-semibold text-primary"
+                        }
+                      >
+                        {statusMessage.status}
+                      </strong>
+                    </p>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {formatNotificationText(notification.title)}
+                      </p>
+                      <p className="mt-0.5 text-sm leading-5 text-muted">
+                        {formatNotificationText(notification.body)}
+                      </p>
+                    </div>
+                  );
+
+                  return (
+                    <li
+                      className="flex items-start gap-3 py-3"
+                      key={notification.id}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`mt-1.5 size-2 shrink-0 rounded-full ${
+                          notification.is_read
+                            ? "bg-line-strong"
+                            : notification.type === "APPLICATION_STATUS"
+                              ? "bg-primary"
+                              : notification.body.includes("FOR_RESUBMISSION")
+                                ? "bg-warning"
+                                : "bg-line"
+                        }`}
+                      />
+                      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          {internalLink ? (
+                            <Link
+                              className="block rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                              href={internalLink}
+                              onClick={(event) => {
+                                if (!notification.is_read) {
+                                  event.preventDefault();
+                                  void markRead(notification.id).then(
+                                    (success) => {
+                                      if (success) router.push(internalLink);
+                                    },
+                                  );
+                                }
+                              }}
+                            >
+                              {content}
+                            </Link>
+                          ) : (
+                            content
+                          )}
+                          {!notification.is_read && (
+                            <button
+                              className="mt-1 min-h-8 rounded-sm text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+                              disabled={busyId === notification.id}
+                              onClick={() => void markRead(notification.id)}
+                              type="button"
+                            >
+                              {busyId === notification.id
+                                ? "Saving…"
+                                : "Mark read"}
+                            </button>
+                          )}
+                        </div>
+                        <time
+                          className="shrink-0 pt-0.5 text-xs text-muted"
+                          dateTime={notification.created_at}
+                        >
+                          {formatDate(notification.created_at, "h:mm A")}
+                        </time>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
     </>
   );
 }

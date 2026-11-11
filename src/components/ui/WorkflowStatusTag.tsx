@@ -7,7 +7,7 @@ const statusStyles: Record<string, string> = {
   ASSESSMENT_SCHEDULED: "border-warning/30 bg-warning/10 text-warning",
   FOR_REVIEW: "border-warning/30 bg-warning/10 text-warning",
   PENDING: "border-line bg-panel-muted text-muted",
-  FOR_RESUBMISSION: "border-warning/30 bg-warning/10 text-warning",
+  FOR_RESUBMISSION: "border-red/30! bg-red-100 text-red-500",
   VERIFIED: "border-primary/20 bg-primary-light text-primary",
   QUALIFIED: "border-primary/20 bg-primary-light text-primary",
   HIRED: "border-primary/20 bg-primary-light text-primary",
@@ -29,7 +29,7 @@ function formatStatus(status: string) {
 export function WorkflowStatusTag({ status }: { status: string }) {
   return (
     <StatusTag
-      className={`block text-xs! font-medium ${statusStyles[status] ?? "border-line bg-panel-muted text-muted"}`}
+      className={`block text-[10px]! min-w-0 justify-center px-4 text-center font-medium ${statusStyles[status] ?? "border-line bg-panel-muted text-muted text-center"}`}
     >
       {formatStatus(status)}
     </StatusTag>

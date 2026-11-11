@@ -5,6 +5,7 @@ import { BellOutlined } from "@ant-design/icons";
 import { Badge, Empty, Popover } from "antd";
 import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/NotificationContext";
+import { formatNotificationText } from "@/utils/format-notification-text";
 
 export function NotificationBell() {
   const router = useRouter();
@@ -120,10 +121,10 @@ export function NotificationBell() {
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium text-ink">
-                        {notification.title}
+                        {formatNotificationText(notification.title)}
                       </span>
                       <span className="mt-1 block text-xs leading-5 text-muted">
-                        {notification.body}
+                        {formatNotificationText(notification.body)}
                       </span>
                       <time
                         className="mt-2 block text-xs text-muted"

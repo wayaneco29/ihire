@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FormInput";
 import { FormSelect } from "@/components/form/FormSelect";
 import { FormUpload } from "@/components/form/FormUpload";
+import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import type { DocumentOcrResult } from "../ocr";
 import { documentUploadSchema, type DocumentUploadValues } from "../schema";
 import { uploadApplicantDocument } from "../actions";
@@ -61,7 +62,7 @@ export function DocumentUploadForm({
   const ocrRequestId = useRef(0);
   const hasMetrics = isTrainingCertificate || isTranscript;
   const form = useForm<DocumentUploadValues>({
-    resolver: yupResolver(documentUploadSchema(isTrainingCertificate)),
+    resolver: yupResolver(documentUploadSchema(isTrainingCertificate, isTranscript)),
     defaultValues: {
       files: [],
       certificateTitle: replacementDocument?.certificate_title ?? "",
@@ -75,6 +76,7 @@ export function DocumentUploadForm({
           ? replacementDocument?.pds_learning_development_id ?? ""
           : "",
       pdsEducationId: "",
+      currentHighestEducationLevel: "",
     },
   });
 
@@ -177,6 +179,10 @@ export function DocumentUploadForm({
     if (isTranscript) {
       formData.set("total_units", String(values.totalUnits));
       formData.set("pds_education_id", values.pdsEducationId ?? "");
+      formData.set(
+        "current_highest_education_level",
+        values.currentHighestEducationLevel ?? "",
+      );
     }
     if (ocrResult) {
       formData.set("ocr_confidence", String(ocrResult.confidence));
@@ -202,6 +208,7 @@ export function DocumentUploadForm({
         totalUnits: null,
         pdsLearningDevelopmentId: "",
         pdsEducationId: "",
+        currentHighestEducationLevel: "",
       });
       setSelectedFile(null);
       setOcrResult(null);
@@ -211,7 +218,7 @@ export function DocumentUploadForm({
         : isTrainingCertificate
         ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
         : isTranscript
-          ? `Transcript uploaded with ${values.totalUnits} units and sent for review.`
+          ? `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. It has been sent for review.`
         : `Version ${result.version} uploaded and sent for review.`;
       if (onSuccess) onSuccess(successMessage);
       else setMessage(successMessage);
@@ -341,6 +348,15 @@ export function DocumentUploadForm({
       )}
       {isTranscript && (
         <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
+          <FormSelect
+            control={form.control}
+            hint="Choose the highest education level you have attained, using the same levels as your PDS."
+            label="Current highest educational attainment"
+            name="currentHighestEducationLevel"
+            options={[...EDUCATION_LEVEL_OPTIONS]}
+            placeholder="Choose education level"
+            required
+          />
           <div>
             <FormInput
               control={form.control}

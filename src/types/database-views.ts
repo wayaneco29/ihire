@@ -53,6 +53,7 @@ export type PublicViews = {
     "v_anonymized_document_metrics": {
         Row: {
             "document_id": string;
+            "current_highest_education_level": PublicEnums["education_level"] | null;
             "ocr_confidence": number | null;
             "ocr_processed_at": string | null;
             "ocr_total_units": number | null;

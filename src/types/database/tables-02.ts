@@ -4,6 +4,7 @@ export type DocumentsTable = {
     Row: {
         "applicant_id": string;
         "certificate_title": string | null;
+        "current_highest_education_level": PublicEnums["education_level"] | null;
         "document_type_id": string;
         "file_path": string;
         "id": string;
@@ -24,6 +25,7 @@ export type DocumentsTable = {
     Insert: {
         "applicant_id": string;
         "certificate_title"?: string | null;
+        "current_highest_education_level"?: PublicEnums["education_level"] | null;
         "document_type_id": string;
         "file_path"?: string;
         "id"?: string;
@@ -43,6 +45,7 @@ export type DocumentsTable = {
     Update: {
         "applicant_id"?: string;
         "certificate_title"?: string | null;
+        "current_highest_education_level"?: PublicEnums["education_level"] | null;
         "document_type_id"?: string;
         "file_path"?: string;
         "id"?: string;

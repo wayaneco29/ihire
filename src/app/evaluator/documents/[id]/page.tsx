@@ -38,7 +38,7 @@ export default async function EvaluatorDocumentPage({
     evaluator.supabase
       .from("v_anonymized_document_metrics")
       .select(
-        "training_hours, total_units, ocr_training_hours, ocr_total_units, ocr_confidence",
+        "training_hours, total_units, current_highest_education_level, ocr_training_hours, ocr_total_units, ocr_confidence",
       )
       .eq("document_id", document.document_id)
       .limit(1)
@@ -95,6 +95,9 @@ export default async function EvaluatorDocumentPage({
           documentType={document.document_type}
           trainingHours={metricsResult.data.training_hours}
           totalUnits={metricsResult.data.total_units}
+          currentHighestEducationLevel={
+            metricsResult.data.current_highest_education_level
+          }
           ocrTrainingHours={metricsResult.data.ocr_training_hours}
           ocrTotalUnits={metricsResult.data.ocr_total_units}
           ocrConfidence={metricsResult.data.ocr_confidence}

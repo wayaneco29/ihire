@@ -5,6 +5,7 @@ import {
   TRAINING_CERTIFICATE_DOCUMENT_TYPE,
   TRANSCRIPT_DOCUMENT_TYPE,
 } from "@/constants/documents";
+import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { getApplicantContext } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -162,9 +163,10 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
     "pds_learning_development_id",
     "total_units",
     "pds_education_id",
+    "current_highest_education_level",
   ].some((key) => formData.has(key));
   if (
-    (isTrainingCertificate && (formData.has("total_units") || formData.has("pds_education_id") || formData.has("ocr_total_units"))) ||
+    (isTrainingCertificate && (formData.has("total_units") || formData.has("pds_education_id") || formData.has("current_highest_education_level") || formData.has("ocr_total_units"))) ||
     (isTranscript && (formData.has("certificate_title") || formData.has("training_hours") || formData.has("pds_learning_development_id") || formData.has("ocr_training_hours"))) ||
     (!isTrainingCertificate && !isTranscript && (hasApplicantMetricInput || hasOcrInput))
   ) {
@@ -191,10 +193,25 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
   const unitsResult = isTranscript
     ? parseMetric(formData.get("total_units"), 99999999.99, "total transcript units", true)
     : { value: null, error: null };
+  const rawHighestEducationLevel = isTranscript
+    ? formData.get("current_highest_education_level")
+    : null;
+  const currentHighestEducationLevel =
+    typeof rawHighestEducationLevel === "string"
+      ? EDUCATION_LEVEL_OPTIONS.find(
+          ({ value }) => value === rawHighestEducationLevel,
+        )?.value ?? null
+      : null;
   if (trainingResult.error || unitsResult.error) {
     return {
       success: false,
       message: trainingResult.error ?? unitsResult.error ?? "Enter a valid document value.",
+    };
+  }
+  if (isTranscript && !currentHighestEducationLevel) {
+    return {
+      success: false,
+      message: "Choose your current highest educational attainment.",
     };
   }
 
@@ -351,6 +368,7 @@ export async function uploadApplicantDocument(formData: FormData): Promise<Docum
       ? {
           total_units: unitsResult.value,
           pds_education_id: pdsEducationId,
+          current_highest_education_level: currentHighestEducationLevel,
         }
       : {}),
     ...(hasOcrInput

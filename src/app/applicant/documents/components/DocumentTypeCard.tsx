@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { message, Modal } from "antd";
+import { Input, message, Modal } from "antd";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
+import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
 import { createClient } from "@/lib/supabase/client";
@@ -18,6 +19,7 @@ export type DocumentRecord = {
   remarks: string | null;
   training_hours: number | null;
   total_units: number | null;
+  current_highest_education_level: string | null;
   pds_learning_development_id: string | null;
   pds_education_id: string | null;
   replaces_document_id: string | null;
@@ -32,7 +34,6 @@ export function DocumentTypeCard({
   documents,
   isTrainingCertificate,
   isTranscript = false,
-  isRequired = false,
   trainingEntries,
   trainingEntriesUnavailable,
   educationEntries = [],
@@ -43,7 +44,6 @@ export function DocumentTypeCard({
   documents: DocumentRecord[];
   isTrainingCertificate: boolean;
   isTranscript?: boolean;
-  isRequired?: boolean;
   trainingEntries: { id: string; title: string; hours: number | null }[];
   trainingEntriesUnavailable: boolean;
   educationEntries?: {
@@ -66,11 +66,34 @@ export function DocumentTypeCard({
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const latest = documents[0];
+  const highestEducationLabel = latest?.current_highest_education_level
+    ? EDUCATION_LEVEL_OPTIONS.find(
+        ({ value }) => value === latest.current_highest_education_level,
+      )?.label ?? latest.current_highest_education_level
+    : null;
+  const latestSummary = latest
+    ? [
+        `Version ${latest.version}`,
+        formatDate(latest.uploaded_at),
+        ...(isTranscript
+          ? [
+              `${latest.total_units ?? 0} units`,
+              ...(highestEducationLabel
+                ? [`Highest education: ${highestEducationLabel}`]
+                : []),
+            ]
+          : []),
+        ...(documents.length > 1
+          ? [`${documents.length - 1} previous versions`]
+          : []),
+      ].join(", ")
+    : isTranscript
+      ? "No TOR uploaded yet"
+      : "No file uploaded yet";
   const trainingTitles = useMemo(
     () => new Map(trainingEntries.map((entry) => [entry.id, entry.title])),
     [trainingEntries],
   );
-  const metricLabel = "hours";
   const recordLabel = "Certificate";
 
   const filteredDocuments = useMemo(() => {
@@ -142,316 +165,286 @@ export function DocumentTypeCard({
     };
 
     return (
-      <tr>
-        <td className="p-0" colSpan={4}>
-          <section className="overflow-hidden bg-panel" aria-label={name}>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-4 py-3 bg-primary">
-              <div>
-                <h2 className="text-sm font-semibold text-white">{name}</h2>
-                <p className="mt-0.5 text-xs text-white/80">
-                  {isRequired ? "Required" : "Optional"}
-                  {" · "}
-                  {documents.length}{" "}
-                  {documents.length === 1
-                    ? recordLabel.toLowerCase()
-                    : `${recordLabel.toLowerCase()}s`}
-                  {" · "}
-                  {metricTotal} {metricLabel} total
-                  {" · "}
-                  {forReviewCount} for review
-                </p>
-              </div>
-              <button
-                className="inline-flex min-h-10 px-4 items-center gap-2 cursor-pointer rounded-sm bg-white text-sm! font-semibold text-primary transition"
-                onClick={() => setUploadOpen(!uploadOpen)}
-                type="button"
-              >
-                Add certificate
-              </button>
-            </div>
+      <section aria-label={name} id={id}>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle pb-3">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">{name}</h2>
+            <p className="mt-1 text-sm text-muted">
+              Optional. Hours count toward your Training score.
+            </p>
+          </div>
+          <button
+            className="inline-flex min-h-10 items-center rounded-sm bg-primary px-6 cursor-pointer text-sm! font-medium! text-on-primary transition hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            onClick={() => setUploadOpen(!uploadOpen)}
+            type="button"
+          >
+            Add certificate
+          </button>
+        </div>
 
-            <div className="flex flex-col gap-2 border-b border-line-subtle px-3 py-3 sm:flex-row sm:items-center">
-              <label className="sr-only" htmlFor={`${id}-search`}>
-                Search {recordLabel.toLowerCase()}s
-              </label>
-              <input
-                className="min-h-10 min-w-0 flex-1 rounded-sm border border-line bg-panel px-3 text-sm! text-ink outline-none placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary/15"
-                id={`${id}-search`}
-                onChange={(event) => {
-                  setSearch(event.target.value);
+        <dl className="grid grid-cols-3 gap-3 border-b border-line-subtle py-4">
+          <div>
+            <dd className="text-2xl font-semibold leading-none text-primary">
+              {currentDocuments.length}
+            </dd>
+            <dt className="mt-1 text-xs text-muted">certificates</dt>
+          </div>
+          <div>
+            <dd className="text-2xl font-semibold leading-none text-primary">
+              {metricTotal}
+            </dd>
+            <dt className="mt-1 text-xs text-muted">total hours</dt>
+          </div>
+          <div>
+            <dd className="text-2xl font-semibold leading-none text-primary">
+              {forReviewCount}
+            </dd>
+            <dt className="mt-1 text-xs text-muted">for review</dt>
+          </div>
+        </dl>
+
+        <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center">
+          <label className="sr-only" htmlFor={`${id}-search`}>
+            Search {recordLabel.toLowerCase()}s
+          </label>
+          <Input
+            className="min-h-10 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
+            id={`${id}-search`}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setShowAll(false);
+            }}
+            placeholder={`Search ${recordLabel.toLowerCase()}s`}
+            type="search"
+            value={search}
+          />
+          <div
+            className="flex flex-wrap gap-2"
+            aria-label="Filter certificates by status"
+          >
+            {[
+              {
+                key: "ALL",
+                label: <span>All</span>,
+              },
+              {
+                key: "FOR_REVIEW",
+                label: <span>For review</span>,
+              },
+              { key: "VERIFIED", label: <span>Verified</span> },
+            ].map((filter) => (
+              <button
+                aria-pressed={statusFilter === filter.key}
+                className={`min-h-8 px-5 rounded-full cursor-pointer border text-xs! font-medium transition ${
+                  statusFilter === filter.key
+                    ? "border-primary bg-primary text-on-primary"
+                    : "border-line text-muted hover:border-primary/40 hover:text-primary"
+                }`}
+                key={filter.key}
+                onClick={() => {
+                  setStatusFilter(filter.key);
                   setShowAll(false);
                 }}
-                placeholder={`Search ${recordLabel.toLowerCase()}s`}
-                type="search"
-                value={search}
-              />
-              <div
-                className="flex flex-wrap gap-2"
-                aria-label="Filter certificates by status"
+                type="button"
               >
-                {[
-                  { key: "ALL", label: `All ${documents.length}` },
-                  { key: "FOR_REVIEW", label: `For review ${forReviewCount}` },
-                  { key: "VERIFIED", label: `Verified ${verifiedCount}` },
-                ].map((filter) => (
-                  <button
-                    aria-pressed={statusFilter === filter.key}
-                    className={`min-h-9 rounded-sm cursor-pointer border px-3 text-xs! font-medium transition ${
-                      statusFilter === filter.key
-                        ? "border-primary/20 bg-primary-light text-primary"
-                        : "border-line text-muted hover:border-primary/40 hover:text-primary"
-                    }`}
-                    key={filter.key}
-                    onClick={() => {
-                      setStatusFilter(filter.key);
-                      setShowAll(false);
-                    }}
-                    type="button"
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-xs">
-                <thead className="bg-panel-muted text-[10px] uppercase tracking-wider text-muted">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">#</th>
-                    <th className="px-3 py-2 font-medium">
-                      {recordLabel} title
-                    </th>
-                    <th className="px-3 py-2 font-medium">Hours</th>
-                    <th className="px-3 py-2 font-medium w-32">Status</th>
-                    <th className="px-3 py-2 font-medium w-20">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line-subtle">
-                  {visibleDocuments.map((document) => (
-                    <tr className="hover:bg-panel-muted/60" key={document.id}>
-                      <td className="whitespace-nowrap px-3 py-3 text-muted">
-                        #{document.version}
-                      </td>
-                      <td className="px-3 py-3">
-                        <p className="font-medium text-ink">
-                          {document.certificate_title ||
-                            (document.pds_learning_development_id &&
-                              trainingTitles.get(
-                                document.pds_learning_development_id,
-                              )) ||
-                            `${recordLabel} #${document.version}`}
-                        </p>
-                        <p className="mt-0.5 text-[10px] text-muted">
-                          Uploaded{" "}
-                          {formatDate(document.uploaded_at, "MMM D, YYYY")}
-                        </p>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-3 font-medium text-ink">
-                        {document.training_hours ?? 0} hrs
-                      </td>
-                      <td className="px-3 py-3">
-                        {document.supersededByVersion !== null ? (
-                          <span className="text-muted">
-                            Replaced by v{document.supersededByVersion}
-                          </span>
-                        ) : (
-                          <WorkflowStatusTag status={document.status} />
-                        )}
-                      </td>
-                      <td className="px-3 py-3 text-right">
-                        <div className="flex gap-2 items-center">
-                          <button
-                            className="min-h-9 px-2 cursor-pointer text-xs! font-medium text-primary hover:underline disabled:opacity-60"
-                            disabled={pending}
-                            onClick={() => openDocument(document)}
-                            type="button"
-                          >
-                            {pendingId === document.id ? "Preparing…" : "View"}
-                          </button>
-                          {document.supersededByVersion === null && (
-                            <button
-                              className="inline-flex min-h-9 items-center rounded-sm bg-primary px-3 text-xs! font-semibold cursor-pointer text-on-primary hover:bg-primary-dark"
-                              onClick={() => setReplacementTarget(document)}
-                              type="button"
-                            >
-                              Replace
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {!visibleDocuments.length && (
-                    <tr>
-                      <td
-                        className="px-3 py-8 text-center text-sm text-muted"
-                        colSpan={5}
-                      >
-                        No {recordLabel.toLowerCase()}s match this search or
-                        filter.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {filteredDocuments.length > INITIAL_CERTIFICATE_COUNT && (
-              <div className="flex items-center justify-between border-t border-line-subtle px-3 py-2 text-xs! text-muted">
-                <span>
-                  Showing {visibleDocuments.length} of{" "}
-                  {filteredDocuments.length}
+        <ul className="divide-y divide-line-subtle">
+          {visibleDocuments.map((document) => (
+            <li className="py-3" key={document.id}>
+              <div className="grid grid-cols-[minmax(0,1fr)_4.25rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_auto]">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-ink">
+                    {document.certificate_title ||
+                      (document.pds_learning_development_id &&
+                        trainingTitles.get(
+                          document.pds_learning_development_id,
+                        )) ||
+                      `${recordLabel} #${document.version}`}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    Uploaded {formatDate(document.uploaded_at, "MMM D, YYYY")}
+                  </p>
+                </div>
+                <span className="whitespace-nowrap text-right text-xs! text-muted">
+                  <span className="text-xs! font-medium">
+                    {document.training_hours ?? 0}
+                  </span>{" "}
+                  hrs
                 </span>
-                <button
-                  className="min-h-9 px-2 font-medium text-primary hover:underline"
-                  onClick={() => setShowAll(!showAll)}
-                  type="button"
-                >
-                  {showAll ? "Show fewer" : "Show more"}
-                </button>
+                <div className="col-span-2 col-start-2 flex items-center justify-end gap-2 sm:contents">
+                  {document.supersededByVersion !== null ? (
+                    <span className="whitespace-nowrap rounded-full bg-panel-muted px-2.5 py-1 text-xs text-muted">
+                      Replaced by v{document.supersededByVersion}
+                    </span>
+                  ) : (
+                    <WorkflowStatusTag status={document.status} />
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="inline-flex min-h-9 items-center rounded-sm px-2 text-xs! cursor-pointer font-semibold text-primary hover:underline disabled:opacity-60"
+                      disabled={pending}
+                      onClick={() => openDocument(document)}
+                      type="button"
+                    >
+                      {pendingId === document.id ? "Preparing…" : "View"}
+                    </button>
+                    {document.supersededByVersion === null && (
+                      <button
+                        className="inline-flex min-h-8 items-center rounded-full bg-primary-light px-5 text-xs! cursor-pointer font-semibold text-primary border border-transparent hover:border-primary"
+                        onClick={() => setReplacementTarget(document)}
+                        type="button"
+                      >
+                        Replace
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+            </li>
+          ))}
+          {!visibleDocuments.length && (
+            <li className="py-8 text-center text-sm text-muted">
+              No {recordLabel.toLowerCase()}s match this search or filter.
+            </li>
+          )}
+        </ul>
 
-            {openError && (
-              <p className="px-4 py-2 text-sm text-danger" role="alert">
-                {openError}
-              </p>
-            )}
-            {signedUrl && (
-              <a
-                className="m-3 inline-flex min-h-9 items-center px-2 text-sm font-medium text-primary hover:underline"
-                href={signedUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Open secure certificate
-              </a>
-            )}
-            <Modal
-              destroyOnHidden
-              footer={null}
-              onCancel={closeUpload}
-              open={uploadOpen || replacementTarget !== null}
-              title={
-                replacementTarget
-                  ? "Update certificate file"
-                  : "Add a certificate"
-              }
-              width={640}
+        {filteredDocuments.length > INITIAL_CERTIFICATE_COUNT && (
+          <div className="flex items-center justify-between border-t border-line-subtle py-2 text-xs text-muted">
+            <span>
+              Showing {visibleDocuments.length} of {filteredDocuments.length}
+            </span>
+            <button
+              className="min-h-9 px-2 font-semibold text-primary hover:underline"
+              onClick={() => setShowAll(!showAll)}
+              type="button"
             >
-              <p className="mb-4 text-sm text-muted">
-                {replacementTarget
-                  ? "Upload a new file for this certificate. The previous file and review history will remain available."
-                  : "Upload one certificate at a time so its hours can be recorded separately."}
-              </p>
-              <DocumentUploadForm
-                documentTypeId={id}
-                isTrainingCertificate={isTrainingCertificate}
-                isTranscript={isTranscript}
-                onCancel={closeUpload}
-                onSuccess={
-                  replacementTarget
-                    ? (successMessage) => {
-                        closeUpload();
-                        messageApi.success(successMessage);
-                      }
-                    : undefined
-                }
-                replacementDocument={replacementTarget}
-                trainingEntries={trainingEntries}
-                trainingEntriesUnavailable={trainingEntriesUnavailable}
-                educationEntries={educationEntries}
-                educationEntriesUnavailable={educationEntriesUnavailable}
-              />
-            </Modal>
-          </section>
-        </td>
-      </tr>
+              {showAll ? "Show fewer" : "Show more"}
+            </button>
+          </div>
+        )}
+
+        {openError && (
+          <p className="py-2 text-sm text-danger" role="alert">
+            {openError}
+          </p>
+        )}
+        {signedUrl && (
+          <a
+            className="inline-flex min-h-9 items-center py-2 text-sm font-medium text-primary hover:underline"
+            href={signedUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Open secure certificate
+          </a>
+        )}
+        <Modal
+          destroyOnHidden
+          footer={null}
+          onCancel={closeUpload}
+          open={uploadOpen || replacementTarget !== null}
+          title={
+            replacementTarget ? "Update certificate file" : "Add a certificate"
+          }
+          width={640}
+        >
+          <p className="mb-4 text-sm text-muted">
+            {replacementTarget
+              ? "Upload a new file for this certificate. The previous file and review history will remain available."
+              : "Upload one certificate at a time so its hours can be recorded separately."}
+          </p>
+          <DocumentUploadForm
+            documentTypeId={id}
+            isTrainingCertificate={isTrainingCertificate}
+            isTranscript={isTranscript}
+            onCancel={closeUpload}
+            onSuccess={
+              replacementTarget
+                ? (successMessage) => {
+                    closeUpload();
+                    messageApi.success(successMessage);
+                  }
+                : undefined
+            }
+            replacementDocument={replacementTarget}
+            trainingEntries={trainingEntries}
+            trainingEntriesUnavailable={trainingEntriesUnavailable}
+            educationEntries={educationEntries}
+            educationEntriesUnavailable={educationEntriesUnavailable}
+          />
+        </Modal>
+      </section>
     );
   }
 
   return (
-    <>
-      <tr className="transition-colors hover:bg-panel-muted/60">
-        <td className="px-4 py-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary-light text-primary">
-              <DocumentTextIcon aria-hidden="true" className="size-4" />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-ink">{name}</p>
-              <p className="mt-0.5 truncate text-xs text-muted">
-                {latest
-                  ? `Version ${latest.version} · ${formatDate(latest.uploaded_at)}${isTranscript ? ` · ${latest.total_units ?? 0} units` : ""}${documents.length > 1 ? ` · ${documents.length - 1} previous versions` : ""}`
-                  : isTranscript
-                    ? "No TOR uploaded yet"
-                    : "No file uploaded yet"}
-              </p>
-            </div>
-          </div>
-        </td>
-        <td className="px-4 py-3">
-          <span
-            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-              isRequired
-                ? "bg-primary-light text-primary"
-                : "bg-panel-muted text-muted"
-            }`}
+    <section
+      aria-label={name}
+      className="flex flex-col gap-3 border-b border-line-subtle py-3 sm:flex-row sm:items-center sm:gap-4"
+      id={id}
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary-light text-primary">
+        <DocumentTextIcon aria-hidden="true" className="size-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-ink">{name}</p>
+        <p className="mt-0.5 text-xs text-muted">
+          {latestSummary}
+        </p>
+        {openError && (
+          <p className="mt-1 text-xs text-danger" role="alert">
+            {openError}
+          </p>
+        )}
+        {signedUrl && (
+          <a
+            className="mt-1 inline-flex min-h-8 items-center text-xs font-medium text-primary hover:underline"
+            href={signedUrl}
+            rel="noreferrer"
+            target="_blank"
           >
-            {isRequired ? "Required" : "Optional"}
-          </span>
-        </td>
-        <td className="px-4 py-3">
-          {latest ? (
-            <WorkflowStatusTag status={latest.status} />
-          ) : (
-            <span className="text-sm text-muted">Not submitted</span>
-          )}
-        </td>
-        <td className="px-4 py-3 text-right">
-          {latest && (
-            <button
-              className="mr-2 inline-flex min-h-9 items-center rounded-sm text-xs! border border-line px-3 cursor-pointer font-medium text-ink hover:border-primary hover:text-primary disabled:opacity-60"
-              disabled={pending}
-              onClick={() => openDocument(latest)}
-              type="button"
-            >
-              {pendingId === latest.id ? "Preparing…" : "View"}
-            </button>
-          )}
+            {isTranscript ? "Open secure TOR" : "Open secure document"}
+          </a>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+        {latest ? (
+          <WorkflowStatusTag status={latest.status} />
+        ) : (
+          <span className="text-xs text-muted">Not submitted</span>
+        )}
+        {latest && (
           <button
-            className="inline-flex min-h-9 items-center rounded-sm bg-primary px-3 text-xs! font-semibold cursor-pointer text-on-primary hover:bg-primary-dark"
-            onClick={() => setUploadOpen(!uploadOpen)}
+            className="inline-flex min-h-8 items-center rounded-sm px-2 text-xs! font-semibold text-primary hover:underline disabled:opacity-60"
+            disabled={pending}
+            onClick={() => openDocument(latest)}
             type="button"
           >
-            Replace
+            {pendingId === latest.id ? "Preparing…" : "View"}
           </button>
-        </td>
-      </tr>
-      {(openError || signedUrl) && (
-        <tr>
-          <td className="px-4 pb-3 text-sm" colSpan={4}>
-            {openError && (
-              <p className="text-danger" role="alert">
-                {openError}
-              </p>
-            )}
-            {signedUrl && (
-              <a
-                className="text-primary hover:underline"
-                href={signedUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {isTranscript ? "Open secure TOR" : "Open secure document"}
-              </a>
-            )}
-          </td>
-        </tr>
-      )}
+        )}
+        <button
+          className={`inline-flex min-h-8 items-center rounded-full px-5 bg-primary-light text-primary cursor-pointer text-xs! font-semibold ${
+            latest?.status === "FOR_RESUBMISSION"
+              ? ""
+              : "border-line bg-panel text-ink hover:border-primary hover:text-primary"
+          }`}
+          onClick={() => setUploadOpen(!uploadOpen)}
+          type="button"
+        >
+          {!latest
+            ? "Upload"
+            : latest.status === "FOR_RESUBMISSION"
+              ? "Replace"
+              : "Replace"}
+        </button>
+      </div>
       {contextHolder}
       <Modal
         destroyOnHidden
@@ -491,6 +484,6 @@ export function DocumentTypeCard({
           educationEntriesUnavailable={educationEntriesUnavailable}
         />
       </Modal>
-    </>
+    </section>
   );
 }
