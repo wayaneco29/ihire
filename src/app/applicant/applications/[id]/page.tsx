@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { CalendarDaysIcon } from "@heroicons/react/24/outline";
@@ -12,6 +12,7 @@ import { calculateApplicantTrainingHours } from "@/utils/calculate-applicant-tra
 import { formatPositionTrack } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import {
+  ApplicationProvisionalTotal,
   ApplicationCriteriaPoints,
   type ApplicationCriterionPointsRow,
 } from "./components/ApplicationCriteriaPoints";
@@ -30,7 +31,9 @@ export default async function ApplicantApplicationDetailPage({
 
   const { data: application, error } = await applicant.supabase
     .from("applications")
-    .select("id, job_id, position_id, pds_version_id, status, applied_at, scheduled_assessment_at")
+    .select(
+      "id, job_id, position_id, pds_version_id, status, applied_at, scheduled_assessment_at",
+    )
     .eq("id", id)
     .eq("applicant_id", applicant.applicant.id)
     .maybeSingle();
@@ -190,10 +193,9 @@ export default async function ApplicantApplicationDetailPage({
     }
   }
 
-  const jobPosition =
-    jobPositions?.find(
-      (jobPosition) => jobPosition.position_id === resolvedPositionId,
-    );
+  const jobPosition = jobPositions?.find(
+    (jobPosition) => jobPosition.position_id === resolvedPositionId,
+  );
   let criteriaUnavailable = Boolean(jobPositionError || !jobPosition);
   const criteriaUnavailableMessage = jobPositionError
     ? "Criteria points are unavailable right now. Refresh the page to try again."
@@ -201,7 +203,7 @@ export default async function ApplicantApplicationDetailPage({
       ? "The position was not saved with this application. Please contact HR to verify it; you do not need to reapply."
       : jobPositions?.length
         ? "The saved position is no longer linked to this job. Contact HR to confirm the scoring profile."
-      : "This job has no scoring profile configured yet. Contact HR for assistance.";
+        : "This job has no scoring profile configured yet. Contact HR for assistance.";
   let criteriaRows: ApplicationCriterionPointsRow[] = [];
   if (!criteriaUnavailable && jobPosition) {
     const weightsResult = await applicant.supabase
@@ -256,8 +258,8 @@ export default async function ApplicantApplicationDetailPage({
             : { data: null, error: null };
         const educationScoringUnavailable = Boolean(
           educationResult.error ||
-            resolvedPositionUnavailable ||
-            educationPointsResult.error,
+          resolvedPositionUnavailable ||
+          educationPointsResult.error,
         );
         const trainingCriterion = (criteriaResult.data ?? []).find(
           (criterion) => criterion.criterion_key === "TRAINING",
@@ -453,13 +455,24 @@ export default async function ApplicantApplicationDetailPage({
   }
 
   return (
-    <>
-      <PageHeader
-        description="Track the review history and details for this application."
-        eyebrow="My applications"
-        title={job?.title ?? "Application details"}
-        actions={<WorkflowStatusTag status={application.status} />}
-      />
+    <div className="mx-auto max-w-5xl">
+      <Link
+        className="inline-flex min-h-9 items-center rounded-sm text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        href="/applicant/applications"
+      >
+        Back to your applications
+      </Link>
+      <header className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            {job?.title ?? "Application details"}
+          </h1>
+          <p className="mt-1 text-sm leading-6 text-muted">
+            Review history and score for this application.
+          </p>
+        </div>
+        <WorkflowStatusTag status={application.status} />
+      </header>
 
       {application.status === "ASSESSMENT_SCHEDULED" && (
         <section
@@ -495,45 +508,63 @@ export default async function ApplicantApplicationDetailPage({
         </section>
       )}
 
-      <div className="mt-7 grid gap-5">
-        <section className="rounded-2xl border border-line bg-panel p-5 shadow-card sm:p-7">
-          <h2 className="text-sm font-semibold text-ink">
-            Position applying for
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            {resolvedPosition
-              ? `${resolvedPosition.title} · ${formatPositionTrack(resolvedPosition.application_type?.name ?? "")}`
-              : resolvedPositionId
-                ? "Position unavailable"
-                : "Position not recorded"}
-          </p>
-          {application.position_id === null && linkedPositionIds.length > 1 && (
-            <p className="mt-3 text-sm text-muted" role="status">
-              This application is missing its saved position. Please contact HR
-              to verify the position on your application.
-            </p>
-          )}
-        </section>
-        <ApplicationCriteriaPoints
-          rows={criteriaRows}
-          unavailable={criteriaUnavailable}
-          unavailableMessage={criteriaUnavailableMessage}
-        />
-        <section className="h-fit rounded-2xl border border-line bg-panel p-5 shadow-card sm:p-7">
-          <div className="border-b border-line-subtle pb-4">
-            <h2 className="text-lg font-semibold tracking-tight text-ink">
-              Status timeline
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              Updates as your application moves through review.
-            </p>
-          </div>
-          <ApplicationTimeline
-            currentStatus={application.status}
-            events={events}
+      <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(16rem,0.8fr)] lg:gap-10">
+        <div className="bg-white shadow rounded-md p-6">
+          <ApplicationCriteriaPoints
+            rows={criteriaRows}
+            unavailable={criteriaUnavailable}
+            unavailableMessage={criteriaUnavailableMessage}
           />
-        </section>
+        </div>
+        <aside className="grid gap-6 bg-white rounded-md shadow">
+          <ApplicationProvisionalTotal
+            rows={criteriaRows}
+            unavailable={criteriaUnavailable}
+          />
+          <section aria-labelledby="position-heading" className="px-6">
+            <h2
+              className="text-xs font-medium text-muted"
+              id="position-heading"
+            >
+              Position applying for
+            </h2>
+            <p className="mt-1 text-sm font-medium text-ink">
+              {resolvedPosition
+                ? `${resolvedPosition.title} · ${formatPositionTrack(resolvedPosition.application_type?.name ?? "")}`
+                : resolvedPositionId
+                  ? "Position unavailable"
+                  : "Position not recorded"}
+            </p>
+            {application.position_id === null &&
+              linkedPositionIds.length > 1 && (
+                <p className="mt-2 text-sm text-muted" role="status">
+                  This application is missing its saved position. Please contact
+                  HR to verify the position on your application.
+                </p>
+              )}
+          </section>
+          <section
+            aria-labelledby="status-timeline-heading"
+            className="px-6 mb-6"
+          >
+            <div className="border-b border-line-subtle pb-4">
+              <h2
+                className="text-lg font-semibold tracking-tight text-ink"
+                id="status-timeline-heading"
+              >
+                Status timeline
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                Updates as your application moves through review.
+              </p>
+            </div>
+            <ApplicationTimeline
+              currentStatus={application.status}
+              events={events}
+            />
+          </section>
+        </aside>
       </div>
-    </>
+    </div>
   );
 }

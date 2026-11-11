@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ApplicationProgress } from "@/components/ui/ApplicationProgress";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
@@ -26,84 +27,6 @@ type NotificationItem = {
   created_at: string;
   is_read: boolean;
 };
-
-const APPLICATION_STAGES = [
-  "Submitted",
-  "Under evaluation",
-  "Assessment scheduled",
-  "Qualified",
-  "Hired",
-];
-
-function getApplicationStage(status: string) {
-  switch (status) {
-    case "UNDER_EVALUATION":
-      return 1;
-    case "ASSESSMENT_SCHEDULED":
-      return 2;
-    case "QUALIFIED":
-      return 3;
-    case "HIRED":
-      return 4;
-    case "NOT_QUALIFIED":
-    case "REJECTED":
-      return 3;
-    default:
-      return 0;
-  }
-}
-
-function ApplicationProgress({ status }: { status: string }) {
-  const activeStage = getApplicationStage(status);
-  const isUnsuccessful = ["NOT_QUALIFIED", "REJECTED"].includes(status);
-  const stages = APPLICATION_STAGES.map((stage, index) =>
-    isUnsuccessful && index === activeStage
-      ? status === "REJECTED"
-        ? "Not selected"
-        : "Not qualified"
-      : stage,
-  );
-
-  return (
-    <div
-      aria-label={`Application progress: ${status.toLowerCase().replaceAll("_", " ")}`}
-      className="mt-3"
-      role="group"
-    >
-      <div className="grid grid-cols-5 gap-1">
-        {stages.map((stage, index) => {
-          const isCurrent = index === activeStage;
-          const isComplete = index < activeStage || status === "HIRED";
-          return (
-            <span
-              aria-hidden="true"
-              className={`h-1.5 rounded-full ${
-                isUnsuccessful && isCurrent
-                  ? "bg-danger"
-                  : isCurrent || isComplete
-                    ? "bg-primary"
-                    : "bg-line"
-              }`}
-              key={stage}
-            />
-          );
-        })}
-      </div>
-      <div className="mt-1.5 grid grid-cols-5 gap-1">
-        {stages.map((stage, index) => (
-          <span
-            className={`text-[10px] leading-4 ${
-              index === activeStage ? "font-medium text-ink" : "text-muted"
-            }`}
-            key={stage}
-          >
-            {stage}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function DashboardSections({
   applications,

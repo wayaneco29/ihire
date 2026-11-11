@@ -60,9 +60,23 @@ export default async function ApplicantApplicationsPage() {
       ? positionTitles.get(application.position_id) ?? "Position unavailable"
       : "Position not recorded",
   }));
+  const inReviewCount = list.filter((application) =>
+    ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED"].includes(
+      application.status,
+    ),
+  ).length;
+  const hiredCount = list.filter(
+    (application) => application.status === "HIRED",
+  ).length;
+  const qualifiedCount = list.filter(
+    (application) => application.status === "QUALIFIED",
+  ).length;
+  const summary = list.length
+    ? `${list.length} submitted. ${inReviewCount} in review, ${hiredCount} hired, ${qualifiedCount ? `${qualifiedCount} qualified` : "none qualified yet"}.`
+    : "No applications submitted yet.";
 
   return (
-    <>
+    <div className="mx-auto max-w-3xl">
       <PageHeader
         actions={
           <Link
@@ -72,8 +86,7 @@ export default async function ApplicantApplicationsPage() {
             Browse jobs
           </Link>
         }
-        description="Follow each application from submission through its latest review."
-        eyebrow="Applicant workspace"
+        description={summary}
         title="Your applications"
       />
       {error || positionsResponse.error ? (
@@ -87,6 +100,6 @@ export default async function ApplicantApplicationsPage() {
       ) : (
         <ApplicationList applications={list} />
       )}
-    </>
+    </div>
   );
 }

@@ -16,25 +16,22 @@ export function ApplicationCriteriaPoints({
   unavailable?: boolean;
   unavailableMessage?: string;
 }>) {
-  const provisionalPoints = rows.reduce(
-    (total, row) =>
-      total +
-      (row.earnedStatus === "scored" ? (row.earnedPoints ?? 0) : 0),
-    0,
-  );
   const maximumPoints = rows.reduce(
     (total, row) => total + row.maximumPoints,
     0,
   );
 
   return (
-    <section className="rounded-2xl border border-line bg-panel p-5 shadow-card sm:p-7">
+    <section aria-labelledby="criteria-points-heading">
       <div className="border-b border-line-subtle pb-4">
-        <h2 className="text-lg font-semibold tracking-tight text-ink">
+        <h2
+          className="text-lg font-semibold tracking-tight text-ink"
+          id="criteria-points-heading"
+        >
           Criteria points
         </h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Current points and maximum points for this application.
+          Your current points out of the maximum for each criterion.
         </p>
       </div>
       {unavailable ? (
@@ -50,10 +47,10 @@ export function ApplicationCriteriaPoints({
           <ul className="mt-4 divide-y divide-line-subtle">
             {rows.map((row) => (
               <li
-                className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-1.5 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-5"
                 key={row.id}
               >
-                <div>
+                <div className="min-w-0">
                   <span className="text-sm font-medium text-ink">
                     {row.title}
                   </span>
@@ -63,7 +60,7 @@ export function ApplicationCriteriaPoints({
                     </p>
                   )}
                 </div>
-                <span className="text-sm text-muted">
+                <span className="shrink-0 text-sm text-muted sm:text-right">
                   {row.earnedStatus === "scored" &&
                   row.earnedPoints !== null ? (
                     <>
@@ -81,23 +78,60 @@ export function ApplicationCriteriaPoints({
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary-light/40 px-4 py-3">
-            <div>
-              <p className="text-sm font-semibold text-ink">
-                Provisional total
-              </p>
-              <p className="mt-1 text-xs leading-5 text-muted">
-                This is not a final score. Evaluator review may change it.
-              </p>
-            </div>
-            <p className="text-sm text-muted">
-              <strong className="font-bold text-ink">
-                {provisionalPoints.toFixed(2)}
-              </strong>{" "}
-              / {maximumPoints.toFixed(2)} points
-            </p>
-          </div>
         </>
+      )}
+    </section>
+  );
+}
+
+export function ApplicationProvisionalTotal({
+  rows,
+  unavailable = false,
+}: Readonly<{
+  rows: ApplicationCriterionPointsRow[];
+  unavailable?: boolean;
+}>) {
+  const provisionalPoints = rows.reduce(
+    (total, row) =>
+      total + (row.earnedStatus === "scored" ? (row.earnedPoints ?? 0) : 0),
+    0,
+  );
+  const maximumPoints = rows.reduce(
+    (total, row) => total + row.maximumPoints,
+    0,
+  );
+
+  return (
+    <section
+      aria-labelledby="provisional-total-heading"
+      className="bg-primary-light p-5"
+    >
+      <h2
+        className="text-sm font-semibold text-ink"
+        id="provisional-total-heading"
+      >
+        Provisional total
+      </h2>
+      {unavailable ? (
+        <p className="mt-3 text-sm text-muted" role="status">
+          Score unavailable
+        </p>
+      ) : rows.length ? (
+        <>
+          <p className="mt-2 flex items-baseline gap-2 text-muted">
+            <strong className="text-3xl font-semibold tracking-tight text-primary">
+              {provisionalPoints.toFixed(2)}
+            </strong>
+            <span className="text-sm">/ {maximumPoints.toFixed(2)} points</span>
+          </p>
+          <p className="mt-2 text-xs leading-5 text-muted">
+            This is not a final score. Evaluator review may change it.
+          </p>
+        </>
+      ) : (
+        <p className="mt-2 text-sm text-muted">
+          No criteria are available to score this application.
+        </p>
       )}
     </section>
   );
