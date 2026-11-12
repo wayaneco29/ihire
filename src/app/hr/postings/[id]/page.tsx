@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { PostingApplicants } from "./components/PostingApplicants";
@@ -108,31 +109,24 @@ export default async function HrPostingDetailPage({
 
   return (
     <div className="mx-auto">
+      <PageHeader
+        title={posting.title}
+        description={posting.description ?? undefined}
+        actions={
+          <Link
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href={`/hr/postings/${posting.id}/edit`}
+          >
+            Edit posting
+          </Link>
+        }
+      />
       <Link
         className="inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         href="/hr/postings"
       >
         <span aria-hidden="true">←</span> Job postings
       </Link>
-
-      <header className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-[40px]">
-            {posting.title}
-          </h1>
-          {posting.description && (
-            <p className="mt-1 max-w-3xl whitespace-pre-line text-sm text-muted sm:text-base">
-              {posting.description}
-            </p>
-          )}
-        </div>
-        <Link
-          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          href={`/hr/postings/${posting.id}/edit`}
-        >
-          Edit posting
-        </Link>
-      </header>
 
       <section
         aria-label="Posting status and hiring progress"

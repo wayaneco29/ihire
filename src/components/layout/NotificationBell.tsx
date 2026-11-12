@@ -158,7 +158,7 @@ export function NotificationBell() {
       <Button
         aria-expanded={open}
         aria-label={`Notifications, ${unreadCount} unread`}
-        className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-panel-muted"
+        className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-primary-light"
         type="button"
         variant="unstyled"
       >

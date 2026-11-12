@@ -35,7 +35,10 @@ export default async function HrPostingsPage() {
   if (error)
     return (
       <>
-        <PageHeader eyebrow="HR workspace" title="Job postings" />
+        <PageHeader
+          description="Create positions and track evaluator outcomes for each posting."
+          title="Job postings"
+        />
         <div className="mt-7">
           <EmptyState
             description="Refresh the page to try again."
@@ -104,22 +107,18 @@ export default async function HrPostingsPage() {
 
   return (
     <div className="mx-auto">
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-[42px]">
-            Job postings
-          </h1>
-          <p className="mt-1 text-sm text-muted sm:text-base">
-            Create positions and track evaluator outcomes for each posting.
-          </p>
-        </div>
-        <Link
-          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          href="/hr/postings/new"
-        >
-          Create posting
-        </Link>
-      </header>
+      <PageHeader
+        title="Job postings"
+        description="Create positions and track evaluator outcomes for each posting."
+        actions={
+          <Link
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href="/hr/postings/new"
+          >
+            Create posting
+          </Link>
+        }
+      />
       {postingItems.length ? (
         <PostingsManager postings={postingItems} />
       ) : (

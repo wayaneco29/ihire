@@ -32,7 +32,7 @@ export function ThemeSwitcher() {
     <Dropdown menu={menu} placement="bottomRight" trigger={["click"]}>
       <Button
         aria-label={`Color theme: ${activeOption.label}`}
-        className="!grid !size-11 !place-items-center !p-0 border-0! hover:bg-panel-muted!"
+        className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-primary-light hover:text-primary-dark"
         icon={activeOption.icon}
         title={`Color theme: ${activeOption.label}`}
         variant="unstyled"

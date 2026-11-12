@@ -22,7 +22,7 @@ export default async function ApplicantProfilePage() {
   const draft = versions?.find((version) => version.status === "DRAFT");
 
   return (
-    <div className="-mx-4 -my-6 min-h-[calc(100vh-4.5rem)] bg-profile-canvas px-4 py-6 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 lg:-mx-10 lg:px-10">
+    <div className="min-h-[calc(100vh-4.5rem)] bg-profile-canvas px-4 py-6 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 lg:-mx-10 lg:px-10">
       <PageHeader
         actions={
           submitted ? (
@@ -42,7 +42,7 @@ export default async function ApplicantProfilePage() {
         eyebrow="Applicant workspace"
         title="My profile"
       />
-      <div className="mt-4 inline-flex items-center gap-3 rounded-sm bg-primary-light/60 px-3.5 py-3 border border-primary/20 w-full">
+      <div className="mt-7 inline-flex items-center gap-3 rounded-sm bg-primary-light/60 px-3.5 py-3 border border-primary/20 w-full">
         <HashtagIcon aria-hidden="true" className="size-8 text-primary" />
         <span>
           <span className="block text-[10px] font-semibold uppercase tracking-widest text-profile-muted">

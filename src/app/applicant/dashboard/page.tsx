@@ -92,7 +92,7 @@ export default async function ApplicantDashboardPage() {
     ...application,
     jobTitle: jobTitles.get(application.job_id) ?? "Job posting",
     positionLabel: application.position_id
-      ? positionTitles.get(application.position_id) ?? "Position unavailable"
+      ? (positionTitles.get(application.position_id) ?? "Position unavailable")
       : "Position not recorded",
   }));
 
@@ -149,9 +149,9 @@ export default async function ApplicantDashboardPage() {
           ? `Your application for ${latestApplication.jobTitle} was not qualified.`
           : latestApplication.status === "REJECTED"
             ? `Your application for ${latestApplication.jobTitle} was not selected.`
-                : latestApplication.status === "ASSESSMENT_SCHEDULED"
-                  ? `Your assessment for ${latestApplication.jobTitle} is scheduled.`
-                  : `Your application for ${latestApplication.jobTitle} is in progress.`;
+            : latestApplication.status === "ASSESSMENT_SCHEDULED"
+              ? `Your assessment for ${latestApplication.jobTitle} is scheduled.`
+              : `Your application for ${latestApplication.jobTitle} is in progress.`;
   const secondaryApplication = secondaryApplications[0];
   const secondaryStatusLabel = secondaryApplication
     ? ({
@@ -182,7 +182,7 @@ export default async function ApplicantDashboardPage() {
 
       <section
         aria-label="Application result"
-        className="rounded-sm bg-[#10432f] px-5 py-6 text-white shadow-sm sm:px-7 sm:py-8"
+        className="rounded-sm bg-[#10432f] px-5 py-6 mt-7 text-white shadow-sm sm:px-7 sm:py-8"
       >
         <p className="text-xs font-medium text-emerald-100">
           {applicationResult ? "Application result" : "Your applications"}

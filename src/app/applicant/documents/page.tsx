@@ -194,7 +194,7 @@ export default async function ApplicantDocumentsPage() {
           {resubmissionTypes.length > 0 && (
             <section
               aria-label="Document needs resubmission"
-              className="mt-6 flex flex-col gap-3 rounded-sm border border-warning/20 border-l-4 border-l-warning bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+              className="mt-7 flex flex-col gap-3 rounded-sm border border-warning/20 border-l-4 border-l-warning bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
             >
               <div>
                 <h2 className="text-sm font-semibold text-warning">
@@ -219,7 +219,7 @@ export default async function ApplicantDocumentsPage() {
           {requiredTypes.length > 0 && (
             <section
               aria-labelledby="required-documents-heading"
-              className="mt-5 rounded-xl border border-line bg-panel p-4 sm:p-5"
+              className="mt-7 rounded-xl border border-line bg-panel p-4 sm:p-5"
             >
               <div className="border-b border-line-subtle pb-3">
                 <h2
@@ -243,7 +243,7 @@ export default async function ApplicantDocumentsPage() {
           {optionalTypes.length > 0 && (
             <section
               aria-labelledby="optional-documents-heading"
-              className="mt-5 rounded-xl border border-line bg-panel p-4 sm:p-5"
+              className="mt-7 rounded-xl border border-line bg-panel p-4 sm:p-5"
             >
               <div className="border-b border-line-subtle pb-3">
                 <h2
