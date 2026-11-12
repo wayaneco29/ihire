@@ -75,6 +75,14 @@ export default async function ApplicantPdsPage() {
 
   return (
     <>
+      <PageHeader
+        title="Personal Data Sheet"
+        description={
+          draft
+            ? "Complete your personal record section by section. Your draft saves as you go."
+            : "Your Personal Data Sheet is submitted. Start an update whenever you are ready to make changes."
+        }
+      />
       {draft ? (
         <PdsWizardShell
           completedSteps={draft.completed_steps}
@@ -86,11 +94,6 @@ export default async function ApplicantPdsPage() {
         />
       ) : (
         <>
-          <PageHeader
-            eyebrow="Applicant workspace"
-            title="Personal Data Sheet"
-            description="Complete your personal record section by section. Your draft saves as you go."
-          />
           <SurfaceCard
             as="section"
             className="mt-7 overflow-hidden rounded-2xl"

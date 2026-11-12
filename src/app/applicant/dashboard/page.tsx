@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
@@ -174,10 +175,10 @@ export default async function ApplicantDashboardPage() {
 
   return (
     <>
-      <p className="mb-5 text-xs text-muted">
-        Division of Southern Leyte <span aria-hidden="true">·</span>{" "}
-        <span className="font-medium text-ink">Applicant dashboard</span>
-      </p>
+      <PageHeader
+        description="Track your applications, Personal Data Sheet, documents, and notifications."
+        title="Applicant dashboard"
+      />
 
       <section
         aria-label="Application result"
@@ -188,9 +189,9 @@ export default async function ApplicantDashboardPage() {
         </p>
         <div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
-            <h1 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+            <h2 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
               {applicationHeadline}
-            </h1>
+            </h2>
             <p className="mt-2 text-sm leading-6 text-emerald-50/90">
               {applicationSummary}
             </p>

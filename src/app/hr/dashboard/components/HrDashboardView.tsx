@@ -59,23 +59,6 @@ export function HrDashboardView({
 
   return (
     <div className="mx-auto">
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-[42px]">
-            Hiring dashboard
-          </h1>
-          <p className="mt-1 text-sm text-muted sm:text-base">
-            See applicant progress and manage your job postings.
-          </p>
-        </div>
-        <Link
-          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          href="/hr/postings/new"
-        >
-          Create posting
-        </Link>
-      </header>
-
       <section
         aria-label="Hiring totals"
         className="mt-7 grid grid-cols-2 overflow-hidden rounded-md border border-line bg-panel md:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]"

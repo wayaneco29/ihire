@@ -1,4 +1,7 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useId, type ReactNode } from "react";
+import { useSetPageHeader } from "@/context/AppShellContext";
 
 type PageHeaderProps = {
   title: string;
@@ -10,27 +13,17 @@ type PageHeaderProps = {
 export function PageHeader({
   title,
   description,
-  eyebrow,
   actions,
 }: PageHeaderProps) {
-  return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="max-w-3xl">
-        {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            {eyebrow}
-          </p>
-        )}
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-          {title}
-        </h1>
-        {description && (
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-            {description}
-          </p>
-        )}
-      </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
-    </div>
-  );
+  const setPageHeader = useSetPageHeader();
+  const id = useId();
+
+  useEffect(() => {
+    setPageHeader({ id, title, description, actions });
+    return () => {
+      setPageHeader((current) => (current?.id === id ? null : current));
+    };
+  }, [actions, description, id, setPageHeader, title]);
+
+  return null;
 }

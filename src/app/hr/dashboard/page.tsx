@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -46,15 +47,12 @@ async function HrDashboardContent() {
 
   if (postingsError || applicationsResult.error) {
     return (
-      <>
-        <PageHeader eyebrow="HR workspace" title="Hiring dashboard" />
-        <div className="mt-7">
-          <EmptyState
-            description="Refresh the page to try loading your hiring summary again."
-            title="Dashboard unavailable"
-          />
-        </div>
-      </>
+      <div className="mt-7">
+        <EmptyState
+          description="Refresh the page to try loading your hiring summary again."
+          title="Dashboard unavailable"
+        />
+      </div>
     );
   }
 
@@ -147,18 +145,32 @@ async function HrDashboardContent() {
 
 export default function HrDashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div
-          aria-live="polite"
-          className="py-8 text-sm text-muted"
-          role="status"
-        >
-          Loading hiring dashboard…
-        </div>
-      }
-    >
-      <HrDashboardContent />
-    </Suspense>
+    <>
+      <PageHeader
+        title="Hiring dashboard"
+        description="See applicant progress and manage your job postings."
+        actions={
+          <Link
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href="/hr/postings/new"
+          >
+            Create posting
+          </Link>
+        }
+      />
+      <Suspense
+        fallback={
+          <div
+            aria-live="polite"
+            className="py-8 text-sm text-muted"
+            role="status"
+          >
+            Loading hiring dashboard…
+          </div>
+        }
+      >
+        <HrDashboardContent />
+      </Suspense>
+    </>
   );
 }
