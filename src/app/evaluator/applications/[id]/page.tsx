@@ -12,7 +12,7 @@ import { formatPositionLabel } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
 import { ApplicationAssessmentScheduleForm } from "../components/ApplicationAssessmentScheduleForm";
-import { buildReviewQueueItems } from "../../reviews/queue";
+import { REVIEW_QUEUE_PAGE_SIZE } from "../../reviews/queue";
 import { AnonymizedApplicantReview } from "./components/AnonymizedApplicantReview";
 
 export default async function EvaluatorApplicationReviewPage({
@@ -20,9 +20,9 @@ export default async function EvaluatorApplicationReviewPage({
   searchParams,
 }: Readonly<{
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ jobId?: string | string[] }>;
+  searchParams: Promise<{ jobId?: string | string[]; page?: string | string[] }>;
 }>) {
-  const [{ id }, { jobId: requestedJobId }] = await Promise.all([
+  const [{ id }, { jobId: requestedJobId, page: requestedPage }] = await Promise.all([
     params,
     searchParams,
   ]);
@@ -31,6 +31,10 @@ export default async function EvaluatorApplicationReviewPage({
     /^[0-9a-f-]{36}$/i.test(requestedJobId)
       ? requestedJobId
       : undefined;
+  const parsedPage =
+    typeof requestedPage === "string" ? Number(requestedPage) : 1;
+  const queuePage =
+    Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   const evaluator = await getEvaluatorContext();
   if (!evaluator) redirect("/login");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -70,6 +74,7 @@ export default async function EvaluatorApplicationReviewPage({
     experienceResult,
     evaluationResult,
     queueApplicantsResult,
+    allAssignedApplicationsResult,
   ] = await Promise.all([
     evaluator.supabase
       .from("job_postings")
@@ -124,16 +129,22 @@ export default async function EvaluatorApplicationReviewPage({
       .from("application_evaluations")
       .select("result, remarks, evaluated_at")
       .eq("application_id", id)
-      .eq("evaluator_id", evaluator.user.id)
       .order("evaluated_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
     jobId && jobId === application.job_id
       ? evaluator.supabase
-          .from("v_anonymized_applicants")
+          .from("v_evaluator_review_queue")
           .select(
-            "application_id, applicant_number, application_status, applied_at, job_id, position_title, position_track",
+            "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
           )
+          .eq("job_id", jobId)
+          .order("applied_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    jobId && jobId === application.job_id
+      ? evaluator.supabase
+          .from("applications")
+          .select("id, applied_at")
           .eq("job_id", jobId)
           .order("applied_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
@@ -190,34 +201,17 @@ export default async function EvaluatorApplicationReviewPage({
     experience_points: experiencePointsResult.data,
   };
 
-  const queueApplicationIds = (queueApplicantsResult.data ?? []).map(
-    (item) => item.application_id,
-  );
-  const queueDocumentsResult =
-    jobId && jobId === application.job_id && queueApplicationIds.length
-      ? await evaluator.supabase
-          .from("v_anonymized_documents")
-          .select(
-            "application_id, document_id, document_type, document_status, uploaded_at",
-          )
-          .order("uploaded_at", { ascending: false })
-          .in("application_id", queueApplicationIds)
-      : { data: [], error: null };
-
-  const queueApplicants = (queueApplicantsResult.data ?? []).map((item) => ({
-    ...item,
-    job_id: item.job_id,
-  }));
-  const queueItems =
-    queueApplicantsResult.error || queueDocumentsResult.error
-      ? []
-      : buildReviewQueueItems(
-          queueApplicants,
-          queueDocumentsResult.data ?? [],
-          new Map(),
-        );
+  const queueItems = queueApplicantsResult.error
+    ? []
+    : queueApplicantsResult.data ?? [];
   const applicantPositions = new Map(
-    queueApplicants.map((item, index) => [item.application_id, index] as const),
+    (allAssignedApplicationsResult.data ?? []).map((item, index) => [
+      item.id,
+      index,
+    ] as const),
+  );
+  const queueItemPositions = new Map(
+    queueItems.map((item, index) => [item.application_id, index] as const),
   );
   const currentQueueIndex = queueItems.findIndex(
     (item) => item.application_id === id,
@@ -238,6 +232,10 @@ export default async function EvaluatorApplicationReviewPage({
             currentApplicantIndex,
         ) ?? null)
       : (queueItems[0] ?? null);
+  const reviewPageFor = (applicationId: string) =>
+    Math.floor(
+      (queueItemPositions.get(applicationId) ?? 0) / REVIEW_QUEUE_PAGE_SIZE,
+    ) + 1;
 
   return (
     <>
@@ -278,11 +276,12 @@ export default async function EvaluatorApplicationReviewPage({
         >
           <Link
             className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
-            href={`/evaluator/reviews?jobId=${jobId}`}
+            href={`/evaluator/reviews?jobId=${jobId}&page=${queuePage}`}
           >
             Back to applicants
           </Link>
-          {queueApplicantsResult.error || queueDocumentsResult.error ? (
+          {queueApplicantsResult.error ||
+          allAssignedApplicationsResult.error ? (
             <p className="text-sm text-warning">
               Queue navigation is temporarily unavailable.
             </p>
@@ -297,7 +296,7 @@ export default async function EvaluatorApplicationReviewPage({
                 {previousApplicant ? (
                   <Link
                     className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
-                    href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}`}
+                    href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(previousApplicant.application_id)}`}
                   >
                     Previous
                   </Link>
@@ -305,7 +304,7 @@ export default async function EvaluatorApplicationReviewPage({
                 {nextApplicant ? (
                   <Link
                     className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-                    href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}`}
+                    href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(nextApplicant.application_id)}`}
                   >
                     Next applicant
                   </Link>

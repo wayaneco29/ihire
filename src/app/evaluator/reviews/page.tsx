@@ -3,10 +3,9 @@ import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEvaluatorContext } from "@/lib/auth/server";
-import { formatPositionLabel } from "@/utils/format-position-track";
+import { REVIEW_QUEUE_PAGE_SIZE } from "./queue";
 import { ApplicantNumberLookup } from "./components/ApplicantNumberLookup";
 import { ReviewQueueList } from "./components/ReviewQueueList";
-import { buildReviewQueueItems } from "./queue";
 
 export default async function EvaluatorReviewsPage({
   searchParams,
@@ -14,6 +13,7 @@ export default async function EvaluatorReviewsPage({
   searchParams: Promise<{
     jobId?: string | string[];
     applicantNumber?: string | string[];
+    page?: string | string[];
   }>;
 }>) {
   const evaluator = await getEvaluatorContext();
@@ -22,6 +22,7 @@ export default async function EvaluatorReviewsPage({
   const {
     jobId: requestedJobId,
     applicantNumber: requestedApplicantNumber,
+    page: requestedPage,
   } = await searchParams;
   const selectedJobId =
     typeof requestedJobId === "string" ? requestedJobId : undefined;
@@ -30,33 +31,57 @@ export default async function EvaluatorReviewsPage({
       ? requestedApplicantNumber.trim().toLocaleUpperCase()
       : "";
   const validApplicantNumber = /^APP-\d{4,}$/.test(applicantNumber);
+  const parsedPage =
+    typeof requestedPage === "string" ? Number(requestedPage) : 1;
+  const page =
+    Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  const [applicantsResult, documentsResult] = await Promise.all([
+  const [jobsResult, applicantLookupResult] = await Promise.all([
     evaluator.supabase
-      .from("v_anonymized_applicants")
-      .select(
-        "application_id, applicant_number, application_status, applied_at, job_id, position_title, position_track",
-      )
-      .order("applied_at", { ascending: false }),
-    evaluator.supabase
-      .from("v_anonymized_documents")
-      .select(
-        "application_id, document_id, document_type, document_status, uploaded_at",
-      )
-      .order("uploaded_at", { ascending: false }),
+      .from("v_evaluator_review_queue_summary")
+      .select("job_id, job_title, waiting_count, rereview_count")
+      .order("waiting_count", { ascending: false }),
+    validApplicantNumber
+      ? evaluator.supabase
+          .from("v_evaluator_review_queue")
+          .select(
+            "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
+          )
+          .eq("applicant_number", applicantNumber)
+          .order("applied_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
-  if (applicantsResult.error || documentsResult.error) {
+  const queuePageResult = selectedJobId
+    ? await evaluator.supabase
+        .from("v_evaluator_review_queue")
+        .select(
+          "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
+          { count: "exact" },
+        )
+        .eq("job_id", selectedJobId)
+        .order("applied_at", { ascending: false })
+        .range(
+          (page - 1) * REVIEW_QUEUE_PAGE_SIZE,
+          page * REVIEW_QUEUE_PAGE_SIZE - 1,
+        )
+    : { data: [], error: null, count: 0 };
+
+  if (
+    jobsResult.error ||
+    applicantLookupResult.error ||
+    queuePageResult.error
+  ) {
     return (
       <>
         <PageHeader
-          description="Anonymized applications and documents assigned to the review queue."
+          description="Anonymized applications assigned to your review queue."
           eyebrow="Evaluator workspace"
           title="Review queue"
         />
         <div className="mt-7">
           <EmptyState
-            description="Refresh this page to try loading the anonymized review queue again."
+            description="Refresh this page to try loading your assigned review queue again."
             title="Review queue unavailable"
           />
         </div>
@@ -64,39 +89,9 @@ export default async function EvaluatorReviewsPage({
     );
   }
 
-  const applicants = applicantsResult.data ?? [];
-  const jobIds = [...new Set(applicants.map((applicant) => applicant.job_id))];
-  const jobsResult = jobIds.length
-    ? await evaluator.supabase
-        .from("job_postings")
-        .select("id, title")
-        .in("id", jobIds)
-    : { data: [], error: null };
-  if (jobsResult.error) {
-    return (
-      <>
-        <PageHeader
-          description="Choose a job posting to review its pending applicants."
-          eyebrow="Evaluator workspace"
-          title="Review queue"
-        />
-        <div className="mt-7">
-          <EmptyState
-            description="Refresh this page to try loading job postings again."
-            title="Job postings unavailable"
-          />
-        </div>
-      </>
-    );
-  }
-
-  const jobTitles = new Map(
-    (jobsResult.data ?? []).map((job) => [job.id, job.title] as const),
-  );
+  const jobs = jobsResult.data ?? [];
   const matchingApplications = validApplicantNumber
-    ? applicants.filter(
-        (applicant) => applicant.applicant_number === applicantNumber,
-      )
+    ? applicantLookupResult.data ?? []
     : [];
   if (matchingApplications.length === 1) {
     const application = matchingApplications[0];
@@ -105,12 +100,19 @@ export default async function EvaluatorReviewsPage({
     );
   }
 
-  const queueItems = buildReviewQueueItems(
-    applicants,
-    documentsResult.data ?? [],
-    jobTitles,
+  const waitingCount = queuePageResult.count ?? 0;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(waitingCount / REVIEW_QUEUE_PAGE_SIZE),
   );
-  const selectedJob = queueItems.find((item) => item.job_id === selectedJobId);
+  if (selectedJobId && page > totalPages && waitingCount > 0) {
+    redirect(
+      `/evaluator/reviews?jobId=${selectedJobId}&page=${totalPages}`,
+    );
+  }
+
+  const applicants = queuePageResult.data ?? [];
+  const selectedJob = jobs.find((job) => job.job_id === selectedJobId);
 
   return (
     <>
@@ -127,13 +129,11 @@ export default async function EvaluatorReviewsPage({
         }
         description={
           selectedJob
-            ? "Review applicants in order. Use the previous and next controls to move through this posting."
-            : "Choose a job posting to see its pending applicants and start reviewing."
+            ? "Review your assigned applicants in order. The list is paginated to keep the queue responsive."
+            : "View the job postings with applications assigned to you."
         }
-        eyebrow={
-          selectedJob ? "Applicants waiting for review" : "Evaluator workspace"
-        }
-        title={selectedJob?.jobTitle ?? "Review queue"}
+        eyebrow={selectedJob ? "Applicants waiting for review" : "Evaluator workspace"}
+        title={selectedJob?.job_title ?? "Review queue"}
       />
       <ApplicantNumberLookup initialApplicantNumber={applicantNumber} />
       {applicantNumber && (
@@ -147,7 +147,7 @@ export default async function EvaluatorReviewsPage({
             </p>
           ) : matchingApplications.length === 0 ? (
             <p className="text-sm text-muted">
-              No applications found for {applicantNumber}.
+              No assigned applications found for {applicantNumber}.
             </p>
           ) : (
             <>
@@ -162,15 +162,11 @@ export default async function EvaluatorReviewsPage({
                   >
                     <div>
                       <p className="text-sm font-medium text-ink">
-                        {jobTitles.get(application.job_id) ??
-                          "Job posting unavailable"}
+                        {application.job_title}
                       </p>
                       <p className="mt-1 text-xs text-muted">
                         {application.position_title
-                          ? formatPositionLabel(
-                              application.position_title,
-                              application.position_track ?? "",
-                            )
+                          ? `${application.position_title}${application.position_track ? ` · ${application.position_track}` : ""}`
                           : "Position not recorded"}
                       </p>
                     </div>
@@ -187,7 +183,14 @@ export default async function EvaluatorReviewsPage({
           )}
         </section>
       )}
-      <ReviewQueueList items={queueItems} selectedJobId={selectedJobId} />
+      <ReviewQueueList
+        applicants={applicants}
+        jobs={jobs}
+        page={page}
+        selectedJobId={selectedJobId}
+        totalPages={totalPages}
+        waitingCount={waitingCount}
+      />
     </>
   );
 }

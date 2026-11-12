@@ -39,6 +39,28 @@ export type PublicFunctions = {
         };
         Returns: string;
     };
+    "reassign_application_evaluator": {
+        Args: {
+            "p_application_id": string;
+            "p_evaluator_id": string | null;
+        };
+        Returns: boolean;
+    };
+    "schedule_application_assessment": {
+        Args: {
+            "p_application_id": string;
+            "p_scheduled_at": string;
+        };
+        Returns: boolean;
+    };
+    "save_application_criterion_score": {
+        Args: {
+            "p_application_id": string;
+            "p_criterion_id": string;
+            "p_points": number;
+        };
+        Returns: undefined;
+    };
     "clone_pds_version": {
         Args: Record<PropertyKey, never>;
         Returns: string;

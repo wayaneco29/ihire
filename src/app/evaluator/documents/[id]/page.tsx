@@ -54,7 +54,6 @@ export default async function EvaluatorDocumentPage({
         "status, remarks, reviewed_at, confirmed_training_hours, confirmed_total_units",
       )
       .eq("document_id", document.document_id)
-      .eq("evaluator_id", evaluator.user.id)
       .order("reviewed_at", { ascending: false })
       .limit(1)
       .maybeSingle(),

@@ -26,12 +26,18 @@ function formatStatus(status: string) {
     .join(" ");
 }
 
-export function WorkflowStatusTag({ status }: { status: string }) {
+export function WorkflowStatusTag({
+  status,
+  label,
+}: {
+  status: string;
+  label?: string;
+}) {
   return (
     <StatusTag
       className={`block text-[10px]! min-w-0 justify-center px-4 text-center font-medium ${statusStyles[status] ?? "border-line bg-panel-muted text-muted text-center"}`}
     >
-      {formatStatus(status)}
+      {label ?? formatStatus(status)}
     </StatusTag>
   );
 }

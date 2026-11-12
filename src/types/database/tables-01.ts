@@ -162,10 +162,72 @@ export type ApplicationCriterionScoresTable = {
   ];
 };
 
+export type ApplicationAssignmentHistoryTable = {
+    Row: {
+        "application_id": string;
+        "assigned_at": string;
+        "assigned_by": string | null;
+        "assignment_source": string;
+        "evaluator_id": string | null;
+        "id": string;
+        "previous_evaluator_id": string | null;
+    };
+    ComputedFields: never;
+    Insert: {
+        "application_id": string;
+        "assigned_at"?: string;
+        "assigned_by"?: string | null;
+        "assignment_source": string;
+        "evaluator_id"?: string | null;
+        "id"?: string;
+        "previous_evaluator_id"?: string | null;
+    };
+    Update: {
+        "application_id"?: string;
+        "assigned_at"?: string;
+        "assigned_by"?: string | null;
+        "assignment_source"?: string;
+        "evaluator_id"?: string | null;
+        "id"?: string;
+        "previous_evaluator_id"?: string | null;
+    };
+    Relationships: [
+        {
+            foreignKeyName: "application_assignment_history_application_id_fkey";
+            columns: ["application_id"];
+            isOneToOne: false;
+            referencedRelation: "applications";
+            referencedColumns: ["id"];
+        },
+        {
+            foreignKeyName: "application_assignment_history_assigned_by_fkey";
+            columns: ["assigned_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+        },
+        {
+            foreignKeyName: "application_assignment_history_evaluator_id_fkey";
+            columns: ["evaluator_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+        },
+        {
+            foreignKeyName: "application_assignment_history_previous_evaluator_id_fkey";
+            columns: ["previous_evaluator_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+        }
+    ];
+};
+
 export type ApplicationsTable = {
     Row: {
         "applicant_id": string;
         "applied_at": string;
+        "assigned_evaluator_id": string | null;
         "id": string;
         "job_id": string;
         "pds_version_id": string;
@@ -177,6 +239,7 @@ export type ApplicationsTable = {
     Insert: {
         "applicant_id": string;
         "applied_at"?: string;
+        "assigned_evaluator_id"?: string | null;
         "id"?: string;
         "job_id": string;
         "pds_version_id": string;
@@ -187,6 +250,7 @@ export type ApplicationsTable = {
     Update: {
         "applicant_id"?: string;
         "applied_at"?: string;
+        "assigned_evaluator_id"?: string | null;
         "id"?: string;
         "job_id"?: string;
         "pds_version_id"?: string;
@@ -205,6 +269,13 @@ export type ApplicationsTable = {
             referencedColumns: [
                 "id"
             ];
+        },
+        {
+            foreignKeyName: "applications_assigned_evaluator_id_fkey";
+            columns: ["assigned_evaluator_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
         },
         {
             foreignKeyName: "applications_job_id_fkey";
@@ -350,6 +421,7 @@ export type DocumentTypesTable = {
 
 export type DatabaseTables01 = {
   "applicants": ApplicantsTable;
+  "application_assignment_history": ApplicationAssignmentHistoryTable;
   "application_criterion_scores": ApplicationCriterionScoresTable;
   "application_evaluations": ApplicationEvaluationsTable;
   "applications": ApplicationsTable;

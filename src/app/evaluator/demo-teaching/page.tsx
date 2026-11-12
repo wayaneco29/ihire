@@ -112,7 +112,6 @@ export default async function EvaluatorDemoTeachingPage({
           .from("application_criterion_scores")
           .select("application_id, criterion_id, points")
           .in("application_id", applicationIds)
-          .eq("evaluator_id", evaluator.user.id)
       : Promise.resolve({ data: [], error: null }),
   ]);
 

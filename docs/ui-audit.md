@@ -9,12 +9,12 @@
 |---|---|---|
 | Public | `/` | Project overview, sign-in and registration links. The copy still described modules as future work after the workflows had shipped. |
 | Authentication | `/login`, `/register`, `/invite/[token]` | Validation, submitting, authentication errors, invitation status and expired/invalid invitation states. |
-| Admin | `/admin/invitations` | Invitation list, create/revoke actions, empty state, validation and action errors. |
+| Admin | `/admin/invitations`, `/admin/assignments` | Invitation list, create/revoke actions; evaluator workload totals, unassigned applications, manual reassignment, assignment history, pagination and action errors. |
 | Applicant | `/applicant`, `/applicant/dashboard`, `/applicant/pds`, `/applicant/profile` | Role redirect; dashboard summaries; 11-step PDS with validation, autosave, saved/submitted versions; profile details and unavailable/empty states. |
 | Applicant | `/applicant/jobs`, `/applicant/jobs/[id]` | Search/filter, posting list/detail, application action, closed/full/expired states and empty results. |
 | Applicant | `/applicant/applications`, `/applicant/applications/[id]` | Application list/detail, status timeline, empty and unavailable states. |
 | Applicant | `/applicant/documents`, `/applicant/notifications` | Document upload/review status, notification list/read action, loading, empty, and unavailable states. |
-| Evaluator | `/evaluator/reviews`, `/evaluator/applications/[id]`, `/evaluator/documents/[id]` | Anonymized queue, applicant review, evaluation form, document review, filters, pending actions, empty and unavailable states. |
+| Evaluator | `/evaluator/reviews`, `/evaluator/applications/[id]`, `/evaluator/documents/[id]` | Anonymized, assignment-scoped queue with pagination; applicant review, evaluation form, document review, pending actions, empty and unavailable states. |
 | HR | `/hr/dashboard`, `/hr/postings`, `/hr/postings/new`, `/hr/postings/[id]`, `/hr/postings/[id]/edit` | Hiring totals, posting management, applicant filters, hire/reject confirmations, capacity/deadline states, validation and unavailable/empty states. |
 | HR | `/hr/applications/[id]/pds` | Authorized printable four-page PDS and print action. Print colors and page geometry are intentionally fixed for paper output. |
 
@@ -41,11 +41,11 @@
 2. **Evaluator:** open the review queue → inspect anonymized applicant and supporting documents → record an evaluation result.
 3. **HR:** create/open a posting → review anonymized applicants and capacity → hire or reject → access the authorized printable PDS for a hired applicant.
 
-Admin invitation management remains a supporting staff journey and must keep its existing role restrictions and actions.
+**Admin:** monitor round-robin evaluator workloads → resolve unassigned applications or reassign work → review the assignment history. Admin assignment management and invitation management must retain their role restrictions.
 
 ## Success criteria
 
-- Preserve all existing routes, permissions, form schemas, server actions, database calls, and workflow rules.
+- Preserve existing routes and applicant/HR behavior while enforcing application-level evaluator assignments and assignment-scoped review access.
 - Use shared semantic design tokens for interactive surfaces and synchronize Ant Design with the active theme.
 - Offer light, dark, and system preference; maintain readable contrast and visible focus states.
 - Keep layouts usable at 320px through 1920px, with no horizontal overflow, and make common mobile controls at least 44px tall.

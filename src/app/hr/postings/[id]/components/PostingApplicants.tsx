@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { Alert, Popconfirm } from "antd";
+import { Alert, Input, Popconfirm, Select, Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { Button } from "@/components/ui/Button";
+import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { recordHiringDecision } from "../actions";
 
@@ -20,7 +22,12 @@ export type ApplicantItem = {
   position_track: string | null;
 };
 
-type ApplicantFilter = "ALL" | "UNDER_EVALUATION" | "QUALIFIED" | "NOT_QUALIFIED" | "HIRED";
+type ApplicantFilter =
+  | "ALL"
+  | "UNDER_EVALUATION"
+  | "QUALIFIED"
+  | "NOT_QUALIFIED"
+  | "HIRED";
 type SortOrder = "asc" | "desc";
 
 const FILTERS: { id: ApplicantFilter; label: string }[] = [
@@ -47,29 +54,6 @@ function matchesFilter(applicant: ApplicantItem, filter: ApplicantFilter) {
     return NOT_QUALIFIED_STATUSES.includes(applicant.application_status);
   }
   return applicant.application_status === filter;
-}
-
-function statusLabel(status: string) {
-  if (status === "SUBMITTED") return "Under evaluation";
-  if (status === "ASSESSMENT_SCHEDULED") return "Under evaluation";
-  if (status === "NOT_QUALIFIED") return "Not qualified";
-  return status
-    .toLocaleLowerCase()
-    .split("_")
-    .map((word) => word.charAt(0).toLocaleUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function statusClasses(status: string) {
-  if (UNDER_EVALUATION_STATUSES.includes(status)) {
-    return "bg-warning/15 text-warning";
-  }
-  if (status === "QUALIFIED") return "bg-success/15 text-success";
-  if (status === "HIRED") return "bg-success text-on-primary";
-  if (NOT_QUALIFIED_STATUSES.includes(status)) {
-    return "bg-danger/10 text-danger";
-  }
-  return "bg-panel-muted text-muted-strong";
 }
 
 function positionLabel(applicant: ApplicantItem) {
@@ -145,28 +129,30 @@ export function PostingApplicants({
       .filter(
         (applicant) =>
           matchesFilter(applicant, filter) &&
-          (!term || applicant.applicant_number.toLocaleLowerCase().includes(term)) &&
-          (positionFilter === "ALL" || positionLabel(applicant) === positionFilter) &&
+          (!term ||
+            applicant.applicant_number.toLocaleLowerCase().includes(term)) &&
+          (positionFilter === "ALL" ||
+            positionLabel(applicant) === positionFilter) &&
           (educationFilter === "ALL" ||
             applicant.education_levels?.includes(educationFilter)),
       )
       .sort((a, b) => {
-        const result = a.applicant_number.localeCompare(b.applicant_number, undefined, {
-          numeric: true,
-          sensitivity: "base",
-        });
+        const result = a.applicant_number.localeCompare(
+          b.applicant_number,
+          undefined,
+          {
+            numeric: true,
+            sensitivity: "base",
+          },
+        );
         return sortOrder === "asc" ? result : -result;
       });
   }, [applicants, educationFilter, filter, positionFilter, search, sortOrder]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const currentPage = Math.min(page, pageCount);
-  const pageApplicants = filtered.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
+  const currentPage = Math.min(
+    page,
+    Math.max(1, Math.ceil(filtered.length / pageSize)),
   );
-  const firstVisible = filtered.length ? (currentPage - 1) * pageSize + 1 : 0;
-  const lastVisible = Math.min(currentPage * pageSize, filtered.length);
 
   function updateFilter<T>(setter: (value: T) => void, value: T) {
     setter(value);
@@ -182,6 +168,108 @@ export function PostingApplicants({
       setWorkingId(null);
     });
   }
+
+  const columns: ColumnsType<ApplicantItem> = [
+    {
+      title: (
+        <button
+          aria-label={`Sort by applicant number ${sortOrder === "asc" ? "descending" : "ascending"}`}
+          className="inline-flex items-center gap-1 cursor-pointer hover:text-ink"
+          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          type="button"
+        >
+          Applicant No.{" "}
+          <span aria-hidden="true">{sortOrder === "asc" ? "↑" : "↓"}</span>
+        </button>
+      ),
+      dataIndex: "applicant_number",
+      key: "applicant_number",
+      className: "pl-6!",
+      fixed: "left",
+      width: 150,
+      render: (applicantNumber: string) => (
+        <span className="font-semibold text-ink">{applicantNumber}</span>
+      ),
+    },
+    {
+      title: "Position",
+      key: "position",
+      width: 190,
+      ellipsis: true,
+      render: (_, applicant) => positionLabel(applicant),
+    },
+    {
+      title: "Education",
+      key: "education",
+      width: 190,
+      ellipsis: true,
+      render: (_, applicant) =>
+        applicant.education_levels?.join(", ") || "Not provided",
+    },
+    {
+      title: "Experience",
+      dataIndex: "experience_years",
+      key: "experience",
+      width: 120,
+      render: (years: number | null) => experienceLabel(years),
+    },
+    {
+      title: "Training",
+      dataIndex: "training_hours",
+      key: "training",
+      width: 120,
+      render: (hours: number | null) => trainingLabel(hours),
+    },
+    {
+      title: "Skills",
+      key: "skills",
+      width: 220,
+      ellipsis: true,
+      render: (_, applicant) => applicant.skills?.join(", ") || "Not provided",
+    },
+    {
+      title: "Status",
+      dataIndex: "application_status",
+      key: "status",
+      width: 160,
+      render: (applicationStatus: string) => (
+        <WorkflowStatusTag
+          label={
+            UNDER_EVALUATION_STATUSES.includes(applicationStatus)
+              ? "Under evaluation"
+              : undefined
+          }
+          status={applicationStatus}
+        />
+      ),
+    },
+    {
+      title: "Actions",
+      key: "review",
+      fixed: "right",
+      width: 150,
+      align: "right",
+      className: "pr-6!",
+      render: (_, applicant) => {
+        const expanded = expandedId === applicant.application_id;
+
+        return (
+          <Button
+            aria-controls={`applicant-details-${applicant.application_id}`}
+            aria-expanded={expanded}
+            onClick={() =>
+              setExpandedId(expanded ? null : applicant.application_id)
+            }
+            size="sm"
+            type="button"
+            variant="bordered"
+          >
+            {expanded ? "Close" : "Review"}
+          </Button>
+        );
+      },
+    },
+  ];
 
   return (
     <section className="mt-8">
@@ -221,7 +309,10 @@ export function PostingApplicants({
             type="button"
             variant="unstyled"
           >
-            {option.label} <span className="tabular-nums">{counts[option.id].toLocaleString()}</span>
+            {option.label}{" "}
+            <span className="tabular-nums">
+              {counts[option.id].toLocaleString()}
+            </span>
           </Button>
         ))}
       </nav>
@@ -229,9 +320,9 @@ export function PostingApplicants({
       <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px_190px]">
         <label>
           <span className="sr-only">Search by applicant number</span>
-          <input
+          <Input
             aria-label="Search by applicant number"
-            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full"
             onChange={(event) => updateFilter(setSearch, event.target.value)}
             placeholder="Search by applicant number, e.g. 0053"
             type="search"
@@ -240,39 +331,35 @@ export function PostingApplicants({
         </label>
         <label>
           <span className="sr-only">Filter by position</span>
-          <select
+          <Select
             aria-label="Filter by position"
-            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onChange={(event) =>
-              updateFilter(setPositionFilter, event.target.value)
-            }
+            className="w-full"
+            onChange={(value) => updateFilter(setPositionFilter, value)}
+            options={[
+              { label: "All positions", value: "ALL" },
+              ...positions.map((position) => ({
+                label: position,
+                value: position,
+              })),
+            ]}
             value={positionFilter}
-          >
-            <option value="ALL">All positions</option>
-            {positions.map((position) => (
-              <option key={position} value={position}>
-                {position}
-              </option>
-            ))}
-          </select>
+          />
         </label>
         <label>
           <span className="sr-only">Filter by education level</span>
-          <select
+          <Select
             aria-label="Filter by education level"
-            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onChange={(event) =>
-              updateFilter(setEducationFilter, event.target.value)
-            }
+            className="w-full"
+            onChange={(value) => updateFilter(setEducationFilter, value)}
+            options={[
+              { label: "All education levels", value: "ALL" },
+              ...educationLevels.map((level) => ({
+                label: level,
+                value: level,
+              })),
+            ]}
             value={educationFilter}
-          >
-            <option value="ALL">All education levels</option>
-            {educationLevels.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
+          />
         </label>
       </div>
 
@@ -284,128 +371,74 @@ export function PostingApplicants({
       )}
 
       <p aria-live="polite" className="sr-only">
-        Showing {firstVisible} to {lastVisible} of {filtered.length} applicants.
+        Showing page {currentPage} of applicants. {filtered.length} applicants
+        match the current filters.
       </p>
 
-      {pageApplicants.length ? (
-        <>
-          <div className="mt-3 overflow-x-auto rounded-lg border border-line bg-panel">
-            <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
-              <thead className="bg-panel-muted/70 text-xs text-muted">
-                <tr>
-                  <th className="whitespace-nowrap px-3 py-3 font-semibold" scope="col">
-                    <button
-                      aria-label={`Sort by applicant number ${sortOrder === "asc" ? "descending" : "ascending"}`}
-                      className="inline-flex items-center gap-1 hover:text-ink"
-                      onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                      type="button"
-                    >
-                      Applicant No. <span aria-hidden="true">{sortOrder === "asc" ? "↑" : "↓"}</span>
-                    </button>
-                  </th>
-                  <th className="px-3 py-3 font-semibold" scope="col">Position</th>
-                  <th className="px-3 py-3 font-semibold" scope="col">Education</th>
-                  <th className="px-3 py-3 font-semibold" scope="col">Experience</th>
-                  <th className="px-3 py-3 font-semibold" scope="col">Training</th>
-                  <th className="px-3 py-3 font-semibold" scope="col">Skills</th>
-                  <th className="px-3 py-3 font-semibold" scope="col">Status</th>
-                  <th className="px-3 py-3 font-semibold" scope="col"><span className="sr-only">Review</span></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {pageApplicants.map((applicant) => {
-                  const expanded = expandedId === applicant.application_id;
-                  const evaluated = ["QUALIFIED", "NOT_QUALIFIED"].includes(
-                    applicant.application_status,
-                  );
-                  const terminal = ["HIRED", "REJECTED"].includes(
-                    applicant.application_status,
-                  );
-                  const pending = isWorking && workingId === applicant.application_id;
-                  const education = applicant.education_levels?.join(", ") || "Not provided";
-                  const skills = applicant.skills?.join(", ") || "Not provided";
-
-                  return (
-                    <ApplicantTableRows
-                      applicant={applicant}
-                      education={education}
-                      expanded={expanded}
-                      evaluated={evaluated}
-                      key={applicant.application_id}
-                      onDecide={decide}
-                      onToggle={() =>
-                        setExpandedId(expanded ? null : applicant.application_id)
-                      }
-                      pending={pending}
-                      skills={skills}
-                      slotsFull={slotsFull}
-                      terminal={terminal}
-                    />
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-3 flex flex-col gap-3 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              Showing {firstVisible}–{lastVisible} of {filtered.length.toLocaleString()} applicants
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="flex items-center gap-2">
-                Rows
-                <select
-                  aria-label="Rows per page"
-                  className="h-9 rounded-[8px] border border-line-strong bg-panel px-2 text-sm text-ink"
-                  onChange={(event) => {
-                    setPageSize(Number(event.target.value));
-                    setPage(1);
-                  }}
-                  value={pageSize}
-                >
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-              </label>
-              <Button
-                disabled={currentPage <= 1}
-                onClick={() => setPage((value) => Math.max(1, value - 1))}
-                size="sm"
-                type="button"
-                variant="bordered"
-              >
-                Previous
-              </Button>
-              <span className="whitespace-nowrap">Page {currentPage} of {pageCount}</span>
-              <Button
-                disabled={currentPage >= pageCount}
-                onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
-                size="sm"
-                type="button"
-                variant="bordered"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="mt-3 rounded-lg border border-line bg-panel p-8 text-center text-sm text-muted">
-          No applicants match these filters.
-        </div>
-      )}
+      <div className="mt-3 overflow-hidden rounded-lg border border-line bg-panel">
+        <Table<ApplicantItem>
+          columns={columns}
+          dataSource={filtered}
+          expandable={{
+            expandedRowKeys: expandedId ? [expandedId] : [],
+            expandedRowRender: (applicant) => (
+              <ApplicantDetails
+                applicant={applicant}
+                education={
+                  applicant.education_levels?.join(", ") || "Not provided"
+                }
+                evaluated={["QUALIFIED", "NOT_QUALIFIED"].includes(
+                  applicant.application_status,
+                )}
+                onDecide={decide}
+                pending={isWorking && workingId === applicant.application_id}
+                skills={applicant.skills?.join(", ") || "Not provided"}
+                slotsFull={slotsFull}
+                terminal={["HIRED", "REJECTED"].includes(
+                  applicant.application_status,
+                )}
+              />
+            ),
+            showExpandColumn: false,
+          }}
+          locale={{
+            emptyText: (
+              <div className="py-5 text-sm text-muted">
+                No applicants match these filters.
+              </div>
+            ),
+          }}
+          onChange={(pagination) => {
+            setPage(pagination.current ?? 1);
+            setPageSize(pagination.pageSize ?? 25);
+          }}
+          pagination={
+            filtered.length
+              ? {
+                  current: currentPage,
+                  pageSize,
+                  pageSizeOptions: [25, 50, 100],
+                  showSizeChanger: true,
+                  total: filtered.length,
+                  showTotal: (total, range) =>
+                    `Showing ${range[0]}–${range[1]} of ${total.toLocaleString()} applicants`,
+                }
+              : false
+          }
+          rowKey="application_id"
+          scroll={{ x: 1254 }}
+          size="middle"
+        />
+      </div>
     </section>
   );
 }
 
-function ApplicantTableRows({
+function ApplicantDetails({
   applicant,
   education,
-  expanded,
   evaluated,
   onDecide,
-  onToggle,
   pending,
   skills,
   slotsFull,
@@ -413,102 +446,77 @@ function ApplicantTableRows({
 }: Readonly<{
   applicant: ApplicantItem;
   education: string;
-  expanded: boolean;
   evaluated: boolean;
   onDecide: (applicationId: string, decision: "HIRED" | "REJECTED") => void;
-  onToggle: () => void;
   pending: boolean;
   skills: string;
   slotsFull: boolean;
   terminal: boolean;
 }>) {
   return (
-    <>
-      <tr className="transition-colors hover:bg-panel-muted/40">
-        <th className="whitespace-nowrap px-3 py-3 font-semibold text-ink" scope="row">
-          {applicant.applicant_number}
-        </th>
-        <td className="max-w-48 truncate px-3 py-3 text-muted-strong" title={positionLabel(applicant)}>
-          {positionLabel(applicant)}
-        </td>
-        <td className="max-w-40 truncate px-3 py-3 text-muted-strong" title={education}>
-          {education}
-        </td>
-        <td className="whitespace-nowrap px-3 py-3 text-muted-strong">
-          {experienceLabel(applicant.experience_years)}
-        </td>
-        <td className="whitespace-nowrap px-3 py-3 text-muted-strong">
-          {trainingLabel(applicant.training_hours)}
-        </td>
-        <td className="max-w-52 truncate px-3 py-3 text-muted-strong" title={skills}>
-          {skills}
-        </td>
-        <td className="whitespace-nowrap px-3 py-3">
-          <span className={`inline-flex min-h-6 items-center rounded-full px-2.5 text-[11px] font-semibold ${statusClasses(applicant.application_status)}`}>
-            {statusLabel(applicant.application_status)}
-          </span>
-        </td>
-        <td className="px-3 py-2.5 text-right">
-          <Button
-            aria-controls={`applicant-details-${applicant.application_id}`}
-            aria-expanded={expanded}
-            onClick={onToggle}
-            size="sm"
-            type="button"
-            variant="bordered"
+    <div
+      className="flex flex-col gap-4 bg-panel-muted/40 px-4 py-4 lg:flex-row lg:items-start lg:justify-between"
+      id={`applicant-details-${applicant.application_id}`}
+    >
+      <dl className="grid flex-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Detail
+          label="Position applying for"
+          value={positionLabel(applicant)}
+        />
+        <Detail label="Education" value={education} />
+        <Detail
+          label="Experience"
+          value={`${Number(applicant.experience_years ?? 0).toFixed(1)} years`}
+        />
+        <Detail
+          label="Training"
+          value={`${trainingLabel(applicant.training_hours).replace(" hrs", " hours")}`}
+        />
+        <Detail label="Skills" value={skills} />
+      </dl>
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {applicant.application_status === "HIRED" && (
+          <Link
+            className="inline-flex h-9 items-center justify-center rounded-[8px] border border-primary px-3.5 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href={`/hr/applications/${applicant.application_id}/pds`}
           >
-            {expanded ? "Close" : "Review"}
-          </Button>
-        </td>
-      </tr>
-      {expanded && (
-        <tr id={`applicant-details-${applicant.application_id}`}>
-          <td className="bg-panel-muted/40 px-4 py-4" colSpan={8}>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <dl className="grid flex-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Detail label="Position applying for" value={positionLabel(applicant)} />
-                <Detail label="Education" value={education} />
-                <Detail label="Experience" value={`${Number(applicant.experience_years ?? 0).toFixed(1)} years`} />
-                <Detail label="Training" value={`${trainingLabel(applicant.training_hours).replace(" hrs", " hours")}`} />
-                <Detail label="Skills" value={skills} />
-              </dl>
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
-                {applicant.application_status === "HIRED" && (
-                  <Link
-                    className="inline-flex h-9 items-center justify-center rounded-[8px] border border-primary px-3.5 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    href={`/hr/applications/${applicant.application_id}/pds`}
-                  >
-                    Printable PDS
-                  </Link>
-                )}
-                {evaluated && !terminal && (
-                  <>
-                    <Popconfirm
-                      onConfirm={() => onDecide(applicant.application_id, "HIRED")}
-                      title={`Hire ${applicant.applicant_number}?`}
-                      description="This records a final hiring decision and uses one slot."
-                    >
-                      <Button disabled={slotsFull || pending} loading={pending} size="sm" variant="filled">
-                        Hire
-                      </Button>
-                    </Popconfirm>
-                    <Popconfirm
-                      onConfirm={() => onDecide(applicant.application_id, "REJECTED")}
-                      title={`Reject ${applicant.applicant_number}?`}
-                      description="This records a final rejection decision."
-                    >
-                      <Button disabled={pending} loading={pending} size="sm" variant="danger">
-                        Reject
-                      </Button>
-                    </Popconfirm>
-                  </>
-                )}
-              </div>
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
+            Printable PDS
+          </Link>
+        )}
+        {evaluated && !terminal && (
+          <>
+            <Popconfirm
+              onConfirm={() => onDecide(applicant.application_id, "HIRED")}
+              title={`Hire ${applicant.applicant_number}?`}
+              description="This records a final hiring decision and uses one slot."
+            >
+              <Button
+                disabled={slotsFull || pending}
+                loading={pending}
+                size="sm"
+                variant="filled"
+              >
+                Hire
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+              onConfirm={() => onDecide(applicant.application_id, "REJECTED")}
+              title={`Reject ${applicant.applicant_number}?`}
+              description="This records a final rejection decision."
+            >
+              <Button
+                disabled={pending}
+                loading={pending}
+                size="sm"
+                variant="danger"
+              >
+                Reject
+              </Button>
+            </Popconfirm>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

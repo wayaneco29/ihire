@@ -1,6 +1,42 @@
 import type { PublicEnums } from './database-enums';
 
 export type PublicViews = {
+    "v_admin_application_assignment_history": {
+        Row: {
+            "application_id": string;
+            "assigned_at": string;
+            "assigned_by_email": string | null;
+            "assignment_source": string;
+            "evaluator_email": string | null;
+            "id": string;
+            "previous_evaluator_email": string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
+    "v_admin_application_assignments": {
+        Row: {
+            "applicant_number": string;
+            "application_id": string;
+            "application_status": PublicEnums["application_status"];
+            "applied_at": string;
+            "assigned_evaluator_email": string | null;
+            "assigned_evaluator_id": string | null;
+            "job_id": string;
+            "job_title": string;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
+    "v_admin_evaluator_assignment_counts": {
+        Row: {
+            "assigned_count": number;
+            "evaluator_email": string;
+            "evaluator_id": string;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
     "v_anonymized_applicants": {
         Row: {
             "applicant_number": string;
@@ -49,6 +85,31 @@ export type PublicViews = {
         ComputedFields: never;
         Relationships: [
         ];
+    };
+    "v_evaluator_review_queue": {
+        Row: {
+            "applicant_number": string;
+            "application_id": string;
+            "application_status": PublicEnums["application_status"];
+            "applied_at": string;
+            "job_id": string;
+            "job_title": string;
+            "position_title": string | null;
+            "position_track": string | null;
+            "review_kind": "INITIAL" | "REREVIEW";
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
+    "v_evaluator_review_queue_summary": {
+        Row: {
+            "job_id": string;
+            "job_title": string;
+            "rereview_count": number;
+            "waiting_count": number;
+        };
+        ComputedFields: never;
+        Relationships: [];
     };
     "v_anonymized_document_metrics": {
         Row: {

@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { getEvaluatorContext } from "@/lib/auth/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { APPLICATION_EVALUATION_RESULTS } from "./schema";
 
 export async function scheduleApplicationAssessment(input: {
@@ -49,24 +48,12 @@ export async function scheduleApplicationAssessment(input: {
     };
   }
 
-  const admin = createAdminClient();
-  const { data: updatedApplication, error: updateError } = await admin
-    .from("applications")
-    .update({
-      scheduled_assessment_at: input.scheduledAt,
-      status: "ASSESSMENT_SCHEDULED",
-    })
-    .eq("id", input.applicationId)
-    .in("status", [
-      "SUBMITTED",
-      "UNDER_EVALUATION",
-      "ASSESSMENT_SCHEDULED",
-      "QUALIFIED",
-      "NOT_QUALIFIED",
-    ])
-    .select("id")
-    .maybeSingle();
-  if (updateError || !updatedApplication) {
+  const { data: scheduled, error: scheduleError } =
+    await evaluator.supabase.rpc("schedule_application_assessment", {
+      p_application_id: input.applicationId,
+      p_scheduled_at: input.scheduledAt,
+    });
+  if (scheduleError || !scheduled) {
     return {
       success: false,
       message: "The assessment could not be scheduled. Refresh and try again.",
@@ -294,40 +281,21 @@ export async function submitApplicationCriterionScores(input: {
     });
   }
 
-  const admin = createAdminClient();
-  const { data: existingScores, error: existingScoresError } = await admin
-    .from("application_criterion_scores")
-    .select("evaluator_id")
-    .eq("application_id", input.applicationId);
-  if (existingScoresError) {
-    return { success: false, message: "Existing criterion scores could not be checked." };
-  }
-  if (
-    existingScores?.some(
-      (score) => score.evaluator_id !== evaluator.user.id,
-    )
-  ) {
-    return {
-      success: false,
-      message: "This application already has scores from another evaluator.",
-    };
-  }
-
-  const updatedAt = new Date().toISOString();
-  const { error: saveError } = await admin
-    .from("application_criterion_scores")
-    .upsert(
-      validatedScores.map((score) => ({
-        application_id: input.applicationId,
-        criterion_id: score.criterionId,
-        evaluator_id: evaluator.user.id,
-        points: score.points,
-        updated_at: updatedAt,
-      })),
-      { onConflict: "application_id,criterion_id" },
-    );
+  const { error: saveError } = await evaluator.supabase.rpc(
+    "save_application_criterion_score",
+    {
+      p_application_id: input.applicationId,
+      p_criterion_id: validatedScores[0].criterionId,
+      p_points: validatedScores[0].points,
+    },
+  );
   if (saveError) {
-    return { success: false, message: "Criterion scores could not be saved. Refresh and try again." };
+    const message = saveError.message.includes("another evaluator")
+      ? "This application already has scores from another evaluator."
+      : saveError.message.includes("no longer assigned")
+        ? "This application is no longer assigned to you."
+        : "Criterion scores could not be saved. Refresh and try again.";
+    return { success: false, message };
   }
 
   revalidatePath(`/evaluator/applications/${input.applicationId}`);

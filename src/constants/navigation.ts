@@ -147,6 +147,12 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
       title: "Administration",
       items: [
         {
+          label: "Evaluator assignments",
+          href: "/admin/assignments",
+          icon: ClipboardDocumentCheckIcon,
+          available: true,
+        },
+        {
           label: "Invitations",
           href: "/admin/invitations",
           icon: EnvelopeIcon,
