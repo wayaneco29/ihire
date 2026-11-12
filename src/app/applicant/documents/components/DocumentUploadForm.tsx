@@ -6,8 +6,8 @@ import type { UploadFile } from "antd";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
-import { FormInput } from "@/components/form/FormInput";
 import { FormDatePicker } from "@/components/form/FormDatePicker";
+import { FormInput } from "@/components/form/FormInput";
 import { FormSelect } from "@/components/form/FormSelect";
 import { FormUpload } from "@/components/form/FormUpload";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
@@ -120,7 +120,9 @@ export function DocumentUploadForm({
   function onSelectedFileChange(file: File | undefined) {
     const requestId = ++ocrRequestId.current;
     setSelectedFile(file ?? null);
-    setPreviewUrl(file ? URL.createObjectURL(file) : null);
+    setPreviewUrl(
+      file?.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+    );
     setOcrResult(null);
     setOcrProgress(null);
     setOcrError(null);
@@ -350,30 +352,12 @@ export function DocumentUploadForm({
         previewAlt={
           selectedFile ? `Preview of ${selectedFile.name}` : undefined
         }
-        previewName={selectedFile?.name}
-        previewUrl={selectedFile?.type.startsWith("image/") ? previewUrl : null}
-      />
-      {selectedFile &&
-        previewUrl &&
-        !selectedFile.type.startsWith("image/") && (
-          <div className="mt-3 rounded-sm border border-line-subtle bg-panel p-3">
-            <p className="mb-2 truncate text-sm font-medium text-ink">
-              Preview: {selectedFile.name}
-            </p>
-            {selectedFile.type === "application/pdf" ||
-            selectedFile.name.toLowerCase().endsWith(".pdf") ? (
-              <iframe
-                className={`h-80 w-full rounded-sm border-0 ${busy ? "pointer-events-none" : ""}`}
-                src={previewUrl}
-                title={`Preview of ${selectedFile.name}`}
-              />
-            ) : (
-              <p className="text-sm text-muted">
-                A preview is not available for this file type.
-              </p>
-            )}
-          </div>
+        previewFile={Boolean(
+          selectedFile && !selectedFile.type.startsWith("image/"),
         )}
+        previewName={selectedFile?.name}
+        previewUrl={previewUrl}
+      />
       {isTrainingCertificate && (
         <div className="mt-3">
           <FormInput

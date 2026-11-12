@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { HashtagIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
@@ -41,6 +42,17 @@ export default async function ApplicantProfilePage() {
         eyebrow="Applicant workspace"
         title="My profile"
       />
+      <div className="mt-4 inline-flex items-center gap-3 rounded-sm bg-primary-light/60 px-3.5 py-3 border border-primary/20 w-full">
+        <HashtagIcon aria-hidden="true" className="size-8 text-primary" />
+        <span>
+          <span className="block text-[10px] font-semibold uppercase tracking-widest text-profile-muted">
+            Applicant number
+          </span>
+          <span className="mt-0.5 block font-[Bricolage_Grotesque] text-lg font-semibold tracking-wide text-ink">
+            {applicant.applicant.applicant_number}
+          </span>
+        </span>
+      </div>
 
       {versionsError ? (
         <div className="mt-7">

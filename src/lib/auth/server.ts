@@ -36,7 +36,7 @@ export async function getApplicantContext() {
 
   const { data: applicant } = await supabase
     .from("applicants")
-    .select("id")
+    .select("id, applicant_number")
     .eq("profile_id", user.id)
     .maybeSingle();
   if (!applicant) return null;

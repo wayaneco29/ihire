@@ -10,7 +10,9 @@ const documentUploadSchemaBase = yup.object({
     .required("Choose a document file."),
   trainingHours: yup
     .number()
-    .transform((value, originalValue) => originalValue === "" ? null : value)
+    .transform((value, originalValue) =>
+      originalValue === "" ? null : value,
+    )
     .nullable()
     .optional()
     .min(0, "Hours cannot be negative.")
