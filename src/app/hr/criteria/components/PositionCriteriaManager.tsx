@@ -1,13 +1,17 @@
 "use client";
 
-import { Fragment, useState } from "react";
-import { Alert, Modal } from "antd";
+import { useState } from "react";
+import { Alert, Modal, Table, type TableColumnsType } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Button } from "@/components/ui/Button";
+import {
+  formatExperienceStandard,
+  formatTrainingStandard,
+} from "@/utils/format-position-standards";
 import {
   positionSchema,
   positionScoringStandardsSchema,
@@ -41,6 +45,16 @@ type Position = {
 type EducationLevel = {
   qualification_level: number;
   description: string;
+};
+
+type CriteriaTableRow = {
+  key: string;
+  kind: "group" | "position";
+  title: string;
+  count?: number;
+  position?: Position;
+  profile?: { version: number; weights: Record<string, number> };
+  positionCriteria?: Criterion[];
 };
 
 const TRAINING_INCREMENT_OPTIONS = Array.from({ length: 31 }, (_, index) => {
@@ -122,50 +136,31 @@ function PositionScoringStandardsEditor({
     }
   }
 
-  const currentLevel = educationLevels.find(
-    (level) => level.qualification_level === position.base_qualification_level,
-  );
-  const currentTrainingLevel = TRAINING_INCREMENT_OPTIONS.find(
-    (option) => Number(option.value) === position.base_training_increment_level,
-  );
-  const currentExperienceLevel = EXPERIENCE_INCREMENT_OPTIONS.find(
-    (option) =>
-      Number(option.value) === position.base_experience_increment_level,
-  );
-
   return (
     <>
-      <div>
-        <p className="text-sm text-ink">
-          Education: {currentLevel?.description ?? "Not set"}
-        </p>
-        <p className="mt-1 text-sm text-ink">
-          Training: {currentTrainingLevel?.label ?? "Not set"}
-        </p>
-        <p className="mt-1 text-sm text-ink">
-          Experience: {currentExperienceLevel?.label ?? "Not set"}
-        </p>
-        <Button
-          className="mt-1 !h-auto !px-0"
-          onClick={() => {
-            form.reset({
-              baseQualificationLevel:
-                position.base_qualification_level?.toString() ?? "",
-              baseTrainingIncrementLevel:
-                position.base_training_increment_level?.toString() ?? "",
-              baseExperienceIncrementLevel:
-                position.base_experience_increment_level?.toString() ?? "",
-            });
-            setMessage(null);
-            setOpen(true);
-          }}
-          variant="ghost"
-        >
-          {currentLevel || currentTrainingLevel || currentExperienceLevel
-            ? "Update standards"
-            : "Set standards"}
-        </Button>
-      </div>
+      <Button
+        className="!h-auto !px-2 text-xs!"
+        size="sm"
+        onClick={() => {
+          form.reset({
+            baseQualificationLevel:
+              position.base_qualification_level?.toString() ?? "",
+            baseTrainingIncrementLevel:
+              position.base_training_increment_level?.toString() ?? "",
+            baseExperienceIncrementLevel:
+              position.base_experience_increment_level?.toString() ?? "",
+          });
+          setMessage(null);
+          setOpen(true);
+        }}
+        variant="ghost"
+      >
+        {position.base_qualification_level !== null ||
+        position.base_training_increment_level !== null ||
+        position.base_experience_increment_level !== null
+          ? "Edit standards"
+          : "Set standards"}
+      </Button>
       <Modal
         centered
         destroyOnHidden
@@ -189,7 +184,7 @@ function PositionScoringStandardsEditor({
             options={[
               { label: "Not set", value: "" },
               ...educationLevels.map((level) => ({
-                label: `${level.qualification_level}. ${level.description}`,
+                label: `Level ${level.qualification_level} · ${level.description}`,
                 value: level.qualification_level.toString(),
               })),
             ]}
@@ -318,7 +313,11 @@ function CreatePositionForm({
           />
         )}
         <div className="flex justify-end gap-3 pt-2">
-          <Button disabled={form.formState.isSubmitting} onClick={close} variant="bordered">
+          <Button
+            disabled={form.formState.isSubmitting}
+            onClick={close}
+            variant="bordered"
+          >
             Cancel
           </Button>
           <Button
@@ -383,6 +382,8 @@ function PositionWeightEditor({
   return (
     <>
       <Button
+        className="!px-3 text-xs!"
+        size="sm"
         onClick={() => {
           form.reset({
             weights: criteria.map(
@@ -392,9 +393,9 @@ function PositionWeightEditor({
           setMessage(null);
           setOpen(true);
         }}
-        variant="ghost"
+        variant={currentVersion === null ? "filled" : "bordered"}
       >
-        Update
+        {currentVersion === null ? "Set up profile" : "Update profile"}
       </Button>
       <Modal
         centered
@@ -517,6 +518,9 @@ export function PositionCriteriaManager({
   >;
 }) {
   const [isAddingPosition, setIsAddingPosition] = useState(false);
+  const [filter, setFilter] = useState<
+    "all" | "teaching" | "non-teaching" | "needs-setup"
+  >("all");
   const groups = [
     {
       title: "Teaching",
@@ -533,17 +537,201 @@ export function PositionCriteriaManager({
       ),
     },
   ];
+  const configuredCount = positions.filter(
+    (position) => profileByPosition[position.id],
+  ).length;
+  const visibleGroups = groups
+    .filter(
+      (group) =>
+        filter === "all" ||
+        filter === "needs-setup" ||
+        group.applicationType === filter,
+    )
+    .map((group) => ({
+      ...group,
+      positions: group.positions.filter(
+        (position) =>
+          filter !== "needs-setup" || !profileByPosition[position.id],
+      ),
+    }))
+    .filter((group) => filter !== "needs-setup" || group.positions.length > 0);
+  const rows: CriteriaTableRow[] = visibleGroups.flatMap((group) => [
+    {
+      key: `group-${group.applicationType}`,
+      kind: "group" as const,
+      title: group.title,
+      count: group.positions.length,
+    },
+    ...group.positions.map((position) => ({
+      key: position.id,
+      kind: "position" as const,
+      title: position.title,
+      position,
+      profile: profileByPosition[position.id],
+      positionCriteria: criteria
+        .filter((criterion) => criterion.position_id === position.id)
+        .sort((a, b) => a.display_order - b.display_order),
+    })),
+  ]);
+  const columns: TableColumnsType<CriteriaTableRow> = [
+    {
+      title: "Position",
+      dataIndex: "title",
+      key: "position",
+      width: 190,
+      fixed: "left",
+      className: "pl-6!",
+      onCell: (row) =>
+        row.kind === "group"
+          ? {
+              colSpan: 6,
+              className: "[&:after]:inset-0! py-2! bg-primary-light/50!",
+            }
+          : {},
+      render: (title: string, row) =>
+        row.kind === "group" ? (
+          <span className="font-semibold text-ink sticky left-6">
+            {title}{" "}
+            <span className="ml-1 font-normal text-muted">
+              {row.count} {row.count === 1 ? "position" : "positions"}
+            </span>
+          </span>
+        ) : (
+          <span className="font-semibold text-ink">{title}</span>
+        ),
+    },
+    {
+      title: "Education",
+      key: "education",
+      width: 230,
+      onCell: (row) => (row.kind === "group" ? { colSpan: 0 } : {}),
+      render: (_, row) => {
+        if (!row.position) return null;
+        const level = educationLevels.find(
+          (item) =>
+            item.qualification_level === row.position?.base_qualification_level,
+        );
+        return (
+          <StandardsValue
+            level={level?.qualification_level}
+            value={level?.description ?? "Not set"}
+          />
+        );
+      },
+    },
+    {
+      title: "Training",
+      key: "training",
+      width: 130,
+      onCell: (row) => (row.kind === "group" ? { colSpan: 0 } : {}),
+      render: (_, row) =>
+        row.position ? (
+          <StandardsValue
+            value={formatTrainingStandard(
+              row.position.base_training_increment_level,
+            )}
+            level={row.position.base_training_increment_level}
+          />
+        ) : null,
+    },
+    {
+      title: "Experience",
+      key: "experience",
+      width: 145,
+      onCell: (row) => (row.kind === "group" ? { colSpan: 0 } : {}),
+      render: (_, row) =>
+        row.position ? (
+          <StandardsValue
+            value={formatExperienceStandard(
+              row.position.base_experience_increment_level,
+            )}
+            level={row.position.base_experience_increment_level}
+          />
+        ) : null,
+    },
+    {
+      title: "Criteria profile",
+      key: "profile",
+      width: 145,
+      onCell: (row) => (row.kind === "group" ? { colSpan: 0 } : {}),
+      render: (_, row) =>
+        row.kind === "group" ? null : row.profile ? (
+          <StatusTag className="border-primary/20 bg-primary-light text-primary-dark">
+            Version {row.profile.version}
+          </StatusTag>
+        ) : (
+          <StatusTag className="border-warning/30 bg-warning/10 text-warning">
+            Not configured
+          </StatusTag>
+        ),
+    },
+    {
+      title: "",
+      key: "actions",
+      width: 260,
+      align: "right",
+      fixed: "right",
+      className: "pr-6!",
+      onCell: (row) => (row.kind === "group" ? { colSpan: 0 } : {}),
+      render: (_, row) =>
+        row.position ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            <PositionScoringStandardsEditor
+              educationLevels={educationLevels}
+              position={row.position}
+            />
+            <PositionWeightEditor
+              criteria={row.positionCriteria ?? []}
+              currentVersion={row.profile?.version ?? null}
+              currentWeights={row.profile?.weights ?? {}}
+              position={row.position}
+            />
+          </div>
+        ) : null,
+    },
+  ];
+  const filterOptions = [
+    { key: "all" as const, label: "All positions", count: positions.length },
+    {
+      key: "teaching" as const,
+      label: "Teaching",
+      count: groups[0].positions.length,
+    },
+    {
+      key: "non-teaching" as const,
+      label: "Non-teaching",
+      count: groups[1].positions.length,
+    },
+    {
+      key: "needs-setup" as const,
+      label: "Needs setup",
+      count: positions.length - configuredCount,
+    },
+  ];
 
   return (
     <section className="mt-7 space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight text-ink">
-            Position criteria
-          </h2>
-          <p className="mt-1 text-sm leading-6 text-muted">
-            Each position has its own criteria and a separate 100-point profile.
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel px-5 py-4 shadow-card">
+        <div className="flex items-baseline gap-3">
+          <strong className="text-xl text-ink">
+            {configuredCount} of {positions.length}
+          </strong>
+          <span className="text-sm text-muted">positions fully set up</span>
+        </div>
+        <div
+          className="h-2 min-w-32 flex-1 overflow-hidden rounded-full bg-panel-muted"
+          role="progressbar"
+          aria-label="Positions fully set up"
+          aria-valuemin={0}
+          aria-valuemax={positions.length}
+          aria-valuenow={configuredCount}
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-[width]"
+            style={{
+              width: `${positions.length ? (configuredCount / positions.length) * 100 : 0}%`,
+            }}
+          />
         </div>
         <Button onClick={() => setIsAddingPosition(true)} variant="filled">
           Add position
@@ -556,120 +744,56 @@ export function PositionCriteriaManager({
         open={isAddingPosition}
       />
 
-      <div className="overflow-hidden rounded-md border border-line bg-panel shadow-card">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] border-collapse text-left">
-            <thead>
-              <tr className="border-b border-line bg-panel-muted text-xs font-semibold text-muted">
-                <th className="px-5 py-3 w-30" scope="col">
-                  Hiring type
-                </th>
-                <th className="px-5 py-3" scope="col">
-                  Position
-                </th>
-                <th className="px-5 py-3" scope="col">
-                  Minimum standards
-                </th>
-                <th className="px-5 py-3" scope="col">
-                  Criteria profile
-                </th>
-                <th className="px-5 py-3 text-right" scope="col">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group) => {
-                return (
-                  <Fragment key={group.applicationType}>
-                    <tr className="border-y border-line-subtle bg-panel-muted/70">
-                      <th
-                        className="px-5 py-3 text-sm font-semibold text-ink"
-                        colSpan={5}
-                        scope="rowgroup"
-                      >
-                        <span className="flex flex-wrap items-center justify-between gap-2">
-                          <span>{group.title}</span>
-                          <span className="text-xs font-normal text-muted">
-                            {group.positions.length}{" "}
-                            {group.positions.length === 1
-                              ? "position"
-                              : "positions"}
-                            {" · "}
-                            separate criteria per position
-                          </span>
-                        </span>
-                      </th>
-                    </tr>
-                    {group.positions.length ? (
-                      group.positions.map((position) => {
-                        const profile = profileByPosition[position.id];
-                        const positionCriteria = criteria
-                          .filter(
-                            (criterion) =>
-                              criterion.position_id === position.id,
-                          )
-                          .sort(
-                            (left, right) =>
-                              left.display_order - right.display_order,
-                          );
-                        return (
-                          <Fragment key={position.id}>
-                            <tr className="border-b border-line-subtle">
-                              <td className="px-5 py-4 align-top text-sm text-muted" />
-                              <th
-                                className="px-5 py-4 text-left align-top text-sm font-semibold text-ink"
-                                scope="row"
-                              >
-                                {position.title}
-                              </th>
-                              <td className="px-5 py-4 align-top">
-                                <PositionScoringStandardsEditor
-                                  educationLevels={educationLevels}
-                                  position={position}
-                                />
-                              </td>
-                              <td className="px-5 py-4 align-top">
-                                {profile ? (
-                                  <StatusTag className="border-primary/20 bg-primary-light text-primary-dark">
-                                    Version {profile.version}
-                                  </StatusTag>
-                                ) : (
-                                  <StatusTag className="border-warning/30 bg-warning/10 text-warning">
-                                    Not configured
-                                  </StatusTag>
-                                )}
-                              </td>
-                              <td className="px-5 py-4 text-right align-top">
-                                <PositionWeightEditor
-                                  criteria={positionCriteria}
-                                  currentVersion={profile?.version ?? null}
-                                  currentWeights={profile?.weights ?? {}}
-                                  position={position}
-                                />
-                              </td>
-                            </tr>
-                          </Fragment>
-                        );
-                      })
-                    ) : (
-                      <tr className="border-b border-line">
-                        <td
-                          className="px-5 py-5 text-sm text-muted"
-                          colSpan={5}
-                        >
-                          No {group.title.toLowerCase()} positions yet. Use Add
-                          position to create one and set its criteria.
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      <nav aria-label="Filter positions" className="flex flex-wrap gap-2">
+        {filterOptions.map((option) => (
+          <button
+            aria-pressed={filter === option.key}
+            className={`min-h-10 rounded-full border px-4 text-sm transition-colors ${filter === option.key ? "border-primary bg-panel text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+            key={option.key}
+            onClick={() => setFilter(option.key)}
+            type="button"
+          >
+            {option.label} <span className="font-semibold">{option.count}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="overflow-hidden rounded-xl border border-line bg-panel shadow-card">
+        <Table<CriteriaTableRow>
+          className="criteria-table [&_.ant-table-thead>tr>th]:bg-panel [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-muted [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink [&_.ant-table-tbody>tr.criteria-group-row>td]:bg-panel-muted"
+          columns={columns}
+          dataSource={rows}
+          locale={{ emptyText: "No positions match this filter." }}
+          pagination={false}
+          rowClassName={(row) =>
+            row.kind === "group"
+              ? "criteria-group-row"
+              : "criteria-position-row"
+          }
+          rowKey="key"
+          scroll={{ x: 1085 }}
+        />
       </div>
     </section>
+  );
+}
+
+function StandardsValue({
+  value,
+  level,
+}: {
+  value: string;
+  level?: number | null;
+}) {
+  if (value === "Not set") return <span className="text-warning">Not set</span>;
+  return (
+    <span className="inline-flex items-start gap-2 text-sm text-ink">
+      {level != null && (
+        <span className="rounded bg-primary-light px-1.5 py-0.5 text-xs font-semibold text-primary-dark">
+          L{level}
+        </span>
+      )}
+      <span>{value}</span>
+    </span>
   );
 }
