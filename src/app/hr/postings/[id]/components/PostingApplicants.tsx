@@ -272,7 +272,7 @@ export function PostingApplicants({
   ];
 
   return (
-    <section className="mt-8">
+    <section className="mt-6">
       {feedback && (
         <Alert
           className="mb-4"
@@ -281,48 +281,36 @@ export function PostingApplicants({
           type={feedback.success ? "success" : "error"}
         />
       )}
-
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-[28px]">
-          Applicants
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          Names are hidden. Review each applicant by number and credentials.
-        </p>
+      <div className="px-5 py-4 shadow rounded-sm bg-panel">
+        <nav
+          aria-label="Filter applicants by status"
+          className="flex flex-wrap gap-1.5"
+        >
+          {FILTERS.map((option) => (
+            <Button
+              aria-pressed={filter === option.id}
+              className={`min-h-10 rounded-full border px-6 text-sm! cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              key={option.id}
+              onClick={() => updateFilter(setFilter, option.id)}
+              size="sm"
+              type="button"
+              variant="unstyled"
+            >
+              {option.label}{" "}
+              <span className="tabular-nums">
+                {counts[option.id].toLocaleString()}
+              </span>
+            </Button>
+          ))}
+        </nav>
       </div>
-
-      <nav
-        aria-label="Filter applicants by status"
-        className="mt-4 flex flex-wrap gap-1.5"
-      >
-        {FILTERS.map((option) => (
-          <Button
-            aria-pressed={filter === option.id}
-            className={`min-h-9 rounded-full border px-3.5 text-sm font-medium ${
-              filter === option.id
-                ? "border-primary-light bg-primary-light text-primary"
-                : "border-line bg-panel text-muted hover:bg-panel-muted"
-            }`}
-            key={option.id}
-            onClick={() => updateFilter(setFilter, option.id)}
-            size="sm"
-            type="button"
-            variant="unstyled"
-          >
-            {option.label}{" "}
-            <span className="tabular-nums">
-              {counts[option.id].toLocaleString()}
-            </span>
-          </Button>
-        ))}
-      </nav>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px_190px]">
         <label>
           <span className="sr-only">Search by applicant number</span>
           <Input
             aria-label="Search by applicant number"
-            className="w-full"
+            className="w-full rounded-sm!"
             onChange={(event) => updateFilter(setSearch, event.target.value)}
             placeholder="Search by applicant number, e.g. 0053"
             type="search"
@@ -333,7 +321,7 @@ export function PostingApplicants({
           <span className="sr-only">Filter by position</span>
           <Select
             aria-label="Filter by position"
-            className="w-full"
+            className="w-full rounded-sm!"
             onChange={(value) => updateFilter(setPositionFilter, value)}
             options={[
               { label: "All positions", value: "ALL" },
@@ -349,7 +337,7 @@ export function PostingApplicants({
           <span className="sr-only">Filter by education level</span>
           <Select
             aria-label="Filter by education level"
-            className="w-full"
+            className="w-full rounded-sm!"
             onChange={(value) => updateFilter(setEducationFilter, value)}
             options={[
               { label: "All education levels", value: "ALL" },
@@ -375,7 +363,7 @@ export function PostingApplicants({
         match the current filters.
       </p>
 
-      <div className="mt-3 overflow-hidden rounded-lg border border-line bg-panel">
+      <div className="mt-3 overflow-hidden rounded-sm border border-line bg-panel">
         <Table<ApplicantItem>
           columns={columns}
           dataSource={filtered}

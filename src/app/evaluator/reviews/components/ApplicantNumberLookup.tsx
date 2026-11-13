@@ -28,9 +28,7 @@ export function ApplicantNumberLookup({
   function submit(values: ApplicantNumberLookupValues) {
     const applicantNumber = encodeURIComponent(values.applicantNumber);
     startTransition(() => {
-      router.push(
-        `${searchPath}?applicantNumber=${applicantNumber}`,
-      );
+      router.push(`${searchPath}?applicantNumber=${applicantNumber}`);
     });
   }
 
@@ -46,13 +44,10 @@ export function ApplicantNumberLookup({
           name="applicantNumber"
           placeholder="e.g. APP-0001"
           required
+          size="medium"
         />
       </div>
-      <Button
-        disabled={pending}
-        type="submit"
-        variant="filled"
-      >
+      <Button disabled={pending} type="submit" variant="filled" size="default">
         {pending ? "Searching…" : "Find applicant"}
       </Button>
     </form>

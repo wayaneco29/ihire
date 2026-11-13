@@ -74,6 +74,8 @@ async function HrDashboardContent() {
     applicationStats.set(application.job_id, stats);
   }
 
+  // This is request-time data, after connection() opts out of prerendering.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const postingProgress = [...(postings ?? [])]
     .sort((a, b) => {

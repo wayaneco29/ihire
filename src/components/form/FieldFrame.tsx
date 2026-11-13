@@ -18,7 +18,7 @@ export function FieldFrame({
   children,
 }: FieldFrameProps) {
   return (
-    <div className="mb-4 min-w-0">
+    <div className="min-w-0">
       <label
         className="mb-1.5 block text-sm font-medium text-ink"
         htmlFor={id}

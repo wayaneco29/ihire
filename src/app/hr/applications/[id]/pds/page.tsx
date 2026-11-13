@@ -30,6 +30,8 @@ export default async function HrPrintablePdsPage({ params }: { params: Promise<{
 
   let pdsData: Json | null = null;
   let versionNumber = 1;
+  let emptyStateDescription =
+    "The submitted PDS could not be loaded. Refresh the page to try again.";
   try {
     const admin = createAdminClient();
     const { data: version, error } = await admin.from("pds_versions")
@@ -38,15 +40,25 @@ export default async function HrPrintablePdsPage({ params }: { params: Promise<{
       .eq("status", "SUBMITTED")
       .maybeSingle();
     if (error || !version) {
-      return <><PageHeader eyebrow="HR workspace" title="Printable PDS" /><div className="mt-7"><EmptyState description="The submitted PDS could not be loaded. Refresh the page to try again." title="PDS unavailable" /></div></>;
+      emptyStateDescription =
+        "The submitted PDS could not be loaded. Refresh the page to try again.";
+    } else {
+      pdsData = await hydratePdsDraftData(admin, version.id, version.draft_data);
+      versionNumber = version.version_no;
     }
-    pdsData = await hydratePdsDraftData(admin, version.id, version.draft_data);
-    versionNumber = version.version_no;
   } catch {
-    return <><PageHeader eyebrow="HR workspace" title="Printable PDS" /><div className="mt-7"><EmptyState description="Secure PDS access is not configured in this environment." title="PDS unavailable" /></div></>;
+    emptyStateDescription =
+      "Secure PDS access is not configured in this environment.";
   }
   if (!pdsData) {
-    return <><PageHeader eyebrow="HR workspace" title="Printable PDS" /><div className="mt-7"><EmptyState description="The submitted PDS could not be loaded. Refresh the page to try again." title="PDS unavailable" /></div></>;
+    return (
+      <>
+        <PageHeader eyebrow="HR workspace" title="Printable PDS" />
+        <div className="mt-7">
+          <EmptyState description={emptyStateDescription} title="PDS unavailable" />
+        </div>
+      </>
+    );
   }
 
   return <>

@@ -711,7 +711,7 @@ export function PositionCriteriaManager({
 
   return (
     <section className="mt-7 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel px-5 py-4 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm bg-panel px-5 py-4 shadow">
         <div className="flex items-baseline gap-3">
           <strong className="text-xl text-ink">
             {configuredCount} of {positions.length}
@@ -737,28 +737,29 @@ export function PositionCriteriaManager({
           Add position
         </Button>
       </div>
-
       <CreatePositionForm
         onCancel={() => setIsAddingPosition(false)}
         onCreated={() => setIsAddingPosition(false)}
         open={isAddingPosition}
       />
+      <div className="rounded-sm bg-panel shadow px-5 py-4">
+        <nav aria-label="Filter positions" className="flex flex-wrap gap-2">
+          {filterOptions.map((option) => (
+            <button
+              aria-pressed={filter === option.key}
+              className={`min-h-10 rounded-full border px-6 text-sm! cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              key={option.key}
+              onClick={() => setFilter(option.key)}
+              type="button"
+            >
+              {option.label}{" "}
+              <span className="font-semibold">{option.count}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
 
-      <nav aria-label="Filter positions" className="flex flex-wrap gap-2">
-        {filterOptions.map((option) => (
-          <button
-            aria-pressed={filter === option.key}
-            className={`min-h-10 rounded-full border px-4 text-sm transition-colors ${filter === option.key ? "border-primary bg-panel text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
-            key={option.key}
-            onClick={() => setFilter(option.key)}
-            type="button"
-          >
-            {option.label} <span className="font-semibold">{option.count}</span>
-          </button>
-        ))}
-      </nav>
-
-      <div className="overflow-hidden rounded-xl border border-line bg-panel shadow-card">
+      <div className="overflow-hidden rounded-sm border border-line bg-panel shadow">
         <Table<CriteriaTableRow>
           className="criteria-table [&_.ant-table-thead>tr>th]:bg-panel [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-muted [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink [&_.ant-table-tbody>tr.criteria-group-row>td]:bg-panel-muted"
           columns={columns}

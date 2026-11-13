@@ -71,6 +71,8 @@ export default async function HrPostingsPage() {
     stats.set(application.job_id, row);
   }
 
+  // This is request-time data for the current page render.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const postingItems = (postings ?? []).map((posting) => {
     const postingStats = stats.get(posting.id) ?? {

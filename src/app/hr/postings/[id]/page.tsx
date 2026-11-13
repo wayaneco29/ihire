@@ -89,6 +89,8 @@ export default async function HrPostingDetailPage({
     : null;
   const hasValidDeadline =
     deadlineTimestamp !== null && Number.isFinite(deadlineTimestamp);
+  // This is request-time data for the current page render.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const isOpen =
     posting.status === "OPEN" &&
@@ -130,7 +132,7 @@ export default async function HrPostingDetailPage({
 
       <section
         aria-label="Posting status and hiring progress"
-        className="mt-5 flex flex-col gap-3 rounded-lg border border-line bg-panel px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:px-5"
+        className="mt-5 flex flex-col gap-3 rounded-sm border border-line bg-panel px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:px-5"
       >
         <span
           className={`inline-flex min-h-6 w-fit items-center rounded-full px-2.5 text-[11px] font-semibold ${

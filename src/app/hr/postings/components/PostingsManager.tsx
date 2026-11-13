@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { FormInput, FormSelect } from "@/components/form";
 
 type PostingStatus = "DRAFT" | "OPEN" | "CLOSED";
 type SortOrder = "deadline-asc" | "deadline-desc" | "created-desc";
@@ -27,12 +29,26 @@ function deadlineSortValue(deadline: string | null) {
   return Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY;
 }
 
+type FilterFormValues = {
+  search: string;
+  status: string;
+  sortOrder: SortOrder;
+};
+
 export function PostingsManager({
   postings,
 }: Readonly<{ postings: PostingItem[] }>) {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("ALL");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("deadline-asc");
+  const filterForm = useForm<FilterFormValues>({
+    defaultValues: {
+      search: "",
+      status: "ALL",
+      sortOrder: "deadline-asc",
+    },
+  });
+
+  const search = filterForm.watch("search");
+  const status = filterForm.watch("status");
+  const sortOrder = filterForm.watch("sortOrder");
 
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
@@ -61,44 +77,37 @@ export function PostingsManager({
   return (
     <section className="mt-6">
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_170px_190px]">
-        <label>
-          <span className="sr-only">Search job postings</span>
-          <input
-            aria-label="Search job postings"
-            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search job titles"
-            type="search"
-            value={search}
-          />
-        </label>
-        <label>
-          <span className="sr-only">Filter by posting status</span>
-          <select
-            aria-label="Filter by posting status"
-            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onChange={(event) => setStatus(event.target.value)}
-            value={status}
-          >
-            <option value="ALL">All statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="CLOSED">Closed</option>
-            <option value="DRAFT">Draft</option>
-          </select>
-        </label>
-        <label>
-          <span className="sr-only">Sort postings</span>
-          <select
-            aria-label="Sort postings"
-            className="h-11 w-full rounded-[8px] border border-line-strong bg-panel px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onChange={(event) => setSortOrder(event.target.value as SortOrder)}
-            value={sortOrder}
-          >
-            <option value="deadline-asc">Soonest deadline</option>
-            <option value="deadline-desc">Latest deadline</option>
-            <option value="created-desc">Recently created</option>
-          </select>
-        </label>
+        <FormInput<FilterFormValues>
+          control={filterForm.control}
+          label="Search job postings"
+          name="search"
+          placeholder="Search job titles"
+          size="medium"
+          type="search"
+        />
+        <FormSelect<FilterFormValues>
+          control={filterForm.control}
+          label="Filter by posting status"
+          name="status"
+          options={[
+            { label: "All statuses", value: "ALL" },
+            { label: "Open", value: "OPEN" },
+            { label: "Closed", value: "CLOSED" },
+            { label: "Draft", value: "DRAFT" },
+          ]}
+          placeholder="Filter by status"
+        />
+        <FormSelect<FilterFormValues>
+          control={filterForm.control}
+          label="Sort postings"
+          name="sortOrder"
+          options={[
+            { label: "Soonest deadline", value: "deadline-asc" },
+            { label: "Latest deadline", value: "deadline-desc" },
+            { label: "Recently created", value: "created-desc" },
+          ]}
+          placeholder="Sort postings"
+        />
       </div>
 
       <p aria-live="polite" className="mt-3 text-xs text-muted">
@@ -107,7 +116,7 @@ export function PostingsManager({
       </p>
 
       {filtered.length ? (
-        <div className="mt-3 overflow-x-auto rounded-md border border-line bg-panel">
+        <div className="mt-3 overflow-x-auto rounded-sm shadow bg-panel">
           <table className="w-full min-w-[980px] border-collapse text-left text-sm">
             <thead className="bg-panel-muted/60 text-xs text-muted">
               <tr>
@@ -220,16 +229,16 @@ export function PostingsManager({
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-4 whitespace-nowrap">
                         <Link
-                          className="inline-flex min-h-9 items-center justify-center rounded-[8px] border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                          href={`/hr/postings/${posting.id}`}
-                        >
-                          View applicants
-                        </Link>
-                        <Link
                           className="inline-flex min-h-9 items-center rounded-sm px-1 text-xs font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                           href={`/hr/postings/${posting.id}/edit`}
                         >
                           Edit posting
+                        </Link>
+                        <Link
+                          className="inline-flex min-h-9 items-center justify-center rounded-[8px] border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          href={`/hr/postings/${posting.id}`}
+                        >
+                          View applicants
                         </Link>
                       </div>
                     </td>
