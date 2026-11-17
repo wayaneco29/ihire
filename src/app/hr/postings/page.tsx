@@ -54,6 +54,7 @@ export default async function HrPostingsPage() {
         .from("v_anonymized_applicants")
         .select("job_id, application_status")
         .in("job_id", ids)
+        .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
     : { data: [] };
   const stats = new Map<
     string,

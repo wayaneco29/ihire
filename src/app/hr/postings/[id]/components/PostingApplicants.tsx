@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { Alert, Input, Popconfirm, Select, Table } from "antd";
+import { Alert, Input, Modal, Popconfirm, Select, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
+import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
+import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { recordHiringDecision } from "../actions";
 
@@ -20,39 +22,24 @@ export type ApplicantItem = {
   skills: string[] | null;
   position_title: string | null;
   position_track: string | null;
+  assessment_points: number | null;
+  assessment_rank: number | null;
+  criterion_scores: {
+    key: string;
+    title: string;
+    points: number | null;
+    maximumPoints: number | null;
+  }[];
 };
 
-type ApplicantFilter =
-  | "ALL"
-  | "UNDER_EVALUATION"
-  | "QUALIFIED"
-  | "NOT_QUALIFIED"
-  | "HIRED";
-type SortOrder = "asc" | "desc";
-
+type ApplicantFilter = "QUALIFIED" | "HIRED" | "NOT_SELECTED";
 const FILTERS: { id: ApplicantFilter; label: string }[] = [
-  { id: "ALL", label: "All" },
-  { id: "UNDER_EVALUATION", label: "Under evaluation" },
-  { id: "QUALIFIED", label: "Qualified" },
-  { id: "NOT_QUALIFIED", label: "Not qualified" },
+  { id: "QUALIFIED", label: "Qualified for hire" },
   { id: "HIRED", label: "Hired" },
+  { id: "NOT_SELECTED", label: "Not selected" },
 ];
-
-const UNDER_EVALUATION_STATUSES = [
-  "SUBMITTED",
-  "UNDER_EVALUATION",
-  "ASSESSMENT_SCHEDULED",
-];
-const NOT_QUALIFIED_STATUSES = ["NOT_QUALIFIED", "REJECTED"];
 
 function matchesFilter(applicant: ApplicantItem, filter: ApplicantFilter) {
-  if (filter === "ALL") return true;
-  if (filter === "UNDER_EVALUATION") {
-    return UNDER_EVALUATION_STATUSES.includes(applicant.application_status);
-  }
-  if (filter === "NOT_QUALIFIED") {
-    return NOT_QUALIFIED_STATUSES.includes(applicant.application_status);
-  }
   return applicant.application_status === filter;
 }
 
@@ -76,16 +63,20 @@ function trainingLabel(hours: number | null) {
 
 export function PostingApplicants({
   applicants,
+  assessmentScoresUnavailable,
   slots,
-}: Readonly<{ applicants: ApplicantItem[]; slots: number }>) {
-  const [filter, setFilter] = useState<ApplicantFilter>("ALL");
+}: Readonly<{
+  applicants: ApplicantItem[];
+  assessmentScoresUnavailable: boolean;
+  slots: number;
+}>) {
+  const [filter, setFilter] = useState<ApplicantFilter>("QUALIFIED");
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState("ALL");
   const [educationFilter, setEducationFilter] = useState("ALL");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     success: boolean;
     message: string;
@@ -97,6 +88,8 @@ export function PostingApplicants({
     (applicant) => applicant.application_status === "HIRED",
   ).length;
   const slotsFull = hiredCount >= slots;
+  const selectedApplicant =
+    applicants.find((applicant) => applicant.application_id === selectedApplicantId) ?? null;
   const positions = useMemo(
     () =>
       [...new Set(applicants.map(positionLabel).filter(Boolean))].sort((a, b) =>
@@ -137,6 +130,15 @@ export function PostingApplicants({
             applicant.education_levels?.includes(educationFilter)),
       )
       .sort((a, b) => {
+        if (a.assessment_points === null && b.assessment_points !== null) return 1;
+        if (b.assessment_points === null && a.assessment_points !== null) return -1;
+        if (
+          a.assessment_points !== null &&
+          b.assessment_points !== null &&
+          a.assessment_points !== b.assessment_points
+        ) {
+          return b.assessment_points - a.assessment_points;
+        }
         const result = a.applicant_number.localeCompare(
           b.applicant_number,
           undefined,
@@ -145,9 +147,9 @@ export function PostingApplicants({
             sensitivity: "base",
           },
         );
-        return sortOrder === "asc" ? result : -result;
+        return result;
       });
-  }, [applicants, educationFilter, filter, positionFilter, search, sortOrder]);
+  }, [applicants, educationFilter, filter, positionFilter, search]);
 
   const currentPage = Math.min(
     page,
@@ -157,34 +159,34 @@ export function PostingApplicants({
   function updateFilter<T>(setter: (value: T) => void, value: T) {
     setter(value);
     setPage(1);
-    setExpandedId(null);
+    setSelectedApplicantId(null);
   }
 
-  function decide(applicationId: string, decision: "HIRED" | "REJECTED") {
+  function decide(applicationId: string) {
     setWorkingId(applicationId);
     startTransition(async () => {
-      const result = await recordHiringDecision(applicationId, decision);
+      const result = await recordHiringDecision(applicationId);
       setFeedback(result);
       setWorkingId(null);
+      if (result.success) setSelectedApplicantId(null);
     });
   }
 
   const columns: ColumnsType<ApplicantItem> = [
     {
-      title: (
-        <button
-          aria-label={`Sort by applicant number ${sortOrder === "asc" ? "descending" : "ascending"}`}
-          className="inline-flex items-center gap-1 cursor-pointer hover:text-ink"
-          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-          type="button"
-        >
-          Applicant No.{" "}
-          <span aria-hidden="true">{sortOrder === "asc" ? "↑" : "↓"}</span>
-        </button>
-      ),
+      title: "Rank",
+      key: "assessment_rank",
+      width: 80,
+      align: "center",
+      fixed: "left",
+      className: "pl-6!",
+      render: (_, applicant) =>
+        applicant.assessment_rank === null ? "—" : `#${applicant.assessment_rank}`,
+    },
+    {
+      title: "Applicant ID",
       dataIndex: "applicant_number",
       key: "applicant_number",
-      className: "pl-6!",
       fixed: "left",
       width: 150,
       render: (applicantNumber: string) => (
@@ -199,12 +201,24 @@ export function PostingApplicants({
       render: (_, applicant) => positionLabel(applicant),
     },
     {
+      title: "Total points",
+      dataIndex: "assessment_points",
+      key: "assessment_points",
+      width: 180,
+      align: "right",
+      render: (points: number | null) =>
+        points === null
+          ? "Awaiting scores"
+          : points.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+    },
+    {
       title: "Education",
       key: "education",
       width: 190,
       ellipsis: true,
       render: (_, applicant) =>
-        applicant.education_levels?.join(", ") || "Not provided",
+        applicant.education_levels?.map(educationLevelLabel).join(", ") ||
+        "Not provided",
     },
     {
       title: "Experience",
@@ -233,14 +247,7 @@ export function PostingApplicants({
       key: "status",
       width: 160,
       render: (applicationStatus: string) => (
-        <WorkflowStatusTag
-          label={
-            UNDER_EVALUATION_STATUSES.includes(applicationStatus)
-              ? "Under evaluation"
-              : undefined
-          }
-          status={applicationStatus}
-        />
+        <WorkflowStatusTag status={applicationStatus} />
       ),
     },
     {
@@ -251,20 +258,14 @@ export function PostingApplicants({
       align: "right",
       className: "pr-6!",
       render: (_, applicant) => {
-        const expanded = expandedId === applicant.application_id;
-
         return (
           <Button
-            aria-controls={`applicant-details-${applicant.application_id}`}
-            aria-expanded={expanded}
-            onClick={() =>
-              setExpandedId(expanded ? null : applicant.application_id)
-            }
+            onClick={() => setSelectedApplicantId(applicant.application_id)}
             size="sm"
             type="button"
             variant="bordered"
           >
-            {expanded ? "Close" : "Review"}
+            Review
           </Button>
         );
       },
@@ -281,6 +282,19 @@ export function PostingApplicants({
           type={feedback.success ? "success" : "error"}
         />
       )}
+      {assessmentScoresUnavailable && (
+        <Alert
+          className="mb-4"
+          message="Assessment points could not be loaded. Ranking may be incomplete; refresh to try again."
+          showIcon
+          type="warning"
+        />
+      )}
+      <p className="mb-3 text-sm text-muted">
+        Applicants are ranked by total criterion points, including education,
+        training certificates, experience, and evaluator scores. Equal totals
+        are ordered by applicant number.
+      </p>
       <div className="px-5 py-4 shadow rounded-sm bg-panel">
         <nav
           aria-label="Filter applicants by status"
@@ -342,7 +356,7 @@ export function PostingApplicants({
             options={[
               { label: "All education levels", value: "ALL" },
               ...educationLevels.map((level) => ({
-                label: level,
+                label: educationLevelLabel(level),
                 value: level,
               })),
             ]}
@@ -367,28 +381,6 @@ export function PostingApplicants({
         <Table<ApplicantItem>
           columns={columns}
           dataSource={filtered}
-          expandable={{
-            expandedRowKeys: expandedId ? [expandedId] : [],
-            expandedRowRender: (applicant) => (
-              <ApplicantDetails
-                applicant={applicant}
-                education={
-                  applicant.education_levels?.join(", ") || "Not provided"
-                }
-                evaluated={["QUALIFIED", "NOT_QUALIFIED"].includes(
-                  applicant.application_status,
-                )}
-                onDecide={decide}
-                pending={isWorking && workingId === applicant.application_id}
-                skills={applicant.skills?.join(", ") || "Not provided"}
-                slotsFull={slotsFull}
-                terminal={["HIRED", "REJECTED"].includes(
-                  applicant.application_status,
-                )}
-              />
-            ),
-            showExpandColumn: false,
-          }}
           locale={{
             emptyText: (
               <div className="py-5 text-sm text-muted">
@@ -414,44 +406,61 @@ export function PostingApplicants({
               : false
           }
           rowKey="application_id"
-          scroll={{ x: 1254 }}
+          scroll={{ x: 1500 }}
           size="middle"
         />
       </div>
+      <Modal
+        centered
+        destroyOnHidden
+        footer={null}
+        onCancel={() => setSelectedApplicantId(null)}
+        open={Boolean(selectedApplicant)}
+        title={selectedApplicant ? `Review applicant ${selectedApplicant.applicant_number}` : "Review applicant"}
+        width={860}
+      >
+        {selectedApplicant && (
+          <ApplicantDetails
+            applicant={selectedApplicant}
+            evaluated={selectedApplicant.application_status === "QUALIFIED"}
+            onDecide={decide}
+            pending={isWorking && workingId === selectedApplicant.application_id}
+            slotsFull={slotsFull}
+            terminal={["HIRED", "NOT_SELECTED"].includes(selectedApplicant.application_status)}
+          />
+        )}
+      </Modal>
     </section>
   );
 }
 
 function ApplicantDetails({
   applicant,
-  education,
   evaluated,
   onDecide,
   pending,
-  skills,
   slotsFull,
   terminal,
 }: Readonly<{
   applicant: ApplicantItem;
-  education: string;
   evaluated: boolean;
-  onDecide: (applicationId: string, decision: "HIRED" | "REJECTED") => void;
+  onDecide: (applicationId: string) => void;
   pending: boolean;
-  skills: string;
   slotsFull: boolean;
   terminal: boolean;
 }>) {
   return (
-    <div
-      className="flex flex-col gap-4 bg-panel-muted/40 px-4 py-4 lg:flex-row lg:items-start lg:justify-between"
-      id={`applicant-details-${applicant.application_id}`}
-    >
-      <dl className="grid flex-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="max-h-[70dvh] space-y-6 overflow-y-auto pr-1">
+      <dl className="grid gap-x-5 gap-y-4 rounded-sm bg-panel-muted/50 p-4 sm:grid-cols-2">
+        <Detail label="Applicant ID" value={applicant.applicant_number} />
+        <Detail label="Rank" value={applicant.assessment_rank ? `#${applicant.assessment_rank}` : "Not ranked"} />
+        <Detail label="Position" value={positionLabel(applicant)} />
+        <Detail label="Application status" value={formatCodeLabel(applicant.application_status)} />
+        <Detail label="Applied" value={formatDate(applicant.applied_at)} />
         <Detail
-          label="Position applying for"
-          value={positionLabel(applicant)}
+          label="Education"
+          value={applicant.education_levels?.map(educationLevelLabel).join(", ") || "Not provided"}
         />
-        <Detail label="Education" value={education} />
         <Detail
           label="Experience"
           value={`${Number(applicant.experience_years ?? 0).toFixed(1)} years`}
@@ -460,9 +469,51 @@ function ApplicantDetails({
           label="Training"
           value={`${trainingLabel(applicant.training_hours).replace(" hrs", " hours")}`}
         />
-        <Detail label="Skills" value={skills} />
+        <Detail label="Skills" value={applicant.skills?.join(", ") || "Not provided"} />
       </dl>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
+      <section aria-labelledby="criterion-scores-heading">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-ink" id="criterion-scores-heading">Criterion scores</h3>
+            <p className="mt-1 text-sm text-muted">Points awarded in each configured category.</p>
+          </div>
+          <p className="text-sm font-semibold text-ink">
+            Total: {applicant.assessment_points?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? "Unavailable"}
+          </p>
+        </div>
+        {applicant.criterion_scores.length ? (
+          <div className="overflow-hidden rounded-sm border border-line">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-panel-muted text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-semibold" scope="col">Category</th>
+                  <th className="px-4 py-3 font-semibold" scope="col">Source</th>
+                  <th className="px-4 py-3 text-right font-semibold" scope="col">Points</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line-subtle">
+                {applicant.criterion_scores.map((score) => (
+                  <tr key={score.key}>
+                    <td className="px-4 py-3 font-medium text-ink">{score.title}</td>
+                    <td className="px-4 py-3 text-muted">{criterionSource(score.key)}</td>
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-ink">
+                      {score.points === null
+                        ? "Not scored"
+                        : score.points.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      {score.maximumPoints !== null && ` / ${score.maximumPoints.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="rounded-sm border border-line bg-panel-muted p-4 text-sm text-muted">
+            No criterion scores are available for this applicant.
+          </p>
+        )}
+      </section>
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line-subtle pt-4">
         {applicant.application_status === "HIRED" && (
           <Link
             className="inline-flex h-9 items-center justify-center rounded-[8px] border border-primary px-3.5 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -472,39 +523,45 @@ function ApplicantDetails({
           </Link>
         )}
         {evaluated && !terminal && (
-          <>
-            <Popconfirm
-              onConfirm={() => onDecide(applicant.application_id, "HIRED")}
-              title={`Hire ${applicant.applicant_number}?`}
-              description="This records a final hiring decision and uses one slot."
+          <Popconfirm
+            onConfirm={() => onDecide(applicant.application_id)}
+            title={`Hire ${applicant.applicant_number}?`}
+            description="This uses one hiring slot. If it fills the last slot, all remaining qualified applicants will be marked Not Selected."
+          >
+            <Button
+              disabled={slotsFull || pending}
+              loading={pending}
+              size="sm"
+              variant="filled"
             >
-              <Button
-                disabled={slotsFull || pending}
-                loading={pending}
-                size="sm"
-                variant="filled"
-              >
-                Hire
-              </Button>
-            </Popconfirm>
-            <Popconfirm
-              onConfirm={() => onDecide(applicant.application_id, "REJECTED")}
-              title={`Reject ${applicant.applicant_number}?`}
-              description="This records a final rejection decision."
-            >
-              <Button
-                disabled={pending}
-                loading={pending}
-                size="sm"
-                variant="danger"
-              >
-                Reject
-              </Button>
-            </Popconfirm>
-          </>
+              Hire
+            </Button>
+          </Popconfirm>
         )}
       </div>
     </div>
+  );
+}
+
+function criterionSource(key: string) {
+  if (key === "EDUCATION") return "PDS education records";
+  if (key === "TRAINING") return "Verified certificates";
+  if (key === "EXPERIENCE") return "Work experience records";
+  return "Evaluator scoring";
+}
+
+function formatCodeLabel(value: string) {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function educationLevelLabel(value: string) {
+  return (
+    EDUCATION_LEVEL_OPTIONS.find((option) => option.value === value)?.label ??
+    formatCodeLabel(value)
   );
 }
 

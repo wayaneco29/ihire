@@ -45,7 +45,7 @@ export function HrDashboardView({
     [filter, postings],
   );
   const metrics = [
-    { label: "Pending evaluation", value: pendingCount },
+    { label: "Awaiting HR decision", value: pendingCount },
     { label: "Total applicants", value: totalApplicants },
     { label: "Hired", value: hiredCount },
     { label: "Open postings", value: openCount },

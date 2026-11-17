@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
+import { calculatePublicTeachingExperience } from "@/utils/calculate-public-teaching-experience";
 import { PostingApplicants } from "./components/PostingApplicants";
 
 function daysUntilDeadline(deadline: string, now: number) {
@@ -48,6 +49,7 @@ export default async function HrPostingDetailPage({
     .from("v_anonymized_applicants")
     .select(applicantColumns, { count: "exact" })
     .eq("job_id", posting.id)
+    .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
     .order("applied_at", { ascending: false })
     .range(0, 999);
 
@@ -71,6 +73,7 @@ export default async function HrPostingDetailPage({
           .from("v_anonymized_applicants")
           .select(applicantColumns)
           .eq("job_id", posting.id)
+          .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
           .order("applied_at", { ascending: false })
           .range(offset, offset + 999),
       ),
@@ -80,7 +83,188 @@ export default async function HrPostingDetailPage({
     applicants.push(...remainingPages.flatMap((result) => result.data ?? []));
   }
 
-  const applicantItems = applicants;
+  const applicantIds = applicants.map((applicant) => applicant.application_id);
+  const scoreApplicantIdBatches = Array.from(
+    { length: Math.ceil(applicantIds.length / 100) },
+    (_, index) => applicantIds.slice(index * 100, (index + 1) * 100),
+  );
+  const assessmentScoreBatches = await Promise.all(
+    scoreApplicantIdBatches.map((batch) =>
+      hr.supabase
+        .from("application_criterion_scores")
+        .select("application_id, points, criterion:position_criteria(criterion_key, title)")
+        .in("application_id", batch),
+    ),
+  );
+  const [applicationPositionsResult, postingPositionsResult] = await Promise.all([
+    applicantIds.length
+      ? hr.supabase.from("applications").select("id, position_id").in("id", applicantIds)
+      : Promise.resolve({ data: [], error: null }),
+    hr.supabase.from("job_posting_positions")
+      .select("position_id, weight_profile_id")
+      .eq("job_id", posting.id),
+  ]);
+  const weightProfileIds = [...new Set((postingPositionsResult.data ?? []).map((row) => row.weight_profile_id))];
+  const criterionWeightsResult = weightProfileIds.length
+    ? await hr.supabase.from("position_criterion_weights")
+        .select("profile_id, points, criterion:position_criteria(criterion_key, title)")
+        .in("profile_id", weightProfileIds)
+    : { data: [], error: null };
+  const assessmentScores = assessmentScoreBatches.flatMap(
+    (batch) => batch.data ?? [],
+  );
+  const assessmentScoresError =
+    assessmentScoreBatches.find((batch) => batch.error)?.error ?? null;
+  const [educationBatches, trainingBatches, experienceStandardsBatches, workExperienceBatches] =
+    await Promise.all([
+      Promise.all(scoreApplicantIdBatches.map((batch) =>
+        hr.supabase.from("v_anonymized_application_education_points")
+          .select("application_id, education_points").in("application_id", batch),
+      )),
+      Promise.all(scoreApplicantIdBatches.map((batch) =>
+        hr.supabase.from("v_anonymized_application_training_points")
+          .select("application_id, training_points").in("application_id", batch),
+      )),
+      Promise.all(scoreApplicantIdBatches.map((batch) =>
+        hr.supabase.from("v_anonymized_application_experience_standards")
+          .select("application_id, minimum_experience_increment_level, maximum_experience_points")
+          .in("application_id", batch),
+      )),
+      Promise.all(scoreApplicantIdBatches.map((batch) =>
+        hr.supabase.from("v_anonymized_work_experience")
+          .select("application_id, date_from, date_to, is_gov_service, position_title", { count: "exact" })
+          .in("application_id", batch).range(0, 999),
+      )),
+    ]);
+  const remainingWorkExperiencePages = await Promise.all(
+    workExperienceBatches.flatMap((firstPage, batchIndex) =>
+      Array.from(
+        { length: Math.max(0, Math.ceil((firstPage.count ?? 0) / 1000) - 1) },
+        (_, index) =>
+          hr.supabase.from("v_anonymized_work_experience")
+            .select("application_id, date_from, date_to, is_gov_service, position_title")
+            .in("application_id", scoreApplicantIdBatches[batchIndex])
+            .range((index + 1) * 1000, (index + 2) * 1000 - 1),
+      ),
+    ),
+  );
+  workExperienceBatches.push(...remainingWorkExperiencePages);
+  const rankingDataUnavailable = Boolean(
+    assessmentScoresError ||
+    applicationPositionsResult.error ||
+    postingPositionsResult.error ||
+    criterionWeightsResult.error ||
+    [...educationBatches, ...trainingBatches, ...experienceStandardsBatches, ...workExperienceBatches]
+      .some((batch) => batch.error),
+  );
+  const pointsByApplication = new Map<string, Map<string, number>>();
+  const titleByCriterion = new Map<string, string>();
+  for (const score of assessmentScores) {
+    const key = score.criterion?.criterion_key;
+    if (!key) continue;
+    const points = pointsByApplication.get(score.application_id) ?? new Map<string, number>();
+    points.set(key, Number(score.points));
+    pointsByApplication.set(score.application_id, points);
+    if (score.criterion?.title) titleByCriterion.set(key, score.criterion.title);
+  }
+  function addCalculatedPoints(applicationId: string, key: string, value: number | null) {
+    if (value === null) return;
+    const points = pointsByApplication.get(applicationId) ?? new Map<string, number>();
+    if (!points.has(key)) points.set(key, Number(value));
+    pointsByApplication.set(applicationId, points);
+  }
+  for (const batch of educationBatches) for (const row of batch.data ?? []) {
+    addCalculatedPoints(row.application_id, "EDUCATION", row.education_points);
+  }
+  for (const batch of trainingBatches) for (const row of batch.data ?? []) {
+    addCalculatedPoints(row.application_id, "TRAINING", row.training_points);
+  }
+  const positionByApplication = new Map(
+    (applicationPositionsResult.data ?? []).map((row) => [row.id, row.position_id]),
+  );
+  const profileByPosition = new Map(
+    (postingPositionsResult.data ?? []).map((row) => [row.position_id, row.weight_profile_id]),
+  );
+  const maximumPointsByProfileAndCriterion = new Map<string, number>();
+  const criteriaByProfile = new Map<string, Map<string, { title: string; maximumPoints: number }>>();
+  for (const weight of criterionWeightsResult.data ?? []) {
+    const criterion = weight.criterion;
+    const key = criterion?.criterion_key;
+    if (!criterion || !key) continue;
+    maximumPointsByProfileAndCriterion.set(`${weight.profile_id}:${key}`, Number(weight.points));
+    const profileCriteria = criteriaByProfile.get(weight.profile_id) ?? new Map();
+    profileCriteria.set(key, {
+      title: criterion.title,
+      maximumPoints: Number(weight.points),
+    });
+    criteriaByProfile.set(weight.profile_id, profileCriteria);
+    titleByCriterion.set(key, criterion.title);
+  }
+  const workByApplication = new Map<string, NonNullable<(typeof workExperienceBatches)[number]["data"]>>();
+  for (const batch of workExperienceBatches) for (const row of batch.data ?? []) {
+    const records = workByApplication.get(row.application_id) ?? [];
+    records.push(row);
+    workByApplication.set(row.application_id, records);
+  }
+  for (const batch of experienceStandardsBatches) for (const row of batch.data ?? []) {
+    if (row.minimum_experience_increment_level === null || row.maximum_experience_points === null) continue;
+    const level = calculatePublicTeachingExperience(workByApplication.get(row.application_id) ?? []).incrementLevel;
+    const difference = level - row.minimum_experience_increment_level;
+    const factor = difference >= 10 ? 1 : difference >= 8 ? 0.8 : difference >= 6 ? 0.6
+      : difference >= 4 ? 0.4 : difference >= 2 ? 0.2 : 0;
+    addCalculatedPoints(row.application_id, "EXPERIENCE", Math.round(row.maximum_experience_points * factor * 100) / 100);
+  }
+  const totalPointsByApplication = new Map(
+    [...pointsByApplication].map(([applicationId, points]): [string, number] => [
+      applicationId,
+      [...points.values()].reduce((sum, value) => sum + value, 0),
+    ]),
+  );
+  const rankedApplicantIds = [...applicants]
+    .filter((applicant) =>
+      totalPointsByApplication.has(applicant.application_id),
+    )
+    .sort((a, b) => {
+      const pointDifference =
+        totalPointsByApplication.get(b.application_id)! -
+        totalPointsByApplication.get(a.application_id)!;
+      return (
+        pointDifference ||
+        a.applicant_number.localeCompare(b.applicant_number, undefined, {
+          numeric: true,
+        })
+      );
+    })
+    .map((applicant) => applicant.application_id);
+  const rankByApplicantId = new Map(
+    rankedApplicantIds.map(
+      (applicationId, index): [string, number] => [applicationId, index + 1],
+    ),
+  );
+  const applicantItems = applicants.map((applicant) => ({
+    ...applicant,
+    assessment_points: totalPointsByApplication.get(applicant.application_id) ?? null,
+    assessment_rank: rankByApplicantId.get(applicant.application_id) ?? null,
+    criterion_scores: (() => {
+      const positionId = positionByApplication.get(applicant.application_id);
+      const profileId = positionId ? profileByPosition.get(positionId) : null;
+      const configuredCriteria = profileId ? criteriaByProfile.get(profileId) : null;
+      const applicantPoints = pointsByApplication.get(applicant.application_id) ?? new Map<string, number>();
+      const keys = new Set([
+        ...applicantPoints.keys(),
+        ...(configuredCriteria?.keys() ?? []),
+      ]);
+      return [...keys].map((key) => {
+        const configured = configuredCriteria?.get(key);
+        return {
+          key,
+          title: configured?.title ?? titleByCriterion.get(key) ?? key.toLowerCase().replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+          points: applicantPoints.get(key) ?? null,
+          maximumPoints: configured?.maximumPoints ?? (profileId ? maximumPointsByProfileAndCriterion.get(`${profileId}:${key}`) ?? null : null),
+        };
+      }).sort((a, b) => a.title.localeCompare(b.title));
+    })()
+  }));
   const hiredCount = applicantItems.filter(
     (applicant) => applicant.application_status === "HIRED",
   ).length;
@@ -206,7 +390,11 @@ export default async function HrPostingDetailPage({
           />
         </div>
       ) : (
-        <PostingApplicants applicants={applicantItems} slots={posting.slots} />
+        <PostingApplicants
+          applicants={applicantItems}
+          assessmentScoresUnavailable={rankingDataUnavailable}
+          slots={posting.slots}
+        />
       )}
     </div>
   );

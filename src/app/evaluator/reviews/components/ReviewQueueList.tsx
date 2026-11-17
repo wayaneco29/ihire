@@ -7,8 +7,8 @@ import { formatPositionLabel } from "@/utils/format-position-track";
 import type { PublicViews } from "@/types/database-views";
 import { REVIEW_QUEUE_STATUS_OPTIONS, reviewQueueHref, type ReviewQueueStatus } from "../queue";
 
-type ReviewQueueJob = PublicViews["v_evaluator_review_queue_summary"]["Row"];
-type ReviewQueueApplicant = PublicViews["v_evaluator_review_queue"]["Row"];
+type ReviewQueueJob = PublicViews["v_evaluator_review_queue_with_scored_summary"]["Row"];
+type ReviewQueueApplicant = PublicViews["v_evaluator_review_queue_with_scored"]["Row"];
 
 export function ReviewQueueList({
   jobs,
@@ -152,7 +152,7 @@ export function ReviewQueueList({
                 <h3 className="font-semibold text-ink">{item.applicant_number}</h3>
                 <p className="mt-1 text-sm text-muted">{item.position_title ? formatPositionLabel(item.position_title, item.position_track ?? "") : "Position not recorded"}</p>
               </div>
-              <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${item.review_kind === "REREVIEW" ? "bg-warning/10 text-warning" : "bg-primary-light text-primary"}`}>{item.review_kind === "REREVIEW" ? "Re-review" : "Initial"}</span>
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${item.review_kind === "REREVIEW" ? "bg-warning/10 text-warning" : "bg-primary-light text-primary"}`}>{item.review_kind === "REREVIEW" ? "Re-review" : item.review_kind === "ASSESSMENT" ? "Decision needed" : "Initial"}</span>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
               <span>Applied {formatDate(item.applied_at)}</span>
@@ -215,7 +215,9 @@ export function ReviewQueueList({
                   >
                     {item.review_kind === "REREVIEW"
                       ? "Re-review"
-                      : "Initial review"}
+                      : item.review_kind === "ASSESSMENT"
+                        ? "Decision needed"
+                        : "Initial review"}
                   </span>
                 </td>
                 <td className="px-5 py-4 text-right">

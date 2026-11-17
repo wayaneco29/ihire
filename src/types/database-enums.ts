@@ -1,5 +1,5 @@
 export type PublicEnums = {
-    "application_status": "SUBMITTED" | "UNDER_EVALUATION" | "ASSESSMENT_SCHEDULED" | "QUALIFIED" | "NOT_QUALIFIED" | "HIRED" | "REJECTED";
+    "application_status": "SUBMITTED" | "UNDER_EVALUATION" | "ASSESSMENT_SCHEDULED" | "ASSESSMENT_SCORED" | "QUALIFIED" | "NOT_QUALIFIED" | "HIRED" | "NOT_SELECTED" | "REJECTED";
     "civil_status": "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "SOLO_PARENT" | "OTHER";
     "document_status": "PENDING" | "FOR_REVIEW" | "VERIFIED" | "REJECTED" | "FOR_RESUBMISSION";
     "document_package_status": "INCOMPLETE" | "PENDING" | "FOR_REVIEW" | "APPROVED" | "NEEDS_RESUBMISSION";

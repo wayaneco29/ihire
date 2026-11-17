@@ -3,13 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { getHrContext } from "@/lib/auth/server";
 
-export async function recordHiringDecision(
-  applicationId: string,
-  decision: "HIRED" | "REJECTED",
-) {
+export async function recordHiringDecision(applicationId: string) {
   const hr = await getHrContext();
   if (!hr) return { success: false, message: "HR access is required." };
-  if (!/^[0-9a-f-]{36}$/i.test(applicationId) || !["HIRED", "REJECTED"].includes(decision)) {
+  if (!/^[0-9a-f-]{36}$/i.test(applicationId)) {
     return { success: false, message: "This application is not available for a hiring decision." };
   }
 
@@ -21,16 +18,12 @@ export async function recordHiringDecision(
   if (applicationError || !application) {
     return { success: false, message: "This application is no longer available." };
   }
-  if (decision === "HIRED" && application.application_status !== "QUALIFIED") {
+  if (application.application_status !== "QUALIFIED") {
     return { success: false, message: "Only qualified applicants can be hired." };
   }
-  if (decision === "REJECTED" && !["QUALIFIED", "NOT_QUALIFIED"].includes(application.application_status)) {
-    return { success: false, message: "The application must be evaluated before a decision is recorded." };
-  }
 
-  const { error } = await hr.supabase.rpc("record_hr_hiring_decision", {
-    target_application_id: applicationId,
-    target_decision: decision,
+  const { data: hiringResult, error } = await hr.supabase.rpc("hire_qualified_applicant", {
+    p_application_id: applicationId,
   });
   if (error) {
     const message = error.message.includes("All available slots")
@@ -46,5 +39,12 @@ export async function recordHiringDecision(
   revalidatePath(`/hr/postings/${application.job_id}`);
   revalidatePath("/applicant/applications");
   revalidatePath(`/applicant/applications/${applicationId}`);
-  return { success: true, message: `${application.applicant_number} marked ${decision === "HIRED" ? "hired" : "rejected"}. The applicant has been notified.` };
+  revalidatePath("/applicant/dashboard");
+  return {
+    success: true,
+    message:
+      hiringResult === "HIRED_AND_FILLED_SLOTS"
+        ? `${application.applicant_number} hired. All slots are filled; the remaining qualified applicants are now marked Not Selected.`
+        : `${application.applicant_number} hired. The applicant has been notified.`,
+  };
 }

@@ -136,9 +136,13 @@ export default async function ApplicantDashboardPage() {
   const secondaryApplications = dashboardApplications.slice(1);
   const applicationResult =
     latestApplication &&
-    ["HIRED", "QUALIFIED", "NOT_QUALIFIED", "REJECTED"].includes(
-      latestApplication.status,
-    );
+    [
+      "HIRED",
+      "QUALIFIED",
+      "NOT_QUALIFIED",
+      "NOT_SELECTED",
+      "REJECTED",
+    ].includes(latestApplication.status);
   const applicationHeadline = !latestApplication
     ? "Your next opportunity starts here."
     : latestApplication.status === "HIRED"
@@ -147,10 +151,14 @@ export default async function ApplicantDashboardPage() {
         ? `You’re qualified for ${latestApplication.jobTitle}.`
         : latestApplication.status === "NOT_QUALIFIED"
           ? `Your application for ${latestApplication.jobTitle} was not qualified.`
+          : latestApplication.status === "NOT_SELECTED"
+            ? `You were not selected for ${latestApplication.jobTitle} because all hiring slots were filled.`
           : latestApplication.status === "REJECTED"
             ? `Your application for ${latestApplication.jobTitle} was not selected.`
             : latestApplication.status === "ASSESSMENT_SCHEDULED"
               ? `Your assessment for ${latestApplication.jobTitle} is scheduled.`
+              : latestApplication.status === "ASSESSMENT_SCORED"
+                ? `Your assessment for ${latestApplication.jobTitle} has been scored. The evaluator's decision is pending.`
               : `Your application for ${latestApplication.jobTitle} is in progress.`;
   const secondaryApplication = secondaryApplications[0];
   const secondaryStatusLabel = secondaryApplication
@@ -159,7 +167,9 @@ export default async function ApplicantDashboardPage() {
         QUALIFIED: "Qualified",
         NOT_QUALIFIED: "Not qualified",
         REJECTED: "Not selected",
+        NOT_SELECTED: "Not selected",
         ASSESSMENT_SCHEDULED: "Assessment scheduled",
+        ASSESSMENT_SCORED: "Assessment scored",
         UNDER_EVALUATION: "Under evaluation",
         SUBMITTED: "Submitted",
       }[secondaryApplication.status] ?? "In progress")

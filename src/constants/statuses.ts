@@ -21,6 +21,7 @@ export const APPLICATION_STATUSES = [
   "QUALIFIED",
   "NOT_QUALIFIED",
   "HIRED",
+  "NOT_SELECTED",
   "REJECTED",
 ] as const;
 

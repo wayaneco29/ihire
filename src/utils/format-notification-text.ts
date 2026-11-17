@@ -1,5 +1,6 @@
 const NOTIFICATION_STATUS_LABELS: Record<string, string> = {
   ASSESSMENT_SCHEDULED: "Assessment scheduled",
+  ASSESSMENT_SCORED: "Assessment scored",
   APPROVED: "Approved",
   CLOSED: "Closed",
   DRAFT: "Draft",
@@ -9,6 +10,7 @@ const NOTIFICATION_STATUS_LABELS: Record<string, string> = {
   INCOMPLETE: "Incomplete",
   NEEDS_RESUBMISSION: "Needs resubmission",
   NOT_QUALIFIED: "Not qualified",
+  NOT_SELECTED: "Not selected",
   OPEN: "Open",
   PENDING: "Pending",
   QUALIFIED: "Qualified",

@@ -16,12 +16,14 @@ import {
 export function ApplicationCriterionScoresForm({
   applicationId,
   applicationStatus,
+  returnHref,
   criteria,
   existingScores,
   scoresUnavailable,
 }: {
   applicationId: string;
   applicationStatus: string;
+  returnHref: string;
   criteria: ManualScoringCriterion[];
   existingScores: Record<string, number | null>;
   scoresUnavailable: boolean;
@@ -45,9 +47,12 @@ export function ApplicationCriterionScoresForm({
   const form = useForm<ApplicationCriterionScoresValues>({
     resolver: yupResolver(schema),
     defaultValues,
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
-  const isFinal =
-    applicationStatus === "HIRED" || applicationStatus === "REJECTED";
+  const isFinal = [
+    "ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED", "HIRED", "NOT_SELECTED", "REJECTED",
+  ].includes(applicationStatus);
 
   function submit(values: ApplicationCriterionScoresValues) {
     setMessage(null);
@@ -60,7 +65,7 @@ export function ApplicationCriterionScoresForm({
         })),
       });
       setMessage(result.message);
-      if (result.success) router.refresh();
+      if (result.success) router.replace(returnHref);
     });
   }
 
@@ -159,13 +164,18 @@ export function ApplicationCriterionScoresForm({
           </div>
           {isFinal && (
             <p className="text-sm text-muted">
-              This application has a final hiring decision and can no longer be
-              scored.
+              Assessment points have already been submitted or a decision has
+              been recorded.
             </p>
           )}
           {message && (
             <p
-              className={`text-sm ${message === "Criterion scores saved." ? "text-primary" : "text-danger"}`}
+              className={`text-sm ${
+                message.startsWith("Assessment scores saved.") ||
+                message === "Criterion scores saved."
+                  ? "text-primary"
+                  : "text-danger"
+              }`}
               role="status"
             >
               {message}

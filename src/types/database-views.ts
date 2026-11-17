@@ -111,6 +111,31 @@ export type PublicViews = {
         ComputedFields: never;
         Relationships: [];
     };
+    "v_evaluator_review_queue_with_scored": {
+        Row: {
+            "applicant_number": string;
+            "application_id": string;
+            "application_status": PublicEnums["application_status"];
+            "applied_at": string;
+            "job_id": string;
+            "job_title": string;
+            "position_title": string | null;
+            "position_track": string | null;
+            "review_kind": "INITIAL" | "REREVIEW" | "ASSESSMENT";
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
+    "v_evaluator_review_queue_with_scored_summary": {
+        Row: {
+            "job_id": string;
+            "job_title": string;
+            "rereview_count": number;
+            "waiting_count": number;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
     "v_anonymized_document_metrics": {
         Row: {
             "document_id": string;

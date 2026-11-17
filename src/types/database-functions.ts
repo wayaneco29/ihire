@@ -53,11 +53,10 @@ export type PublicFunctions = {
         };
         Returns: boolean;
     };
-    "save_application_criterion_score": {
+    "save_application_assessment_scores": {
         Args: {
             "p_application_id": string;
-            "p_criterion_id": string;
-            "p_points": number;
+            "p_scores": Json;
         };
         Returns: undefined;
     };
@@ -107,6 +106,12 @@ export type PublicFunctions = {
         Args: {
             "target_application_id": string;
             "target_decision": string;
+        };
+        Returns: string;
+    };
+    "hire_qualified_applicant": {
+        Args: {
+            "p_application_id": string;
         };
         Returns: string;
     };

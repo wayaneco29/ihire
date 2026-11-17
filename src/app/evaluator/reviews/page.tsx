@@ -47,12 +47,12 @@ export default async function EvaluatorReviewsPage({
 
   const [jobsResult, applicantLookupResult] = await Promise.all([
     evaluator.supabase
-      .from("v_evaluator_review_queue_summary")
+      .from("v_evaluator_review_queue_with_scored_summary")
       .select("job_id, job_title, waiting_count, rereview_count")
       .order("waiting_count", { ascending: false }),
     validApplicantNumber
       ? evaluator.supabase
-          .from("v_evaluator_review_queue")
+          .from("v_evaluator_review_queue_with_scored")
           .select(
             "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
           )
@@ -63,7 +63,7 @@ export default async function EvaluatorReviewsPage({
 
   const queueQuery = selectedJobId
     ? evaluator.supabase
-        .from("v_evaluator_review_queue")
+        .from("v_evaluator_review_queue_with_scored")
         .select(
           "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
           { count: "exact" },

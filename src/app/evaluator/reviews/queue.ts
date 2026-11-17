@@ -4,6 +4,7 @@ export const REVIEW_QUEUE_STATUS_OPTIONS = [
   { value: "SUBMITTED", label: "Submitted" },
   { value: "UNDER_EVALUATION", label: "Under evaluation" },
   { value: "ASSESSMENT_SCHEDULED", label: "Assessment scheduled" },
+  { value: "ASSESSMENT_SCORED", label: "Assessment scored" },
   { value: "QUALIFIED", label: "Qualified" },
   { value: "NOT_QUALIFIED", label: "Not qualified" },
 ] as const;

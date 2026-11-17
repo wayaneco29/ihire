@@ -63,7 +63,7 @@ export default async function ApplicantApplicationsPage() {
       : "Position not recorded",
   }));
   const inReviewCount = list.filter((application) =>
-    ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED"].includes(
+    ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED", "ASSESSMENT_SCORED"].includes(
       application.status,
     ),
   ).length;

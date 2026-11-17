@@ -37,7 +37,9 @@ export function ApplicationAssessmentScheduleForm({
       scheduledAt: formatPhilippineDateTimeInput(scheduledAt),
     },
   });
-  const isFinal = ["HIRED", "REJECTED"].includes(applicationStatus);
+  const isFinal = [
+    "ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED", "HIRED", "NOT_SELECTED", "REJECTED",
+  ].includes(applicationStatus);
 
   function submit(values: ApplicationAssessmentScheduleValues) {
     setMessage(null);
@@ -71,8 +73,8 @@ export function ApplicationAssessmentScheduleForm({
         </p>
       ) : isFinal ? (
         <p className="mt-4 text-sm text-muted">
-          The application has a final hiring decision and can no longer be
-          scheduled.
+          This assessment has already been scored or decided and can no longer
+          be scheduled.
         </p>
       ) : (
         <form

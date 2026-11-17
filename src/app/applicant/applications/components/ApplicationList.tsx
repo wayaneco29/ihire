@@ -141,6 +141,7 @@ export function ApplicationList({
                   "QUALIFIED",
                   "HIRED",
                   "NOT_QUALIFIED",
+                  "NOT_SELECTED",
                   "REJECTED",
                 ].includes(application.status) && (
                   <WorkflowStatusTag status={application.status} />

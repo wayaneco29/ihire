@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { FormSelect } from "@/components/form/FormSelect";
 import { FormTextArea } from "@/components/form/FormTextArea";
 import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
@@ -14,11 +13,6 @@ import {
   applicationEvaluationSchema,
   type ApplicationEvaluationValues,
 } from "../schema";
-
-const evaluationOptions = [
-  { label: "Qualified", value: "QUALIFIED" },
-  { label: "Not qualified", value: "NOT_QUALIFIED" },
-];
 
 export function ApplicationEvaluationPanel({
   applicationId,
@@ -46,7 +40,6 @@ export function ApplicationEvaluationPanel({
     startTransition(async () => {
       const result = await submitApplicationEvaluation({
         applicationId,
-        result: values.result,
         remarks: values.remarks,
       });
       setMessage(result.message);
@@ -55,16 +48,17 @@ export function ApplicationEvaluationPanel({
   }
 
   const isFinal =
-    applicationStatus === "HIRED" || applicationStatus === "REJECTED";
+    applicationStatus === "HIRED" ||
+    applicationStatus === "NOT_SELECTED" ||
+    applicationStatus === "REJECTED";
 
   return (
     <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-ink">Application evaluation</h2>
+          <h2 className="font-semibold text-ink">Evaluator decision</h2>
           <p className="mt-1 text-sm text-muted">
-            Required document types must be verified before you submit an
-            assessment.
+            Qualifying the applicant forwards them to HR for ranking.
           </p>
         </div>
         {previousEvaluation && (
@@ -99,14 +93,6 @@ export function ApplicationEvaluationPanel({
           className="mt-5 space-y-4 border-t border-line-subtle pt-5"
           onSubmit={form.handleSubmit(submit)}
         >
-          <FormSelect
-            control={form.control}
-            label="Assessment result"
-            name="result"
-            options={evaluationOptions}
-            placeholder="Choose a result"
-            required
-          />
           <FormTextArea
             control={form.control}
             label="Evaluation remarks"
@@ -121,11 +107,11 @@ export function ApplicationEvaluationPanel({
             type="submit"
             variant="filled"
           >
-            {pending ? "Saving assessment…" : "Save assessment"}
+            {pending ? "Qualifying applicant…" : "Qualify and forward to HR"}
           </Button>
           {message && (
             <p
-              className={`text-sm ${message === "Application evaluation saved." ? "text-primary" : "text-danger"}`}
+              className={`text-sm ${message.startsWith("Applicant qualified") ? "text-primary" : "text-danger"}`}
               role="status"
             >
               {message}

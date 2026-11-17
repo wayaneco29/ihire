@@ -1,17 +1,9 @@
-const DASHBOARD_STAGES = [
-  "Submitted",
-  "Under evaluation",
-  "Assessment scheduled",
-  "Qualified",
-  "Hired",
-];
-
 const APPLICATION_STAGES = [
   "Submitted",
   "Under evaluation",
   "Assessment",
   "Qualified",
-  "Final outcome",
+  "Hired",
 ];
 
 type ApplicationProgressProps = {
@@ -24,6 +16,7 @@ function getApplicationStage(status: string) {
     case "UNDER_EVALUATION":
       return 1;
     case "ASSESSMENT_SCHEDULED":
+    case "ASSESSMENT_SCORED":
       return 2;
     case "QUALIFIED":
       return 3;
@@ -32,9 +25,23 @@ function getApplicationStage(status: string) {
     case "NOT_QUALIFIED":
     case "REJECTED":
       return 3;
+    case "NOT_SELECTED":
+      return 4;
     default:
       return 0;
   }
+}
+
+function getStageLabel(stage: string, status: string, index: number) {
+  if (index === 3 && ["NOT_QUALIFIED", "REJECTED"].includes(status)) {
+    return "Rejected";
+  }
+
+  if (index === 4 && status === "NOT_SELECTED") {
+    return "Not selected";
+  }
+
+  return stage;
 }
 
 export function ApplicationProgress({
@@ -42,17 +49,11 @@ export function ApplicationProgress({
   variant = "segments",
 }: ApplicationProgressProps) {
   const activeStage = getApplicationStage(status);
-  const isUnsuccessful = ["NOT_QUALIFIED", "REJECTED"].includes(status);
-  const stages = (
-    variant === "milestones" ? APPLICATION_STAGES : DASHBOARD_STAGES
-  ).map((stage, index) =>
-    isUnsuccessful && index === activeStage
-      ? status === "REJECTED"
-        ? variant === "milestones"
-          ? "Rejected"
-          : "Not selected"
-        : "Not qualified"
-      : stage,
+  const isUnsuccessful = ["NOT_QUALIFIED", "NOT_SELECTED", "REJECTED"].includes(
+    status,
+  );
+  const stages = APPLICATION_STAGES.map((stage, index) =>
+    getStageLabel(stage, status, index),
   );
   const accessibleStatus = status.toLowerCase().replaceAll("_", " ");
 

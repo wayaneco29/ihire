@@ -19,7 +19,7 @@ import {
 } from "@/utils/philippine-time";
 import { ApplicationCriterionScoresForm } from "../applications/components/ApplicationCriterionScoresForm";
 
-export default function EvaluatorDemoTeachingPage(props: {
+export default function EvaluationSchedulesPage(props: {
   searchParams: Promise<{
     applicantNumber?: string | string[];
     applicationId?: string | string[];
@@ -69,6 +69,7 @@ export async function TeachingAssessmentPage({
     .from("applications")
     .select("id, job_id, scheduled_assessment_at")
     .eq("assigned_evaluator_id", evaluator.user.id)
+    .eq("status", "ASSESSMENT_SCHEDULED")
     .gte("scheduled_assessment_at", `${date}T00:00:00+08:00`)
     .lt("scheduled_assessment_at", `${nextDate}T00:00:00+08:00`)
     .order("scheduled_assessment_at", { ascending: true });
@@ -227,12 +228,20 @@ export async function TeachingAssessmentPage({
       <PageHeader
         description="Review scheduled teaching assessments and record points for each activity."
         eyebrow="Evaluator workspace"
-        title="Teaching assessment points"
+        title="Evaluation Schedules"
       />
+      {showSchedule && (
+        <Link
+          className="mb-4 inline-flex min-h-10 items-center text-sm font-semibold text-primary hover:text-primary-dark"
+          href="/evaluator/reviews"
+        >
+          Review scored applicants
+        </Link>
+      )}
       {!showSchedule ? (
         <Link
           className="inline-flex min-h-11 items-center gap-2 text-primary text-sm px-4 py-1.5 hover:bg-primary-light rounded-sm transition-colors"
-          href={`/evaluator/demo-teaching?date=${date}`}
+          href={`/evaluator/evaluation-schedules?date=${date}`}
         >
           <ArrowLeftIcon aria-hidden="true" className="size-4" /> Back to
           schedule
@@ -259,21 +268,21 @@ export async function TeachingAssessmentPage({
             >
               <Link
                 className="inline-flex min-h-10 items-center rounded-sm border border-line px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
-                href={`/evaluator/demo-teaching?date=${shiftIsoDate(date, -1)}`}
+                href={`/evaluator/evaluation-schedules?date=${shiftIsoDate(date, -1)}`}
               >
                 Previous day
               </Link>
               {date !== today && (
                 <Link
                   className="inline-flex min-h-10 items-center rounded-sm border border-line px-3 text-sm font-semibold text-primary hover:bg-primary-light"
-                  href="/evaluator/demo-teaching"
+                  href="/evaluator/evaluation-schedules"
                 >
                   Today
                 </Link>
               )}
               <Link
                 className="inline-flex min-h-10 items-center rounded-sm border border-line px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
-                href={`/evaluator/demo-teaching?date=${nextDate}`}
+                href={`/evaluator/evaluation-schedules?date=${nextDate}`}
               >
                 Next day
               </Link>
@@ -288,8 +297,8 @@ export async function TeachingAssessmentPage({
             </p>
           ) : teachingSchedule.length === 0 ? (
             <p className="p-5 text-sm text-muted">
-              No teaching applicants are scheduled for this day. Choose another
-              date to review upcoming assessments.
+              No teaching applicants are awaiting assessment on this day.
+              Choose another date to review upcoming assessments.
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -349,7 +358,7 @@ export async function TeachingAssessmentPage({
                       <td className="px-5 py-4 text-right">
                         <Link
                           className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-                          href={`/evaluator/demo-teaching/${row.id}?date=${date}&applicantNumber=${encodeURIComponent(row.applicant.applicant_number)}`}
+                          href={`/evaluator/evaluation-schedules/${row.id}?date=${date}&applicantNumber=${encodeURIComponent(row.applicant.applicant_number)}`}
                         >
                           Enter points
                         </Link>
@@ -413,7 +422,7 @@ export async function TeachingAssessmentPage({
                   </div>
                   <Link
                     className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-                    href={`/evaluator/demo-teaching?date=${date}&applicantNumber=${encodeURIComponent(applicantNumber)}&applicationId=${application.application_id}`}
+                    href={`/evaluator/evaluation-schedules?date=${date}&applicantNumber=${encodeURIComponent(applicantNumber)}&applicationId=${application.application_id}`}
                   >
                     View this job
                   </Link>
@@ -506,6 +515,7 @@ export async function TeachingAssessmentPage({
                     ) : (
                       <ApplicationCriterionScoresForm
                         applicationId={application.application_id}
+                        returnHref={`/evaluator/evaluation-schedules?date=${date}`}
                         applicationStatus={application.application_status}
                         criteria={assessmentCriteria.map(
                           ({ criterion, weight }) => ({

@@ -43,6 +43,7 @@ async function HrDashboardContent() {
         .from("v_anonymized_applicants")
         .select("job_id, application_status")
         .in("job_id", jobIds)
+        .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
     : { data: [], error: null };
 
   if (postingsError || applicationsResult.error) {
@@ -126,10 +127,8 @@ async function HrDashboardContent() {
       };
     });
 
-  const pendingCount = applications.filter((application) =>
-    ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED"].includes(
-      application.application_status,
-    ),
+  const pendingCount = applications.filter(
+    (application) => application.application_status === "QUALIFIED",
   ).length;
   const hiredCount = applications.filter(
     (application) => application.application_status === "HIRED",

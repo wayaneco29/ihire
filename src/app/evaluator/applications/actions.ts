@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getEvaluatorContext } from "@/lib/auth/server";
-import { APPLICATION_EVALUATION_RESULTS } from "./schema";
+import type { Json } from "@/types/database";
 
 export async function scheduleApplicationAssessment(input: {
   applicationId: string;
@@ -41,10 +41,10 @@ export async function scheduleApplicationAssessment(input: {
       message: "This application is no longer available for review.",
     };
   }
-  if (["HIRED", "REJECTED"].includes(application.application_status)) {
+  if (["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED", "HIRED", "NOT_SELECTED", "REJECTED"].includes(application.application_status)) {
     return {
       success: false,
-      message: "This application already has a final hiring decision.",
+      message: "This assessment has already been scored or decided.",
     };
   }
 
@@ -71,16 +71,13 @@ export async function scheduleApplicationAssessment(input: {
 
 export async function submitApplicationEvaluation(input: {
   applicationId: string;
-  result: string;
   remarks: string;
 }): Promise<{ success: boolean; message: string }> {
   if (
     !input ||
     typeof input !== "object" ||
     typeof input.applicationId !== "string" ||
-    typeof input.result !== "string" ||
     !/^[0-9a-f-]{36}$/i.test(input.applicationId) ||
-    !APPLICATION_EVALUATION_RESULTS.includes(input.result as (typeof APPLICATION_EVALUATION_RESULTS)[number]) ||
     typeof input.remarks !== "string" ||
     input.remarks.length > 2000
   ) {
@@ -94,14 +91,22 @@ export async function submitApplicationEvaluation(input: {
 
   const { data: application, error: applicationError } = await evaluator.supabase
     .from("v_anonymized_applicants")
-    .select("application_id, application_status")
+    .select("application_id, application_status, position_track, job_id")
     .eq("application_id", input.applicationId)
     .maybeSingle();
   if (applicationError || !application) {
     return { success: false, message: "This application is no longer available for review." };
   }
-  if (["HIRED", "REJECTED"].includes(application.application_status)) {
-    return { success: false, message: "This application already has a final hiring decision." };
+  if (["HIRED", "NOT_SELECTED", "REJECTED"].includes(application.application_status)) {
+    return { success: false, message: "This application already has a final hiring outcome." };
+  }
+  if (
+    application.position_track === "TEACHING" &&
+    !["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
+      application.application_status,
+    )
+  ) {
+    return { success: false, message: "Submit both assessment scores before making the evaluation decision." };
   }
 
   const [requiredTypesResult, documentsResult] = await Promise.all([
@@ -140,17 +145,32 @@ export async function submitApplicationEvaluation(input: {
   const { error } = await evaluator.supabase.from("application_evaluations").insert({
     application_id: input.applicationId,
     evaluator_id: evaluator.user.id,
-    result: input.result,
+    result: "QUALIFIED",
     remarks: input.remarks.trim() || null,
   });
 
   if (error) {
+    if (error.message.includes("All hiring slots have been filled")) {
+      return {
+        success: false,
+        message: "All hiring slots have been filled. This application can no longer be qualified.",
+      };
+    }
     return { success: false, message: "The evaluation could not be saved. Refresh and try again." };
   }
 
   revalidatePath(`/evaluator/applications/${input.applicationId}`);
   revalidatePath("/evaluator/reviews");
-  return { success: true, message: "Application evaluation saved." };
+  revalidatePath(`/applicant/applications/${input.applicationId}`);
+  revalidatePath("/applicant/applications");
+  revalidatePath("/applicant/dashboard");
+  revalidatePath("/hr/dashboard");
+  revalidatePath("/hr/postings");
+  revalidatePath(`/hr/postings/${application.job_id}`);
+  return {
+    success: true,
+    message: "Applicant qualified and forwarded to HR for ranking.",
+  };
 }
 
 export async function submitApplicationCriterionScores(input: {
@@ -200,8 +220,8 @@ export async function submitApplicationCriterionScores(input: {
   ) {
     return { success: false, message: "This application is no longer available for review." };
   }
-  if (["HIRED", "REJECTED"].includes(applicationView.data.application_status)) {
-    return { success: false, message: "This application already has a final hiring decision." };
+  if (["HIRED", "NOT_SELECTED", "REJECTED"].includes(applicationView.data.application_status)) {
+    return { success: false, message: "This application already has a final hiring outcome." };
   }
   if (!applicationResult.data.position_id) {
     return { success: false, message: "A position must be selected before criterion scores can be entered." };
@@ -282,16 +302,17 @@ export async function submitApplicationCriterionScores(input: {
     });
   }
 
-  for (const score of validatedScores) {
-    const { error: saveError } = await evaluator.supabase.rpc(
-      "save_application_criterion_score",
-      {
-        p_application_id: input.applicationId,
-        p_criterion_id: score.criterionId,
-        p_points: score.points,
-      },
-    );
-    if (!saveError) continue;
+  const { error: saveError } = await evaluator.supabase.rpc(
+    "save_application_assessment_scores",
+    {
+      p_application_id: input.applicationId,
+      p_scores: validatedScores.map((score) => ({
+        criterion_id: score.criterionId,
+        points: score.points,
+      })) as Json,
+    },
+  );
+  if (saveError) {
     const message = saveError.message.includes("another evaluator")
       ? "This application already has scores from another evaluator."
       : saveError.message.includes("no longer assigned")
@@ -302,6 +323,12 @@ export async function submitApplicationCriterionScores(input: {
 
   revalidatePath(`/evaluator/applications/${input.applicationId}`);
   revalidatePath("/evaluator/reviews");
-  revalidatePath("/evaluator/demo-teaching");
-  return { success: true, message: "Criterion scores saved." };
+  revalidatePath("/evaluator/evaluation-schedules");
+  revalidatePath(`/applicant/applications/${input.applicationId}`);
+  revalidatePath("/applicant/applications");
+  revalidatePath("/applicant/dashboard");
+  return {
+    success: true,
+    message: "Assessment scores saved. Review the applicant and qualify them to forward their application to HR.",
+  };
 }

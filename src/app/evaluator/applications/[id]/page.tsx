@@ -135,7 +135,7 @@ export default async function EvaluatorApplicationReviewPage({
       .maybeSingle(),
     jobId && jobId === application.job_id
       ? evaluator.supabase
-          .from("v_evaluator_review_queue")
+          .from("v_evaluator_review_queue_with_scored")
           .select(
             "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
           )
@@ -171,6 +171,29 @@ export default async function EvaluatorApplicationReviewPage({
     application.application_status === "ASSESSMENT_SCHEDULED" &&
     Boolean(schedule?.scheduled_assessment_at) &&
     requiredDocumentsVerified;
+  const readyForEvaluation =
+    application.position_track === "TEACHING"
+      ? ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
+          application.application_status,
+        )
+      : readyForAssessment || Boolean(evaluationResult.data);
+  const submittedAssessment =
+    application.position_track === "TEACHING" &&
+    ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
+      application.application_status,
+    )
+      ? await evaluator.supabase
+          .from("application_criterion_scores")
+          .select("points, criterion:position_criteria(criterion_key, title)")
+          .eq("application_id", id)
+      : { data: [], error: null };
+  const submittedAssessmentScores = (submittedAssessment.data ?? []).filter(
+    (score) =>
+      score.criterion?.criterion_key === "CLASSROOM_OBSERVATION" ||
+      score.criterion?.criterion_key === "TEACHER_REFLECTION",
+  );
+  const assessmentScoresReady =
+    !submittedAssessment.error && submittedAssessmentScores.length === 2;
 
   const publicTeachingExperience = calculatePublicTeachingExperience(
     experienceResult.data ?? [],
@@ -347,7 +370,28 @@ export default async function EvaluatorApplicationReviewPage({
           scheduledAt={schedule?.scheduled_assessment_at ?? null}
         />
       </div>
-      {readyForAssessment || evaluationResult.data ? (
+      {application.position_track === "TEACHING" &&
+        ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
+          application.application_status,
+        ) && (
+          <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
+            <h2 className="font-semibold text-ink">Submitted assessment points</h2>
+            {submittedAssessment.error ? (
+              <p className="mt-3 text-sm text-danger">Scores could not be loaded. Refresh before making a decision.</p>
+            ) : (
+              <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+                {submittedAssessmentScores.map((score) => (
+                  <div key={score.criterion!.criterion_key}>
+                    <dt className="text-sm text-muted">{score.criterion!.title}</dt>
+                    <dd className="mt-1 text-lg font-semibold text-ink">{score.points} points</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </section>
+        )}
+      {readyForEvaluation &&
+      (application.position_track !== "TEACHING" || assessmentScoresReady) ? (
         <div className="mt-5">
           <ApplicationEvaluationPanel
             applicationId={id}
@@ -357,8 +401,9 @@ export default async function EvaluatorApplicationReviewPage({
         </div>
       ) : (
         <p className="mt-5 rounded-sm border border-line bg-panel-muted p-4 text-sm text-muted">
-          The evaluation panel will appear after all required documents are
-          verified and an assessment has been scheduled.
+          {application.position_track === "TEACHING"
+            ? "The evaluator decision will appear after both assessment scores are submitted."
+            : "The evaluation panel will appear after all required documents are verified and an assessment has been scheduled."}
         </p>
       )}
       <Link
