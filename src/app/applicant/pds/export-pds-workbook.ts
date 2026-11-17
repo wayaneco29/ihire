@@ -326,7 +326,11 @@ function fillEligibilityAndWork(
     const row = 18 + index;
     if (row <= 45) {
       setDate(sheet, `A${row}`, entry.date_from);
-      setCell(sheet, `C${row}`, entry.date_to ? displayDate(entry.date_to) : "Present");
+      setCell(
+        sheet,
+        `C${row}`,
+        entry.date_to ? displayDate(entry.date_to) : "Present",
+      );
       setCell(sheet, `D${row}`, entry.position_title);
       setCell(sheet, `G${row}`, entry.agency_company);
       setCell(sheet, `J${row}`, entry.monthly_salary);
@@ -481,17 +485,26 @@ function fillQuestionnaireAndReferences(
     data.questionnaire.map((entry) => [entry.question_code, entry]),
   );
   const locations: Record<string, string> = {
-    "34A": "I11", "34B": "I12", "35A": "I15",
-    "35B": "I22", "36": "I25", "37": "I29",
-    "38A": "K32", "38B": "K35", "39": "I39",
-    "40A": "I44", "40B": "I46", "40C": "I48",
+    "34A": "I11",
+    "34B": "I12",
+    "35A": "I15",
+    "35B": "I22",
+    "36": "I25",
+    "37": "I29",
+    "38A": "K32",
+    "38B": "K35",
+    "39": "I39",
+    "40A": "I44",
+    "40B": "I46",
+    "40C": "I48",
   };
   for (const [code, location] of Object.entries(locations)) {
     const entry = answers.get(code as Questionnaire["question_code"]);
     if (!entry?.answer) continue;
     const details =
       code === "39"
-        ? COUNTRY_OPTIONS.find((option) => option.value === entry.details)?.label ?? entry.details
+        ? (COUNTRY_OPTIONS.find((option) => option.value === entry.details)
+            ?.label ?? entry.details)
         : code === "40B" || code === "40C"
           ? entry.id_no
           : entry.details;
@@ -539,13 +552,22 @@ function fillQuestionnaireAndReferences(
 }
 
 // IDs come from the labeled YES/NO controls and their anchors in C4.
-const questionnaireCheckboxes: Record<Questionnaire["question_code"], readonly [number, number]> = {
-  "34A": [1025, 1026], "34B": [1027, 1028],
-  "35A": [1029, 1030], "35B": [1031, 1032],
-  "36": [1033, 1034], "37": [1035, 1036],
-  "38A": [1050, 1051], "38B": [1052, 1053],
-  "39": [1037, 1038], "40A": [1039, 1042],
-  "40B": [1040, 1043], "40C": [1041, 1044],
+const questionnaireCheckboxes: Record<
+  Questionnaire["question_code"],
+  readonly [number, number]
+> = {
+  "34A": [1025, 1026],
+  "34B": [1027, 1028],
+  "35A": [1029, 1030],
+  "35B": [1031, 1032],
+  "36": [1033, 1034],
+  "37": [1035, 1036],
+  "38A": [1050, 1051],
+  "38B": [1052, 1053],
+  "39": [1037, 1038],
+  "40A": [1039, 1042],
+  "40B": [1040, 1043],
+  "40C": [1041, 1044],
 };
 
 async function fillQuestionnaireControls(zip: JSZip, entries: Questionnaire[]) {
@@ -553,7 +575,8 @@ async function fillQuestionnaireControls(zip: JSZip, entries: Questionnaire[]) {
   const allIds = new Set(Object.values(questionnaireCheckboxes).flat());
   for (const entry of entries) {
     const pair = questionnaireCheckboxes[entry.question_code];
-    if (pair && typeof entry.answer === "boolean") checked.add(pair[entry.answer ? 0 : 1]);
+    if (pair && typeof entry.answer === "boolean")
+      checked.add(pair[entry.answer ? 0 : 1]);
   }
   const read = async (path: string) => {
     const file = zip.file(path);
@@ -562,13 +585,22 @@ async function fillQuestionnaireControls(zip: JSZip, entries: Questionnaire[]) {
   };
   const vmlPath = "xl/drawings/vmlDrawing2.vml";
   const vml = await read(vmlPath);
-  zip.file(vmlPath, vml.replace(/<v:shape\b([^>]*\bid="Check_x0020_Box_x0020_(\d+)"[^>]*)>([\s\S]*?)<\/v:shape>/g,
-    (shape, attributes: string, id: string, body: string) => {
-      if (!allIds.has(Number(id))) return shape;
-      const content = body.replace(/<x:Checked>[^<]*<\/x:Checked>/g, "")
-        .replace("</x:ClientData>", `${checked.has(Number(id)) ? "<x:Checked>1</x:Checked>" : ""}</x:ClientData>`);
-      return `<v:shape${attributes}>${content}</v:shape>`;
-    }));
+  zip.file(
+    vmlPath,
+    vml.replace(
+      /<v:shape\b([^>]*\bid="Check_x0020_Box_x0020_(\d+)"[^>]*)>([\s\S]*?)<\/v:shape>/g,
+      (shape, attributes: string, id: string, body: string) => {
+        if (!allIds.has(Number(id))) return shape;
+        const content = body
+          .replace(/<x:Checked>[^<]*<\/x:Checked>/g, "")
+          .replace(
+            "</x:ClientData>",
+            `${checked.has(Number(id)) ? "<x:Checked>1</x:Checked>" : ""}</x:ClientData>`,
+          );
+        return `<v:shape${attributes}>${content}</v:shape>`;
+      },
+    ),
+  );
 
   // Excel also stores checkbox state in control properties; keep both formats
   // consistent so opening the file does not restore the template's old state.
@@ -578,20 +610,28 @@ async function fillQuestionnaireControls(zip: JSZip, entries: Questionnaire[]) {
   for (const match of relationships.matchAll(/<Relationship\b[^>]*\/>/g)) {
     const id = /\bId="([^"]+)"/.exec(match[0])?.[1];
     const target = /\bTarget="([^"]+)"/.exec(match[0])?.[1];
-    if (id && target) targets.set(id, posix.normalize(`xl/worksheets/${target}`));
+    if (id && target)
+      targets.set(id, posix.normalize(`xl/worksheets/${target}`));
   }
   for (const match of sheet.matchAll(/<control\b[^>]*>/g)) {
     const id = Number(/\bname="Check Box (\d+)"/.exec(match[0])?.[1]);
     if (!allIds.has(id)) continue;
     const relationship = /\br:id="([^"]+)"/.exec(match[0])?.[1];
     const path = relationship ? targets.get(relationship) : undefined;
-    if (!path?.startsWith("xl/ctrlProps/")) throw new Error(`PDS checkbox ${id} has no control properties.`);
+    if (!path?.startsWith("xl/ctrlProps/"))
+      throw new Error(`PDS checkbox ${id} has no control properties.`);
     const xml = await read(path);
     // Match Excel's own serialization: place checked after objectType and
     // omit it for unchecked controls. The previous explicit Unchecked output
     // caused Excel to reject the downloaded workbook.
-    zip.file(path, xml.replace(/<formControlPr\b([^>]*?)(\/?>)/, (_match, attributes: string, ending: string) =>
-      `<formControlPr${attributes.replace(/\s+checked="[^"]*"/g, "").replace(/\bobjectType="CheckBox"/, () => `objectType="CheckBox"${checked.has(id) ? ' checked="Checked"' : ""}`)}${ending}`));
+    zip.file(
+      path,
+      xml.replace(
+        /<formControlPr\b([^>]*?)(\/?>)/,
+        (_match, attributes: string, ending: string) =>
+          `<formControlPr${attributes.replace(/\s+checked="[^"]*"/g, "").replace(/\bobjectType="CheckBox"/, () => `objectType="CheckBox"${checked.has(id) ? ' checked="Checked"' : ""}`)}${ending}`,
+      ),
+    );
   }
 }
 
@@ -603,22 +643,32 @@ async function removeInvalidC4PrinterSettings(zip: JSZip) {
   const relsPath = "xl/worksheets/_rels/sheet4.xml.rels";
   const sheetFile = zip.file(sheetPath);
   const relsFile = zip.file(relsPath);
-  if (!sheetFile || !relsFile) throw new Error("PDS C4 worksheet relationships are missing.");
+  if (!sheetFile || !relsFile)
+    throw new Error("PDS C4 worksheet relationships are missing.");
   let sheet = await sheetFile.async("string");
   const ids = new Set<string>();
-  const relationships = (await relsFile.async("string")).replace(/<Relationship\b[^>]*\/>/g, (relationship) => {
-    if (!/\bType="[^"]*\/printerSettings"/.test(relationship)) return relationship;
-    const id = /\bId="([^"]+)"/.exec(relationship)?.[1];
-    const target = /\bTarget="([^"]+)"/.exec(relationship)?.[1];
-    if (!id || !target) throw new Error("Malformed PDS C4 printer relationship.");
-    const path = posix.normalize(`xl/worksheets/${target}`);
-    if (!path.startsWith("xl/printerSettings/")) throw new Error("Unexpected PDS printer settings path.");
-    ids.add(id);
-    zip.remove(path);
-    return "";
-  });
+  const relationships = (await relsFile.async("string")).replace(
+    /<Relationship\b[^>]*\/>/g,
+    (relationship) => {
+      if (!/\bType="[^"]*\/printerSettings"/.test(relationship))
+        return relationship;
+      const id = /\bId="([^"]+)"/.exec(relationship)?.[1];
+      const target = /\bTarget="([^"]+)"/.exec(relationship)?.[1];
+      if (!id || !target)
+        throw new Error("Malformed PDS C4 printer relationship.");
+      const path = posix.normalize(`xl/worksheets/${target}`);
+      if (!path.startsWith("xl/printerSettings/"))
+        throw new Error("Unexpected PDS printer settings path.");
+      ids.add(id);
+      zip.remove(path);
+      return "";
+    },
+  );
   sheet = sheet.replace(/<pageSetup\b[^>]*>/g, (tag) =>
-    tag.replace(/\s+r:id="([^"]+)"/g, (attribute, id: string) => ids.has(id) ? "" : attribute));
+    tag.replace(/\s+r:id="([^"]+)"/g, (attribute, id: string) =>
+      ids.has(id) ? "" : attribute,
+    ),
+  );
   zip.file(sheetPath, sheet);
   zip.file(relsPath, relationships);
 }
@@ -1051,27 +1101,6 @@ export async function createPdsWorkbook(
     zip.file(
       `xl/worksheets/sheet${index + 1}.xml`,
       applySheetCells(xml, sheets[name as keyof typeof sheets]),
-    );
-  }
-
-  if (continuations.length) {
-    const continuationFile = zip.file("xl/worksheets/sheet5.xml");
-    const workbookFile = zip.file("xl/workbook.xml");
-    if (!continuationFile || !workbookFile)
-      throw new Error("PDS continuation worksheet is missing.");
-    zip.file(
-      "xl/worksheets/sheet5.xml",
-      setContinuationSheet(
-        await continuationFile.async("string"),
-        continuations,
-      ),
-    );
-    zip.file(
-      "xl/workbook.xml",
-      (await workbookFile.async("string")).replace(
-        'name="Sheet1"',
-        'name="PDS Continuation"',
-      ),
     );
   }
 
