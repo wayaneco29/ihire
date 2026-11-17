@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRightIcon, BriefcaseIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
@@ -36,30 +37,33 @@ export function ReviewQueueList({
     }
 
     return (
-      <ul className="mt-7 grid gap-4 xl:grid-cols-2">
+      <section aria-labelledby="postings-heading" className="mt-7">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+          <div><h2 className="text-lg font-semibold text-ink" id="postings-heading">Job postings</h2><p className="mt-1 text-sm text-muted">Choose a posting to review its applicants.</p></div>
+          <p className="text-sm tabular-nums text-muted">{jobs.length} {jobs.length === 1 ? "posting" : "postings"}</p>
+        </div>
+      <ul className="grid gap-3 xl:grid-cols-2">
         {[...jobs]
           .sort((first, second) => second.waiting_count - first.waiting_count)
           .map((job) => (
             <li key={job.job_id}>
               <Link
-                className="group flex h-full flex-col rounded-sm border border-line bg-panel p-5 transition hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-6"
+                className="group flex h-full flex-col rounded-sm border border-line bg-panel p-5 transition hover:border-primary hover:bg-primary-light/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-6"
                 href={`/evaluator/reviews?jobId=${job.job_id}`}
               >
                 <div className="flex w-full items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                      Job posting
-                    </p>
-                    <h2 className="mt-2 text-lg font-semibold text-ink group-hover:text-primary">
+                    <span className="grid size-9 place-items-center rounded-sm bg-panel-muted text-muted group-hover:bg-primary-light group-hover:text-primary"><BriefcaseIcon aria-hidden="true" className="size-5" /></span>
+                    <h3 className="mt-3 text-lg font-semibold leading-snug text-ink group-hover:text-primary">
                       {job.job_title}
-                    </h2>
+                    </h3>
                   </div>
                   <span className="shrink-0 rounded-sm bg-primary-light px-3 py-2 text-center text-primary">
                     <span className="block text-xl font-bold leading-none">
                       {job.waiting_count}
                     </span>
                     <span className="mt-1 block text-[11px] font-semibold">
-                      pending
+                      waiting
                     </span>
                   </span>
                 </div>
@@ -76,18 +80,14 @@ export function ReviewQueueList({
                   )}
                 </div>
                 <span className="mt-5 inline-flex min-h-11 items-center font-semibold text-primary">
-                  View applicants{" "}
-                  <span
-                    aria-hidden="true"
-                    className="ml-2 transition group-hover:translate-x-1"
-                  >
-                    →
-                  </span>
+                  View applicants
+                  <ArrowRightIcon aria-hidden="true" className="ml-2 size-4 transition group-hover:translate-x-1" />
                 </span>
               </Link>
             </li>
           ))}
       </ul>
+      </section>
     );
   }
 
@@ -124,7 +124,25 @@ export function ReviewQueueList({
           Open an applicant, then move through this posting&apos;s queue.
         </p>
       </div>
-      <div className="overflow-x-auto">
+      <div className="divide-y divide-line-subtle md:hidden">
+        {applicants.map((item) => (
+          <article className="p-5" key={item.application_id}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-ink">{item.applicant_number}</h3>
+                <p className="mt-1 text-sm text-muted">{item.position_title ? formatPositionLabel(item.position_title, item.position_track ?? "") : "Position not recorded"}</p>
+              </div>
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${item.review_kind === "REREVIEW" ? "bg-warning/10 text-warning" : "bg-primary-light text-primary"}`}>{item.review_kind === "REREVIEW" ? "Re-review" : "Initial"}</span>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
+              <span>Applied {formatDate(item.applied_at)}</span>
+              <WorkflowStatusTag status={item.application_status} />
+            </div>
+            <Link className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}`}>Review applicant <ArrowRightIcon aria-hidden="true" className="size-4" /></Link>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[680px] text-left text-sm">
           <thead className="bg-panel-muted text-xs uppercase tracking-wide text-muted">
             <tr>

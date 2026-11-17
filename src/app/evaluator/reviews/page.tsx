@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  ArrowLeftIcon,
+  ClipboardDocumentCheckIcon,
+} from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEvaluatorContext } from "@/lib/auth/server";
@@ -91,7 +95,7 @@ export default async function EvaluatorReviewsPage({
 
   const jobs = jobsResult.data ?? [];
   const matchingApplications = validApplicantNumber
-    ? applicantLookupResult.data ?? []
+    ? (applicantLookupResult.data ?? [])
     : [];
   if (matchingApplications.length === 1) {
     const application = matchingApplications[0];
@@ -106,13 +110,19 @@ export default async function EvaluatorReviewsPage({
     Math.ceil(waitingCount / REVIEW_QUEUE_PAGE_SIZE),
   );
   if (selectedJobId && page > totalPages && waitingCount > 0) {
-    redirect(
-      `/evaluator/reviews?jobId=${selectedJobId}&page=${totalPages}`,
-    );
+    redirect(`/evaluator/reviews?jobId=${selectedJobId}&page=${totalPages}`);
   }
 
   const applicants = queuePageResult.data ?? [];
   const selectedJob = jobs.find((job) => job.job_id === selectedJobId);
+  const totalWaiting = jobs.reduce(
+    (count, job) => count + job.waiting_count,
+    0,
+  );
+  const totalRereviews = jobs.reduce(
+    (count, job) => count + job.rereview_count,
+    0,
+  );
 
   return (
     <>
@@ -120,10 +130,11 @@ export default async function EvaluatorReviewsPage({
         actions={
           selectedJob ? (
             <Link
-              className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink transition hover:bg-panel-muted"
+              className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink transition hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href="/evaluator/reviews"
             >
-              All job postings
+              <ArrowLeftIcon aria-hidden="true" className="size-4" /> All
+              postings
             </Link>
           ) : undefined
         }
@@ -132,10 +143,51 @@ export default async function EvaluatorReviewsPage({
             ? "Review your assigned applicants in order. The list is paginated to keep the queue responsive."
             : "View the job postings with applications assigned to you."
         }
-        eyebrow={selectedJob ? "Applicants waiting for review" : "Evaluator workspace"}
+        eyebrow={
+          selectedJob ? "Applicants waiting for review" : "Evaluator workspace"
+        }
         title={selectedJob?.job_title ?? "Review queue"}
       />
-      <ApplicantNumberLookup initialApplicantNumber={applicantNumber} />
+      <section
+        aria-label="Review workload"
+        className="mt-6 overflow-hidden rounded-sm border border-line bg-panel"
+      >
+        <div className="flex items-center gap-3 border-b border-line-subtle px-5 py-4">
+          <span className="grid size-10 shrink-0 place-items-center rounded-sm bg-primary-light text-primary">
+            <ClipboardDocumentCheckIcon aria-hidden="true" className="size-5" />
+          </span>
+          <div>
+            <h2 className="text-sm font-semibold text-ink">
+              {selectedJob ? "Posting workload" : "Your review workload"}
+            </h2>
+            <p className="text-xs text-muted">
+              {selectedJob
+                ? "Applications assigned to this posting"
+                : "Across your assigned job postings"}
+            </p>
+          </div>
+        </div>
+        <dl className="grid grid-cols-2 divide-x divide-line-subtle sm:grid-cols-3">
+          <div className="px-5 py-4">
+            <dt className="text-xs text-muted">Waiting</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink">
+              {selectedJob ? waitingCount : totalWaiting}
+            </dd>
+          </div>
+          <div className="px-5 py-4">
+            <dt className="text-xs text-muted">Re-reviews</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink">
+              {selectedJob ? selectedJob.rereview_count : totalRereviews}
+            </dd>
+          </div>
+          <div className="col-span-2 border-t border-line-subtle px-5 py-4 sm:col-span-1 sm:border-t-0">
+            <dt className="text-xs text-muted">Job postings</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink">
+              {selectedJob ? 1 : jobs.length}
+            </dd>
+          </div>
+        </dl>
+      </section>
       {applicantNumber && (
         <section
           aria-live="polite"
