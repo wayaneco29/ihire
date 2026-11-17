@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
@@ -76,6 +76,17 @@ export default async function ApplicantPdsPage() {
   return (
     <>
       <PageHeader
+        actions={
+          submitted ? (
+            <Link
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              href={`/applicant/pds/${submitted.id}/download`}
+            >
+              <ArrowDownTrayIcon aria-hidden="true" className="size-4" />
+              Download PDS
+            </Link>
+          ) : undefined
+        }
         title="Personal Data Sheet"
         description={
           draft
