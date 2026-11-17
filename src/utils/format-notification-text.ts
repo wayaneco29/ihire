@@ -1,10 +1,13 @@
 const NOTIFICATION_STATUS_LABELS: Record<string, string> = {
   ASSESSMENT_SCHEDULED: "Assessment scheduled",
+  APPROVED: "Approved",
   CLOSED: "Closed",
   DRAFT: "Draft",
   FOR_RESUBMISSION: "Needs resubmission",
   FOR_REVIEW: "Under review",
   HIRED: "Hired",
+  INCOMPLETE: "Incomplete",
+  NEEDS_RESUBMISSION: "Needs resubmission",
   NOT_QUALIFIED: "Not qualified",
   OPEN: "Open",
   PENDING: "Pending",

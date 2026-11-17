@@ -130,6 +130,10 @@ export type PublicFunctions = {
         };
         Returns: string;
     };
+    "submit_applicant_documents_for_review": {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+    };
     "update_job_posting_with_positions": {
         Args: {
             "p_deadline": string | null;

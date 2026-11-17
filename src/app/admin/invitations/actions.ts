@@ -22,7 +22,7 @@ function newToken() {
 
 function validationMessage(error: unknown) {
   return error instanceof ValidationError
-    ? error.errors[0] ?? "Check the invitation details."
+    ? (error.errors[0] ?? "Check the invitation details.")
     : "Check the invitation details.";
 }
 
@@ -49,11 +49,28 @@ export async function createInvitation(values: unknown): Promise<ActionResult> {
     invited_by: admin.user.id,
     expires_at: expiresAt,
   });
-
   if (error) {
+    if (error.code === "23505") {
+      return {
+        success: false,
+        message: "An active invitation already exists for this email.",
+      };
+    }
+    if (
+      error.code === "23514" &&
+      error.message.includes("invitations_role_check")
+    ) {
+      return {
+        success: false,
+        message:
+          "Document Reviewer invitations are not enabled in the database yet. Apply the latest database migration and try again.",
+      };
+    }
+
+    console.error("Invitation creation failed.", error);
     return {
       success: false,
-      message: "An active invitation may already exist for this email.",
+      message: "The invitation could not be created. Please try again.",
     };
   }
 
@@ -96,7 +113,10 @@ export async function resendInvitation(id: string): Promise<ActionResult> {
     .select("id")
     .maybeSingle();
   if (error || !data) {
-    return { success: false, message: "Only pending invitations can be resent." };
+    return {
+      success: false,
+      message: "Only pending invitations can be resent.",
+    };
   }
 
   revalidatePath("/admin/invitations");

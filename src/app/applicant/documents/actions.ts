@@ -22,6 +22,42 @@ export type DocumentUploadResult =
   | { success: true; version: number; pdsSynced: boolean }
   | { success: false; message: string };
 
+export type SubmitDocumentsResult =
+  | { success: true; submittedCount: number; message: string }
+  | { success: false; message: string };
+
+export async function submitApplicantDocumentsForReview(): Promise<SubmitDocumentsResult> {
+  const applicant = await getApplicantContext();
+  if (!applicant) {
+    return {
+      success: false,
+      message: "Sign in as an applicant to submit documents.",
+    };
+  }
+
+  const { data: submittedCount, error } = await applicant.supabase.rpc(
+    "submit_applicant_documents_for_review",
+  );
+  if (error || submittedCount === null) {
+    return {
+      success: false,
+      message: "Your documents could not be submitted for review. Please try again.",
+    };
+  }
+
+  revalidatePath("/applicant/documents");
+  revalidatePath("/applicant/jobs");
+  revalidatePath("/applicant/dashboard");
+  return {
+    success: true,
+    submittedCount,
+    message:
+      submittedCount > 0
+        ? `${submittedCount} document${submittedCount === 1 ? "" : "s"} submitted for review.`
+        : "There are no new documents waiting to be submitted.",
+  };
+}
+
 function parseMetric(
   raw: FormDataEntryValue | null,
   max: number,
@@ -176,7 +212,7 @@ export async function uploadApplicantDocument(
       .maybeSingle(),
     applicant.supabase
       .from("documents")
-      .select("version")
+      .select("version, status")
       .eq("applicant_id", applicant.applicant.id)
       .eq("document_type_id", documentTypeId)
       .order("version", { ascending: false })
@@ -203,6 +239,16 @@ export async function uploadApplicantDocument(
         "We could not load the current document version. Refresh and try again.",
     };
   }
+  if (
+    latest?.status === "VERIFIED" &&
+    documentType.name !== TRAINING_CERTIFICATE_DOCUMENT_TYPE
+  ) {
+    return {
+      success: false,
+      message:
+        "This document is verified and locked. Contact the Document Reviewer if it needs to be reopened.",
+    };
+  }
 
   const isTrainingCertificate =
     documentType.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE;
@@ -224,7 +270,7 @@ export async function uploadApplicantDocument(
     const { data: existingDocument, error: existingDocumentError } =
       await applicant.supabase
         .from("documents")
-        .select("id, document_type_id")
+        .select("id, document_type_id, status")
         .eq("id", replacementDocumentId)
         .eq("applicant_id", applicant.applicant.id)
         .maybeSingle();
@@ -241,6 +287,13 @@ export async function uploadApplicantDocument(
       return {
         success: false,
         message: "That certificate is no longer available to update.",
+      };
+    }
+    if (existingDocument.status === "VERIFIED") {
+      return {
+        success: false,
+        message:
+          "This document is verified and locked. It cannot be replaced.",
       };
     }
     const { data: existingReplacement, error: replacementError } =

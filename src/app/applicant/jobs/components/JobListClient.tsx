@@ -72,28 +72,28 @@ export function JobListClient({
     <>
       <section
         aria-label="Filter job postings"
-        className="mt-7 grid gap-2 rounded-2xl border border-line-subtle bg-panel p-2 shadow-card sm:grid-cols-[minmax(0,1fr)_17rem] sm:gap-3 sm:p-3"
+        className="mt-7 grid gap-2 sm:grid-cols-[minmax(0,1fr)_17rem] sm:gap-3"
       >
-        <label className="block min-w-0 rounded-xl focus-within:ring-2 focus-within:ring-primary/40">
+        <label className="block min-w-0 rounded-xl">
           <span className="sr-only">Search job postings</span>
           <Input
-            className="!min-h-[3.75rem] !rounded-xl !border-0 !bg-panel-muted !px-4 !text-base !shadow-none placeholder:!text-muted [&.ant-input-affix-wrapper]:!border-0 [&.ant-input-affix-wrapper]:!bg-panel-muted [&.ant-input-affix-wrapper]:!shadow-none"
             prefix={
               <MagnifyingGlassIcon
                 aria-hidden="true"
                 className="mr-2 size-5 text-muted"
               />
             }
+            className="rounded-sm!"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by title or description"
             type="search"
             value={search}
           />
         </label>
-        <label className="block min-w-0 rounded-xl focus-within:ring-2 focus-within:ring-primary/40">
+        <label className="block min-w-0">
           <span className="sr-only">Filter by application deadline</span>
           <Select
-            className="!h-[3.75rem] w-full [&_.ant-select-selector]:!h-[3.75rem] [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-panel-muted [&_.ant-select-selector]:!px-4 [&_.ant-select-selector]:!shadow-none"
+            className="w-full"
             prefix={
               <CalendarDaysIcon
                 aria-hidden="true"
@@ -142,7 +142,7 @@ export function JobListClient({
             const deadlineMessage = getDeadlineMessage(job.deadline, nowMs);
             return (
               <li
-                className="grid overflow-hidden rounded-2xl border border-line bg-panel shadow-card lg:grid-cols-[minmax(0,1fr)_19rem]"
+                className="grid overflow-hidden rounded-sm border border-line bg-panel shadow-card lg:grid-cols-[minmax(0,1fr)_19rem]"
                 key={job.id}
               >
                 <article className="min-w-0 p-5 sm:p-7 lg:p-8">

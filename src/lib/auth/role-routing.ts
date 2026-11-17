@@ -3,6 +3,7 @@ import { USER_ROLES, type UserRole } from "@/constants/roles";
 export const ROLE_HOME: Record<UserRole, string> = {
   APPLICANT: "/applicant",
   EVALUATOR: "/evaluator/reviews",
+  DOCUMENT_REVIEWER: "/document-reviewer/documents",
   HR: "/hr/dashboard",
   ADMIN: "/admin/invitations",
 };

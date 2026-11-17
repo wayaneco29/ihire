@@ -1,22 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import {
-  TRAINING_CERTIFICATE_DOCUMENT_TYPE,
-  TRANSCRIPT_DOCUMENT_TYPE,
   groupSupportingDocuments,
 } from "@/constants/documents";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
-import {
-  createDocumentPreviewUrl,
-  submitDocumentReview,
-} from "../../../documents/actions";
+import { createDocumentPreviewUrl } from "../../../documents/actions";
 
 type AnonymizedDocument = {
   document_id: string;
@@ -112,7 +105,6 @@ export function AnonymizedApplicantReview({
   documentsUnavailable: boolean;
   documents: AnonymizedDocument[];
 }) {
-  const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [selectedDocument, setSelectedDocument] =
     useState<AnonymizedDocument | null>(null);
@@ -121,9 +113,7 @@ export function AnonymizedApplicantReview({
     null,
   );
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<
-    "preview" | "verify" | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<"preview" | null>(null);
   const [isPending, startTransition] = useTransition();
   const documentGroups = groupSupportingDocuments(documents);
 
@@ -152,31 +142,6 @@ export function AnonymizedApplicantReview({
       }
       setPreviewUrl(result.signedUrl);
       setPreviewContentType(result.contentType ?? null);
-    });
-  }
-
-  function verifyDocument() {
-    if (!selectedDocument) return;
-    setFeedback(null);
-    setPendingAction("verify");
-    startTransition(async () => {
-      const result = await submitDocumentReview({
-        applicationId,
-        documentId: selectedDocument.document_id,
-        status: "VERIFIED",
-        remarks: "",
-        confirmedTrainingHours: null,
-        confirmedTotalUnits: null,
-      });
-      setPendingAction(null);
-      setFeedback(result.message);
-      if (result.success) {
-        setSelectedDocument({
-          ...selectedDocument,
-          document_status: "VERIFIED",
-        });
-        router.refresh();
-      }
     });
   }
 
@@ -569,8 +534,8 @@ export function AnonymizedApplicantReview({
                         Preview not available for this file type
                       </p>
                       <p className="mt-2 text-sm text-muted">
-                        Download the file to review it. You can still verify it
-                        after checking the document.
+                        Download the file to review it. Document verification
+                        is handled by the Document Reviewer.
                       </p>
                     </div>
                   )}
@@ -615,45 +580,10 @@ export function AnonymizedApplicantReview({
                   </p>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {selectedDocument.document_status === "FOR_REVIEW" ? (
-                  <>
-                    <Link
-                      className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
-                      href={`/evaluator/documents/${selectedDocument.document_id}`}
-                    >
-                      {selectedDocument.document_type ===
-                        TRAINING_CERTIFICATE_DOCUMENT_TYPE ||
-                      selectedDocument.document_type ===
-                        TRANSCRIPT_DOCUMENT_TYPE
-                        ? "Confirm values and review"
-                        : "Other review actions"}
-                    </Link>
-                    {selectedDocument.document_type !==
-                      TRAINING_CERTIFICATE_DOCUMENT_TYPE &&
-                      selectedDocument.document_type !==
-                        TRANSCRIPT_DOCUMENT_TYPE && (
-                        <Button
-                          disabled={!previewUrl || isPending}
-                          onClick={verifyDocument}
-                          type="button"
-                          variant="filled"
-                        >
-                          {pendingAction === "verify"
-                            ? "Verifying…"
-                            : "Mark as verified"}
-                        </Button>
-                      )}
-                  </>
-                ) : (
-                  <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">
-                    Current status{" "}
-                    <WorkflowStatusTag
-                      status={selectedDocument.document_status}
-                    />
-                  </span>
-                )}
-              </div>
+              <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">
+                Document status{" "}
+                <WorkflowStatusTag status={selectedDocument.document_status} />
+              </span>
             </div>
           </div>
         )}

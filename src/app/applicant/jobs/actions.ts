@@ -26,6 +26,26 @@ export async function applyToJob(
     return { success: false, message: "Submit your PDS before applying to a job." };
   }
 
+  const { data: documentStatus, error: documentStatusError } =
+    await applicant.supabase
+      .from("v_applicant_document_status")
+      .select("status")
+      .eq("applicant_id", applicant.applicant.id)
+      .maybeSingle();
+  if (documentStatusError || !documentStatus) {
+    return {
+      success: false,
+      message: "We could not verify your required documents. Please try again.",
+    };
+  }
+  if (documentStatus.status !== "APPROVED") {
+    return {
+      success: false,
+      message:
+        "Your required documents must be approved by the Document Reviewer before you can apply.",
+    };
+  }
+
   const { data: job, error: jobError } = await applicant.supabase
     .from("job_postings")
     .select("id, status, deadline")
@@ -59,6 +79,10 @@ export async function applyToJob(
     const message =
       error?.code === "PGRST202"
         ? "The application service has not been updated yet. Please try again later or contact HR."
+        : error?.message.includes(
+              "All required documents must be approved before applying",
+            )
+          ? "Your required documents must be approved by the Document Reviewer before you can apply."
         : error?.message.includes(
               "Choose a position included in this job posting",
             )

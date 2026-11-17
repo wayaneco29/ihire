@@ -126,6 +126,28 @@ export type PublicViews = {
         Relationships: [
         ];
     };
+    "v_document_review_queue": {
+        Row: {
+            "applicant_number": string;
+            "document_id": string;
+            "document_status": PublicEnums["document_status"];
+            "document_type": string;
+            "storage_key": string;
+            "uploaded_at": string;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
+    "v_applicant_document_status": {
+        Row: {
+            "applicant_id": string;
+            "required_document_count": number;
+            "status": PublicEnums["document_package_status"];
+            "verified_required_count": number;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
     "v_anonymized_education": {
         Row: {
             "application_id": string;

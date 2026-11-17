@@ -6,6 +6,7 @@ import type { Database } from "@/types/database";
 const ROLE_HOME: Record<UserRole, string> = {
   APPLICANT: "/applicant",
   EVALUATOR: "/evaluator/reviews",
+  DOCUMENT_REVIEWER: "/document-reviewer/documents",
   HR: "/hr/dashboard",
   ADMIN: "/admin/invitations",
 };
@@ -13,6 +14,7 @@ const ROLE_HOME: Record<UserRole, string> = {
 const PROTECTED_AREAS: { prefix: string; role: UserRole }[] = [
   { prefix: "/applicant", role: "APPLICANT" },
   { prefix: "/evaluator", role: "EVALUATOR" },
+  { prefix: "/document-reviewer", role: "DOCUMENT_REVIEWER" },
   { prefix: "/hr", role: "HR" },
   { prefix: "/admin", role: "ADMIN" },
 ];
@@ -109,6 +111,7 @@ export const config = {
     "/register",
     "/applicant/:path*",
     "/evaluator/:path*",
+    "/document-reviewer/:path*",
     "/hr/:path*",
     "/admin/:path*",
   ],

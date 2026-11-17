@@ -56,6 +56,19 @@ export async function getEvaluatorContext() {
   return { supabase, user };
 }
 
+export async function getDocumentReviewerContext() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return null;
+  if (user.app_metadata.role !== "DOCUMENT_REVIEWER") return null;
+
+  console.log(user);
+  return { supabase, user };
+}
+
 export async function getHrContext() {
   const supabase = await createClient();
   const {

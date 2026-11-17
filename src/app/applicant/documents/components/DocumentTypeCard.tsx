@@ -120,7 +120,7 @@ export function DocumentTypeCard({
         const matchesStatus =
           statusFilter === "ALL" ||
           (statusFilter === "FOR_REVIEW" &&
-            ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(
+            ["PENDING", "FOR_REVIEW", "REJECTED", "FOR_RESUBMISSION"].includes(
               document.status,
             )) ||
           document.status === statusFilter;
@@ -159,10 +159,7 @@ export function DocumentTypeCard({
       (document) => document.supersededByVersion === null,
     );
     const forReviewCount = currentDocuments.filter((document) =>
-      ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(document.status),
-    ).length;
-    const verifiedCount = currentDocuments.filter(
-      (document) => document.status === "VERIFIED",
+      ["PENDING", "FOR_REVIEW", "REJECTED", "FOR_RESUBMISSION"].includes(document.status),
     ).length;
     const metricTotal = currentDocuments.reduce(
       (total, document) => total + (document.training_hours ?? 0),
@@ -316,14 +313,20 @@ export function DocumentTypeCard({
                     >
                       {pendingId === document.id ? "Preparing…" : "View"}
                     </Button>
-                    <Button
-                      className="!h-8 !px-5 !text-xs"
-                      onClick={() => setReplacementTarget(document)}
-                      type="button"
-                      variant="filled"
-                    >
-                      Replace
-                    </Button>
+                    {document.status === "VERIFIED" ? (
+                      <span className="px-2 text-xs font-medium text-muted">
+                        Locked
+                      </span>
+                    ) : (
+                      <Button
+                        className="!h-8 !px-5 !text-xs"
+                        onClick={() => setReplacementTarget(document)}
+                        type="button"
+                        variant="filled"
+                      >
+                        Replace
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -451,18 +454,20 @@ export function DocumentTypeCard({
             {pendingId === latest.id ? "Preparing…" : "View"}
           </Button>
         )}
-        <Button
-          className="!h-8 !px-5 !text-xs"
-          onClick={() => setUploadOpen(!uploadOpen)}
-          type="button"
-          variant="filled"
-        >
-          {!latest
-            ? "Upload"
-            : latest.status === "FOR_RESUBMISSION"
-              ? "Replace"
-              : "Replace"}
-        </Button>
+        {latest?.status === "VERIFIED" ? (
+          <span className="px-2 text-xs font-medium text-muted">
+            Verified · locked
+          </span>
+        ) : (
+          <Button
+            className="!h-8 !px-5 !text-xs"
+            onClick={() => setUploadOpen(!uploadOpen)}
+            type="button"
+            variant="filled"
+          >
+            {!latest ? "Upload" : "Replace"}
+          </Button>
+        )}
       </div>
       {contextHolder}
       <Modal
@@ -492,9 +497,9 @@ export function DocumentTypeCard({
         <p className="mb-4 text-sm text-muted">
           {isTranscript
             ? latest
-              ? "Upload an updated TOR. The previous version will remain in your document history."
-              : "Upload your TOR. You can upload an updated version later."
-            : "Upload one document at a time and send it for review."}
+              ? "Upload an updated TOR. The previous version will remain in your document history. Submit all documents when ready."
+              : "Upload your TOR, then submit all documents when ready for review."
+            : "Upload one document at a time. Submit all documents from this page when you are ready for review."}
         </p>
         <DocumentUploadForm
           documentTypeId={id}

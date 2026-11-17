@@ -123,6 +123,7 @@ export function InvitationManager({
             options={[
               { label: "HR", value: "HR" },
               { label: "Evaluator", value: "EVALUATOR" },
+              { label: "Document reviewer", value: "DOCUMENT_REVIEWER" },
             ]}
             required
           />

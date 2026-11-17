@@ -117,6 +117,19 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
       ],
     },
   ],
+  DOCUMENT_REVIEWER: [
+    {
+      title: "Documents",
+      items: [
+        {
+          label: "Review queue",
+          href: "/document-reviewer/documents",
+          icon: ClipboardDocumentCheckIcon,
+          available: true,
+        },
+      ],
+    },
+  ],
   HR: [
     {
       title: "Hiring",

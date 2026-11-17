@@ -177,6 +177,7 @@ export default async function ApplicantJobDetailPage({
   const [
     { data: submittedPds, error: pdsError },
     { data: certificateType, error: certificateTypeError },
+    documentStatusResult,
   ] = await Promise.all([
     applicant.supabase
       .from("pds_versions")
@@ -191,16 +192,28 @@ export default async function ApplicantJobDetailPage({
       .select("id")
       .eq("name", "Training and Seminar Certificates")
       .maybeSingle(),
+    applicant.supabase
+      .from("v_applicant_document_status")
+      .select("status, required_document_count, verified_required_count")
+      .eq("applicant_id", applicant.applicant.id)
+      .maybeSingle(),
   ]);
 
-  if (pdsError || certificateTypeError || !certificateType) {
+  if (
+    pdsError ||
+    certificateTypeError ||
+    documentStatusResult.error ||
+    !certificateType ||
+    !documentStatusResult.data
+  ) {
     return (
       <EmptyState
-        description="Refresh the page to try loading your training records."
-        title="Training points unavailable"
+        description="Refresh the page to try loading your document eligibility and training records."
+        title="Application eligibility unavailable"
       />
     );
   }
+  const documentStatus = documentStatusResult.data;
 
   const [
     learningResult,
@@ -480,17 +493,39 @@ export default async function ApplicantJobDetailPage({
                 </Link>
               </div>
             ) : applicant.profile.has_submitted_pds ? (
-              positions.length ? (
-                <ApplyButton
-                  jobId={job.id}
-                  positions={positionsWithScoringPoints}
-                />
-              ) : (
-                <p className="max-w-sm text-sm text-muted">
-                  No positions are available for this posting. Contact HR
-                  for assistance.
-                </p>
-              )
+                documentStatus.status === "APPROVED" ? (
+                  positions.length ? (
+                    <ApplyButton
+                      jobId={job.id}
+                      positions={positionsWithScoringPoints}
+                    />
+                  ) : (
+                    <p className="max-w-sm text-sm text-muted">
+                      No positions are available for this posting. Contact HR
+                      for assistance.
+                    </p>
+                  )
+                ) : (
+                  <div className="max-w-md rounded-xl border border-warning/30 bg-warning/10 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-ink">
+                        Required documents
+                      </p>
+                      <WorkflowStatusTag status={documentStatus.status} />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-muted">
+                      Your required documents must be approved before you can
+                      apply. Upload any missing documents and submit them for
+                      review.
+                    </p>
+                    <Link
+                      className="mt-3 inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-dark"
+                      href="/applicant/documents"
+                    >
+                      Go to documents
+                    </Link>
+                  </div>
+                )
             ) : (
               <Link
                 className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"

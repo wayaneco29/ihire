@@ -308,12 +308,12 @@ export function DocumentUploadForm({
         ? " The linked PDS training entry was updated in your draft. Submit the updated PDS when ready."
         : "";
       const uploadSuccessMessage = replacementDocument
-        ? `Certificate file updated. The new version with ${values.trainingHours} hours has been sent for review.`
+        ? `Certificate file updated with ${values.trainingHours} hours. Submit all documents when you are ready for review.`
         : isTrainingCertificate
-          ? `Certificate uploaded with ${values.trainingHours} hours and sent for review. Add another certificate or close this form.`
+          ? `Certificate uploaded with ${values.trainingHours} hours. Submit all documents when you are ready for review. Add another certificate or close this form.`
           : isTranscript
-            ? `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. It has been sent for review.`
-            : `Version ${result.version} uploaded and sent for review.`;
+            ? `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. Submit all documents when you are ready for review.`
+            : `Version ${result.version} uploaded. Submit all documents when you are ready for review.`;
       const successMessage = `${uploadSuccessMessage}${pdsSyncMessage}`;
       if (onSuccess) onSuccess(successMessage);
       else setMessage(successMessage);

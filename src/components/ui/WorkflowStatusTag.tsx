@@ -9,6 +9,7 @@ const statusStyles: Record<string, string> = {
   PENDING: "border-line bg-panel-muted text-muted",
   FOR_RESUBMISSION: "border-red/30! bg-red-100 text-red-500",
   VERIFIED: "border-primary/20 bg-primary-light text-primary",
+  APPROVED: "border-primary/20 bg-primary-light text-primary",
   QUALIFIED: "border-primary/20 bg-primary-light text-primary",
   HIRED: "border-primary/20 bg-primary-light text-primary",
   OPEN: "border-primary/20 bg-primary-light text-primary",

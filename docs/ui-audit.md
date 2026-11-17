@@ -37,9 +37,10 @@
 
 ## Three journeys to prioritize
 
-1. **Applicant:** create account or sign in → complete and submit the 11-step PDS → browse a posting → apply → follow application status and notifications.
-2. **Evaluator:** open the review queue → inspect anonymized applicant and supporting documents → record an evaluation result.
-3. **HR:** create/open a posting → review anonymized applicants and capacity → hire or reject → access the authorized printable PDS for a hired applicant.
+1. **Applicant:** create account or sign in → complete and submit the 11-step PDS → upload and submit required documents → wait for Document Reviewer approval → apply to a posting → follow application status and notifications.
+2. **Document Reviewer:** open the document queue → inspect applicant-number-only files → verify or request resubmission.
+3. **Evaluator:** open the review queue → inspect anonymized applicant details and verified document statuses → record an evaluation result.
+4. **HR:** create/open a posting → review anonymized applicants and capacity → hire or reject → access the authorized printable PDS for a hired applicant.
 
 **Admin:** monitor round-robin evaluator workloads → resolve unassigned applications or reassign work → review the assignment history. Admin assignment management and invitation management must retain their role restrictions.
 

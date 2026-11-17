@@ -28,14 +28,15 @@ The user requires a strict **Step-by-Step Task Checklist** workflow.
 
 ## 1. Project Overview
 
-A role-based recruitment platform with three user roles plus a seeded Admin:
+A role-based recruitment platform with four staff/applicant roles plus a seeded Admin:
 
 | Role | How they get an account | Purpose |
 |---|---|---|
 | **APPLICANT** | Self sign-up / login | Fills PDS, uploads documents, applies to jobs |
-| **EVALUATOR** | **Invite-only** (sent by ADMIN) | Reviews applicant documents and marks status before it goes to HR |
+| **EVALUATOR** | **Invite-only** (sent by ADMIN) | Reviews applications and records assessment results |
+| **DOCUMENT_REVIEWER** | **Invite-only** (sent by ADMIN) | Verifies applicant documents before job applications are enabled |
 | **HR** | **Invite-only** (sent by ADMIN) | Posts jobs, views anonymized applicants per posting, selects who to hire |
-| **ADMIN** | Seeded (one account) | Sends invitations to HR and Evaluators |
+| **ADMIN** | Seeded (one account) | Sends invitations to HR, Evaluators, and Document Reviewers |
 
 ### Core principle: anonymity
 Applicants are **anonymized to HR and Evaluators to prevent cheating/bias**. They see only the **Applicant Number** (e.g. `APP-0001`) and **credibility data**, never identity. This must be **enforced at the database level** (RLS plus views), not only hidden in the UI.
@@ -61,9 +62,10 @@ Applicants are **anonymized to HR and Evaluators to prevent cheating/bias**. The
 
 | # | Decision |
 |---|---|
-| 1 | HR and Evaluator accounts are **invite-only**, created through a seeded **ADMIN** role |
+| 1 | HR, Evaluator, and Document Reviewer accounts are **invite-only**, created through a seeded **ADMIN** role |
 | 2 | Required documents are **global** (`document_types`), not per job |
-| 3 | If an applicant updates a document or submits a new PDS version, an evaluator **re-reviews** it |
+| 3 | Applicants explicitly submit uploaded documents to a Document Reviewer; verified files are immutable |
+| 4 | Applicants may apply only when the overall required-document status is `APPROVED` |
 | 4 | Credibility data = education level, years of experience, training hours, skills |
 | 5 | **Any** evaluator can review **any** applicant (no assignment table) |
 | 6 | **In-app notifications only** (no email for now) |
@@ -169,22 +171,27 @@ Sign up / Login. Pages:
 | **Jobs** | Lists jobs HR posted. Applicant **applies here**. Applicant is anonymous to HR/Evaluator. Only their credibility is shown. |
 | **Profile** | Read-only view of data from the **latest SUBMITTED PDS**: Personal Information, Educational Background, Work Experience, Trainings, Skills |
 | **My Application** | Lists the user's applications. Each opens a detail on a **new page** |
-| **Documents** | Upload a document; view or update it. Updating triggers re-review |
+| **Documents** | Upload documents, submit them for review, and view status. Verified files are locked |
 | **PDS** | Wizard form (see 8) |
 
 **First-login rule:** on first login the applicant **must** complete the PDS before using the rest of the app (`profiles.has_submitted_pds`).
 
 ### 7.2 Evaluator
-Reviews applicant documents and sets the document status before it reaches HR. Statuses: `FOR_REVIEW`, `VERIFIED`, `REJECTED`, `FOR_RESUBMISSION`. Sees only anonymized data (Applicant No. + credibility). Any evaluator can review any applicant.
+Reviews application credibility and records assessment results. Supporting-document verification is handled separately by the Document Reviewer.
 
-### 7.3 HR
+### 7.3 Document Reviewer
+- Reviews the applicant-number-only document queue.
+- Verifies documents or requests a correction/resubmission.
+- Confirms transcript units and training hours used in application scoring.
+
+### 7.4 HR
 - **Dashboard**: total postings, open postings, total applicants, qualified vs total per posting, pending evaluation count, hired count.
 - **Postings**: list of postings with **number of applicants**, and **qualified / total** (as checked by evaluators).
 - **Posting detail**: list of applicants for that job, **anonymized, showing only Applicant Number** (plus credibility), from which HR can **select to hire**.
 - **Printable PDS** (CS Form 212 layout) for HR to print so the applicant signs physically. Unlock timing: see open question in section 3.
 
-### 7.3 Admin
-Create and manage invitations (email, role HR/EVALUATOR, token, expiry).
+### 7.5 Admin
+Create and manage invitations (email, role, token, expiry).
 
 ---
 
@@ -285,27 +292,29 @@ Create and manage invitations (email, role HR/EVALUATOR, token, expiry).
 | **applications** | `id`, `job_id`, `applicant_id`, `pds_version_id` (snapshot), `status`, `applied_at`. **UNIQUE(job_id, applicant_id)** |
 | **document_types** | `id`, `name`, `is_required` (global) |
 | **documents** | `id`, `applicant_id`, `document_type_id`, `file_path`, `version`, `status`, `uploaded_at`; every training certificate upload is a separate row and also stores `training_hours` and optional `pds_learning_development_id` |
-| **document_reviews** | `id`, `document_id`, `evaluator_id`, `status`, `remarks`, `reviewed_at` |
+| **document_reviews** | `id`, `document_id`, `reviewer_id`, `status`, `remarks`, `reviewed_at` |
 | **application_evaluations** | `id`, `application_id`, `evaluator_id`, `result` (QUALIFIED/NOT_QUALIFIED), `remarks`, `evaluated_at` |
 | **hiring_decisions** | `id`, `application_id`, `hr_id`, `decision` (HIRED/REJECTED), `decided_at` |
 
 ### Statuses
-- **Document:** `PENDING` → `FOR_REVIEW` → `VERIFIED` / `REJECTED` / `FOR_RESUBMISSION`
+- **Document:** `PENDING` → applicant submits → `FOR_REVIEW` → `VERIFIED` / `REJECTED` / `FOR_RESUBMISSION`
+- **Required-document package:** `INCOMPLETE` / `PENDING` / `FOR_REVIEW` / `NEEDS_RESUBMISSION` → `APPROVED`
 - **Application:** `SUBMITTED` → `UNDER_EVALUATION` → `QUALIFIED` / `NOT_QUALIFIED` → `HIRED` / `REJECTED`
 - **PDS version:** `DRAFT` → `SUBMITTED`
 
 ### Anonymity enforcement
 - HR and Evaluator **cannot read** `profiles`, `pds_personal_info`, `pds_addresses`, `pds_family_background`, `pds_children` or `pds_references` directly (RLS blocks it).
 - They read through **views** (e.g. `v_anonymized_applicants`) exposing only `applicant_number`, credibility data (education level, years of experience, training hours, skills) and the questionnaire answers.
-- Documents shown to Evaluators must not leak identity (use applicant number; consider a signed-URL-only access pattern and watch for names inside file names).
+- Documents shown to Evaluators or Document Reviewers must not leak identity (use applicant number and signed URLs; avoid exposing original file names).
 - Identity unlock timing is the open question in section 3.
 
 ---
 
 ## 10. Cross-Cutting Behaviors
 
-- **Re-review rule:** a new document upload, or a new submitted PDS version, sets the document/application back to `FOR_REVIEW` and sends an in-app notification to evaluators. Keep old files as versions.
-- **Notifications (in-app):** document status changes (applicant), re-review needed (evaluators), applicant qualified (HR), application status changes (applicant), invite accepted (admin).
+- **Document review rule:** uploads remain `PENDING` until the applicant submits them. Only Document Reviewers can verify documents. Corrections require a new version after resubmission is requested; verified files cannot be edited or deleted.
+- **Application eligibility:** `apply_to_job()` rejects new applications unless the overall required-document status is `APPROVED`.
+- **Notifications (in-app):** document submissions and status changes (Document Reviewer/applicant), applicant qualified (HR), application status changes (applicant), invite accepted (admin).
 - **Route protection:** `middleware.ts` plus role-based routing. Applicants with no submitted PDS are redirected to `/applicant/pds`.
 - **Storage:** private Supabase buckets for documents. Access through signed URLs and RLS.
 
@@ -403,17 +412,22 @@ yarn install
 - [x] 5.5 Job detail and Apply (one application per job, snapshots `pds_version_id`, anonymized to HR/Evaluator)
 - [x] 5.6 My Applications list with status tags
 - [x] 5.7 Application detail on a new page (`/applicant/applications/[id]`): status timeline, job info, evaluator remarks
-- [x] 5.8 Documents: upload per global document type, view (signed URL), update (new version resets status to `FOR_REVIEW`), status and remarks display; Training and Seminar Certificate uploads capture hours and optionally link to a PDS training entry
+- [x] 5.8 Documents: upload per global document type, explicitly submit for review, view status and remarks, lock verified files; Training and Seminar Certificate uploads capture hours and optionally link to a PDS training entry
 - [x] 5.9 Notifications page (full list)
 
 ### [x] Phase 6: Evaluator Module
 - [x] 6.1 Evaluator layout and navigation
 - [x] 6.2 Review queue: anonymized list (Applicant No., credibility, document status) filtered by `FOR_REVIEW`; any evaluator sees all
 - [x] 6.3 Applicant review page: credibility data, questionnaire answers, documents (still no identity)
-- [x] 6.4 Document viewer (signed URL) with a status action: `VERIFIED` / `REJECTED` / `FOR_RESUBMISSION`, plus remarks
-- [x] 6.5 Application evaluation: set `QUALIFIED` / `NOT_QUALIFIED` with remarks once the required documents are verified
-- [x] 6.6 Re-review queue (items reset by updated documents or new PDS versions) and notifications
+- [x] 6.4 Application review shows document status read-only; Document Reviewer handles document verification
+- [x] 6.5 Application evaluation: set `QUALIFIED` / `NOT_QUALIFIED` with remarks once required documents are approved
+- [x] 6.6 Application review queue and notifications
 - [x] 6.7 Verify anonymity (no name, sex, age, address, no identity inside file names)
+
+### [x] Phase 6.5: Document Reviewer Module
+- [x] Invite-only role and protected review queue
+- [x] Applicant-number-only document review with verified-file locking
+- [x] Overall required-document approval gates job applications
 
 ### [x] Phase 7: HR Module
 - [x] 7.1 HR layout and navigation

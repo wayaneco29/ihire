@@ -10,12 +10,19 @@ import {
   DocumentTypeCard,
   type DocumentRecord,
 } from "./components/DocumentTypeCard";
+import { SubmitDocumentsButton } from "./components/SubmitDocumentsButton";
+import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 
 export default async function ApplicantDocumentsPage() {
   const applicant = await getApplicantContext();
   if (!applicant) redirect("/login");
 
-  const [typesResult, documentsResult, pdsVersionsResult] = await Promise.all([
+  const [
+    typesResult,
+    documentsResult,
+    pdsVersionsResult,
+    documentStatusResult,
+  ] = await Promise.all([
     applicant.supabase
       .from("document_types")
       .select("id, name, is_required")
@@ -33,9 +40,19 @@ export default async function ApplicantDocumentsPage() {
       .eq("applicant_id", applicant.applicant.id)
       .order("version_no", { ascending: false })
       .in("status", ["DRAFT", "SUBMITTED"]),
+    applicant.supabase
+      .from("v_applicant_document_status")
+      .select("status, required_document_count, verified_required_count")
+      .eq("applicant_id", applicant.applicant.id)
+      .maybeSingle(),
   ]);
 
-  if (typesResult.error || documentsResult.error) {
+  if (
+    typesResult.error ||
+    documentsResult.error ||
+    documentStatusResult.error ||
+    !documentStatusResult.data
+  ) {
     return (
       <>
         <PageHeader
@@ -126,6 +143,26 @@ export default async function ApplicantDocumentsPage() {
   const trainingCertificateType = prioritizedDocumentTypes.find(
     (type) => type.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE,
   );
+  const pendingCount = prioritizedDocumentTypes.reduce((count, type) => {
+    const typeDocuments = documentsByType.get(type.id) ?? [];
+    if (type.name === TRAINING_CERTIFICATE_DOCUMENT_TYPE) {
+      return (
+        count +
+        typeDocuments.filter(
+          (document) =>
+            document.status === "PENDING" &&
+            document.supersededByVersion === null,
+        ).length
+      );
+    }
+    return (
+      count +
+      Number(
+        typeDocuments[0]?.status === "PENDING" &&
+          typeDocuments[0]?.supersededByVersion === null,
+      )
+    );
+  }, 0);
   const requiredTypes = prioritizedDocumentTypes.filter(
     (type) => type.is_required && type.id !== trainingCertificateType?.id,
   );
@@ -136,7 +173,7 @@ export default async function ApplicantDocumentsPage() {
     (documentsByType.get(type.id) ?? []).some(
       (document) =>
         document.supersededByVersion === null &&
-        document.status === "FOR_RESUBMISSION",
+        ["REJECTED", "FOR_RESUBMISSION"].includes(document.status),
     ),
   );
   const requiredCount = requiredTypes.filter(
@@ -149,7 +186,7 @@ export default async function ApplicantDocumentsPage() {
     (type) => documentsByType.get(type.id)?.[0],
   ).length;
   const optionalReviewCount = optionalTypes.filter((type) =>
-    ["PENDING", "FOR_REVIEW", "FOR_RESUBMISSION"].includes(
+    ["PENDING", "FOR_REVIEW", "REJECTED", "FOR_RESUBMISSION"].includes(
       documentsByType.get(type.id)?.[0]?.status ?? "",
     ),
   ).length;
@@ -186,11 +223,28 @@ export default async function ApplicantDocumentsPage() {
   return (
     <div className="mx-auto">
       <PageHeader
-        description="Upload documents and track evaluator feedback."
+        description="Upload documents, submit them for verification, and track their status."
         title="Documents"
       />
       {documentTypes.length ? (
         <>
+          <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-panel p-4">
+            <div>
+              <h2 className="text-sm font-semibold text-ink">
+                Overall required-document status
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                {documentStatusResult.data.verified_required_count} of{" "}
+                {documentStatusResult.data.required_document_count} required
+                documents verified. You can apply only after all required
+                documents are approved.
+              </p>
+            </div>
+            <WorkflowStatusTag status={documentStatusResult.data.status} />
+          </section>
+          {pendingCount > 0 && (
+            <SubmitDocumentsButton pendingCount={pendingCount} />
+          )}
           {resubmissionTypes.length > 0 && (
             <section
               aria-label="Document needs resubmission"
@@ -203,7 +257,7 @@ export default async function ApplicantDocumentsPage() {
                     : `${resubmissionTypes.length} documents need new versions`}
                 </h2>
                 <p className="mt-0.5 text-sm text-ink">
-                  The evaluator sent it back for resubmission. Upload a
+                  The Document Reviewer sent it back for resubmission. Upload a
                   corrected copy.
                 </p>
               </div>
@@ -219,7 +273,7 @@ export default async function ApplicantDocumentsPage() {
           {requiredTypes.length > 0 && (
             <section
               aria-labelledby="required-documents-heading"
-              className="mt-7 rounded-xl border border-line bg-panel p-4 sm:p-5"
+              className="mt-7 rounded-sm border border-line bg-panel p-4 sm:p-5"
             >
               <div className="border-b border-line-subtle pb-3">
                 <h2
@@ -243,7 +297,7 @@ export default async function ApplicantDocumentsPage() {
           {optionalTypes.length > 0 && (
             <section
               aria-labelledby="optional-documents-heading"
-              className="mt-7 rounded-xl border border-line bg-panel p-4 sm:p-5"
+              className="mt-7 rounded-sm border border-line bg-panel p-4 sm:p-5"
             >
               <div className="border-b border-line-subtle pb-3">
                 <h2
@@ -268,7 +322,7 @@ export default async function ApplicantDocumentsPage() {
           )}
 
           {trainingCertificateType && (
-            <div className="mt-5 rounded-xl border border-line bg-panel p-4 sm:p-5">
+            <div className="mt-5 rounded-sm border border-line bg-panel p-4 sm:p-5">
               {renderDocumentType(trainingCertificateType)}
             </div>
           )}

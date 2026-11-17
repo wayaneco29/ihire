@@ -133,7 +133,7 @@ export async function submitApplicationEvaluation(input: {
   if (missingTypes.length) {
     return {
       success: false,
-      message: `Required documents must be uploaded and verified first: ${missingTypes.join(", ")}.`,
+      message: `Required documents must be approved first: ${missingTypes.join(", ")}.`,
     };
   }
 

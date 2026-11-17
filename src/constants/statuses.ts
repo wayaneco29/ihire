@@ -6,6 +6,14 @@ export const DOCUMENT_STATUSES = [
   "FOR_RESUBMISSION",
 ] as const;
 
+export const DOCUMENT_PACKAGE_STATUSES = [
+  "INCOMPLETE",
+  "PENDING",
+  "FOR_REVIEW",
+  "APPROVED",
+  "NEEDS_RESUBMISSION",
+] as const;
+
 export const APPLICATION_STATUSES = [
   "SUBMITTED",
   "UNDER_EVALUATION",

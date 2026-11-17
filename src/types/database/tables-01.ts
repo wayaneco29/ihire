@@ -331,7 +331,7 @@ export type DocumentReviewsTable = {
         "confirmed_total_units": number | null;
         "confirmed_training_hours": number | null;
         "document_id": string;
-        "evaluator_id": string;
+        "reviewer_id": string;
         "id": string;
         "remarks": string | null;
         "reviewed_at": string;
@@ -342,7 +342,7 @@ export type DocumentReviewsTable = {
         "confirmed_total_units"?: number | null;
         "confirmed_training_hours"?: number | null;
         "document_id": string;
-        "evaluator_id": string;
+        "reviewer_id": string;
         "id"?: string;
         "remarks"?: string | null;
         "reviewed_at"?: string;
@@ -352,7 +352,7 @@ export type DocumentReviewsTable = {
         "confirmed_total_units"?: number | null;
         "confirmed_training_hours"?: number | null;
         "document_id"?: string;
-        "evaluator_id"?: string;
+        "reviewer_id"?: string;
         "id"?: string;
         "remarks"?: string | null;
         "reviewed_at"?: string;
@@ -382,9 +382,9 @@ export type DocumentReviewsTable = {
             ];
         },
         {
-            foreignKeyName: "document_reviews_evaluator_id_fkey";
+            foreignKeyName: "document_reviews_reviewer_id_fkey";
             columns: [
-                "evaluator_id"
+                "reviewer_id"
             ];
             isOneToOne: false;
             referencedRelation: "profiles";

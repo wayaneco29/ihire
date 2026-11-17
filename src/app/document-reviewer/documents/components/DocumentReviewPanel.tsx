@@ -15,11 +15,11 @@ import { FormTextArea } from "@/components/form/FormTextArea";
 import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { createClient } from "@/lib/supabase/client";
-import { submitDocumentReview } from "../actions";
+import { submitDocumentReview } from "../../actions";
 import {
   createDocumentReviewSchema,
   type DocumentReviewValues,
-} from "../schema";
+} from "@/app/document-reviewer/documents/schema";
 
 const reviewOptions = [
   { label: "Verified", value: "VERIFIED" },
@@ -28,7 +28,6 @@ const reviewOptions = [
 ];
 
 export function DocumentReviewPanel({
-  applicationId,
   documentId,
   storageKey,
   documentStatus,
@@ -40,8 +39,10 @@ export function DocumentReviewPanel({
   ocrTotalUnits,
   ocrConfidence,
   previousReview,
+  stayOnPageOnSuccess = false,
+  hideFileButton = false,
+  onReviewSuccess,
 }: {
-  applicationId: string;
   documentId: string;
   storageKey: string;
   documentStatus: string;
@@ -59,6 +60,9 @@ export function DocumentReviewPanel({
     confirmed_training_hours: number | null;
     confirmed_total_units: number | null;
   } | null;
+  stayOnPageOnSuccess?: boolean;
+  hideFileButton?: boolean;
+  onReviewSuccess?: () => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -114,7 +118,6 @@ export function DocumentReviewPanel({
     setReviewSucceeded(false);
     startTransition(async () => {
       const result = await submitDocumentReview({
-        applicationId,
         documentId,
         status: values.status,
         remarks: values.remarks,
@@ -123,7 +126,11 @@ export function DocumentReviewPanel({
       });
       setMessage(result.message);
       setReviewSucceeded(result.success);
-      if (result.success) router.refresh();
+      if (result.success) {
+        onReviewSuccess?.();
+        if (stayOnPageOnSuccess) router.refresh();
+        else router.push("/document-reviewer/documents");
+      }
     });
   }
 
@@ -137,19 +144,23 @@ export function DocumentReviewPanel({
         The stored object uses an opaque key. The applicant’s original filename
         is not shown here.
       </p>
-      <Button
-        className="mt-4 !rounded-sm !px-4 !text-sm"
-        disabled={viewing || pending}
-        onClick={viewFile}
-        type="button"
-        variant="bordered"
-      >
-        {viewing ? "Creating secure link…" : "Open document"}
-      </Button>
-      {fileError && (
-        <p className="mt-2 text-sm text-danger" role="alert">
-          {fileError}
-        </p>
+      {!hideFileButton && (
+        <>
+          <Button
+            className="mt-4 !rounded-sm !px-4 !text-sm"
+            disabled={viewing || pending}
+            onClick={viewFile}
+            type="button"
+            variant="bordered"
+          >
+            {viewing ? "Creating secure link…" : "Open document"}
+          </Button>
+          {fileError && (
+            <p className="mt-2 text-sm text-danger" role="alert">
+              {fileError}
+            </p>
+          )}
+        </>
       )}
 
       {previousReview && (
@@ -190,7 +201,7 @@ export function DocumentReviewPanel({
           {(includesTrainingHours || includesTotalUnits) && (
             <div className="rounded-sm border border-line-subtle bg-panel-muted p-3">
               <p className="text-sm font-medium text-ink">
-                Evaluator-confirmed value
+                Reviewer-confirmed value
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
                 {includesTrainingHours
