@@ -233,14 +233,14 @@ export async function submitApplicationCriterionScores(input: {
       weights.map((weight) => weight.criterion_id),
     )
     .eq("position_id", applicationResult.data.position_id)
-    .eq("criterion_key", "CLASSROOM_OBSERVATION");
+    .in("criterion_key", ["CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"]);
   if (criteriaError || !criteria?.length) {
     return { success: false, message: "The position scoring criteria could not be loaded." };
   }
 
   if (
     criteria.some(
-      (criterion) => criterion.criterion_key !== "CLASSROOM_OBSERVATION",
+      (criterion) => !["CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"].includes(criterion.criterion_key),
     )
   ) {
     return { success: false, message: "The position scoring criteria are invalid." };
@@ -249,13 +249,14 @@ export async function submitApplicationCriterionScores(input: {
     weights.map((weight) => [weight.criterion_id, weight.points]),
   );
   if (
-    criteria.length !== 1 ||
-    input.scores.length !== 1 ||
-    input.scores[0].criterionId !== criteria[0].id
+    criteria.length !== 2 ||
+    input.scores.length !== 2 ||
+    new Set(input.scores.map((score) => score.criterionId)).size !== 2 ||
+    criteria.some((criterion) => !input.scores.some((score) => score.criterionId === criterion.id))
   ) {
     return {
       success: false,
-      message: "Only the demo teaching observation score can be entered here.",
+      message: "Enter both demo teaching and teaching reflection form points.",
     };
   }
   const validatedScores: { criterionId: string; points: number }[] = [];
@@ -281,15 +282,16 @@ export async function submitApplicationCriterionScores(input: {
     });
   }
 
-  const { error: saveError } = await evaluator.supabase.rpc(
-    "save_application_criterion_score",
-    {
-      p_application_id: input.applicationId,
-      p_criterion_id: validatedScores[0].criterionId,
-      p_points: validatedScores[0].points,
-    },
-  );
-  if (saveError) {
+  for (const score of validatedScores) {
+    const { error: saveError } = await evaluator.supabase.rpc(
+      "save_application_criterion_score",
+      {
+        p_application_id: input.applicationId,
+        p_criterion_id: score.criterionId,
+        p_points: score.points,
+      },
+    );
+    if (!saveError) continue;
     const message = saveError.message.includes("another evaluator")
       ? "This application already has scores from another evaluator."
       : saveError.message.includes("no longer assigned")
@@ -300,5 +302,6 @@ export async function submitApplicationCriterionScores(input: {
 
   revalidatePath(`/evaluator/applications/${input.applicationId}`);
   revalidatePath("/evaluator/reviews");
+  revalidatePath("/evaluator/demo-teaching");
   return { success: true, message: "Criterion scores saved." };
 }

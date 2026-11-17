@@ -109,7 +109,7 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
           available: true,
         },
         {
-          label: "Demo teaching points",
+          label: "Teaching assessment points",
           href: "/evaluator/demo-teaching",
           icon: AcademicCapIcon,
           available: true,

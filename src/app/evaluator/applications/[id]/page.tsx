@@ -12,7 +12,7 @@ import { formatPositionLabel } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
 import { ApplicationAssessmentScheduleForm } from "../components/ApplicationAssessmentScheduleForm";
-import { REVIEW_QUEUE_PAGE_SIZE } from "../../reviews/queue";
+import { REVIEW_QUEUE_PAGE_SIZE, reviewQueueHref, reviewQueueStatus } from "../../reviews/queue";
 import { AnonymizedApplicantReview } from "./components/AnonymizedApplicantReview";
 
 export default async function EvaluatorApplicationReviewPage({
@@ -20,9 +20,9 @@ export default async function EvaluatorApplicationReviewPage({
   searchParams,
 }: Readonly<{
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ jobId?: string | string[]; page?: string | string[] }>;
+  searchParams: Promise<{ jobId?: string | string[]; page?: string | string[]; status?: string | string[] }>;
 }>) {
-  const [{ id }, { jobId: requestedJobId, page: requestedPage }] = await Promise.all([
+  const [{ id }, { jobId: requestedJobId, page: requestedPage, status: requestedStatus }] = await Promise.all([
     params,
     searchParams,
   ]);
@@ -35,6 +35,7 @@ export default async function EvaluatorApplicationReviewPage({
     typeof requestedPage === "string" ? Number(requestedPage) : 1;
   const queuePage =
     Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const selectedStatus = reviewQueueStatus(typeof requestedStatus === "string" ? requestedStatus : undefined);
   const evaluator = await getEvaluatorContext();
   if (!evaluator) redirect("/login");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -203,7 +204,9 @@ export default async function EvaluatorApplicationReviewPage({
 
   const queueItems = queueApplicantsResult.error
     ? []
-    : queueApplicantsResult.data ?? [];
+    : (queueApplicantsResult.data ?? []).filter(
+        (item) => !selectedStatus || item.application_status === selectedStatus,
+      );
   const applicantPositions = new Map(
     (allAssignedApplicationsResult.data ?? []).map((item, index) => [
       item.id,
@@ -276,7 +279,7 @@ export default async function EvaluatorApplicationReviewPage({
         >
           <Link
             className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
-            href={`/evaluator/reviews?jobId=${jobId}&page=${queuePage}`}
+            href={reviewQueueHref(jobId, queuePage, selectedStatus)}
           >
             Back to applicants
           </Link>
@@ -296,7 +299,7 @@ export default async function EvaluatorApplicationReviewPage({
                 {previousApplicant ? (
                   <Link
                     className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
-                    href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(previousApplicant.application_id)}`}
+                    href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(previousApplicant.application_id)}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Previous
                   </Link>
@@ -304,7 +307,7 @@ export default async function EvaluatorApplicationReviewPage({
                 {nextApplicant ? (
                   <Link
                     className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-                    href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(nextApplicant.application_id)}`}
+                    href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(nextApplicant.application_id)}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Next applicant
                   </Link>

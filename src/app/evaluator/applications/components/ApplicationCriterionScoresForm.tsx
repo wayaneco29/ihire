@@ -65,13 +65,32 @@ export function ApplicationCriterionScoresForm({
   }
 
   return (
-    <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
-      <div>
-        <h2 className="font-semibold text-ink">Demo teaching points</h2>
-        <p className="mt-1 text-sm text-muted">
-          Enter the points awarded for the demo teaching observation. The score
-          cannot exceed the maximum configured for this position.
-        </p>
+    <section
+      aria-labelledby="assessment-points-title"
+      className="rounded-sm border border-line bg-panel p-5 sm:p-6"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2
+            className="text-lg font-semibold text-ink"
+            id="assessment-points-title"
+          >
+            Award points
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-muted">
+            Record each activity separately using the position&apos;s scoring
+            limits.
+          </p>
+        </div>
+        {criteria.length > 0 && (
+          <span className="rounded-sm bg-primary-light px-3 py-2 text-xs font-semibold text-primary">
+            {criteria.reduce(
+              (total, criterion) => total + criterion.maxPoints,
+              0,
+            )}{" "}
+            points available
+          </span>
+        )}
       </div>
       {scoresUnavailable ? (
         <p className="mt-4 text-sm text-danger" role="alert">
@@ -87,29 +106,57 @@ export function ApplicationCriterionScoresForm({
           className="mt-5 space-y-4 border-t border-line-subtle pt-5"
           onSubmit={form.handleSubmit(submit)}
         >
-          <div className="grid gap-x-4 sm:grid-cols-2">
+          <div className="space-y-3">
             {criteria.map((criterion, index) => (
-              <FormInput
-                control={form.control}
-                hint={`Maximum ${criterion.maxPoints} points.`}
+              <div
+                className="rounded-sm border border-line-subtle bg-panel-muted p-4 sm:p-5"
                 key={criterion.id}
-                label={criterion.title}
-                max={criterion.maxPoints}
-                min={0}
-                name={`scores.${index}.points`}
-                required
-                step="0.01"
-                type="number"
-              />
+              >
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-primary">
+                      Category {index + 1}
+                    </p>
+                    <h3 className="mt-1 font-semibold text-ink">
+                      {criterion.title}
+                    </h3>
+                    <p className="mt-1 text-xs leading-5 text-muted">
+                      {criterion.title.toLowerCase().includes("reflection")
+                        ? "Score the teaching reflection form."
+                        : "Score the applicant's demo teaching presentation."}
+                    </p>
+                  </div>
+                  <span className="rounded-sm border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold tabular-nums text-ink">
+                    Max {criterion.maxPoints}
+                  </span>
+                </div>
+                <FormInput
+                  control={form.control}
+                  hint={
+                    existingScores[criterion.id] != null
+                      ? `Previously saved: ${existingScores[criterion.id]} points.`
+                      : `Enter up to ${criterion.maxPoints} points.`
+                  }
+                  label="Points awarded"
+                  max={criterion.maxPoints}
+                  min={0}
+                  name={`scores.${index}.points`}
+                  required
+                  step="0.01"
+                  type="number"
+                />
+              </div>
             ))}
           </div>
-          <Button
-            disabled={pending || isFinal}
-            type="submit"
-            variant="filled"
-          >
-            {pending ? "Saving points…" : "Save points"}
-          </Button>
+          <div className="border-t border-line-subtle pt-4">
+            <Button
+              disabled={pending || isFinal}
+              type="submit"
+              variant="filled"
+            >
+              {pending ? "Saving points…" : "Submit assessment points"}
+            </Button>
+          </div>
           {isFinal && (
             <p className="text-sm text-muted">
               This application has a final hiring decision and can no longer be

@@ -7,7 +7,7 @@ import {
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEvaluatorContext } from "@/lib/auth/server";
-import { REVIEW_QUEUE_PAGE_SIZE } from "./queue";
+import { REVIEW_QUEUE_PAGE_SIZE, reviewQueueHref, reviewQueueStatus } from "./queue";
 import { ApplicantNumberLookup } from "./components/ApplicantNumberLookup";
 import { ReviewQueueList } from "./components/ReviewQueueList";
 
@@ -18,6 +18,7 @@ export default async function EvaluatorReviewsPage({
     jobId?: string | string[];
     applicantNumber?: string | string[];
     page?: string | string[];
+    status?: string | string[];
   }>;
 }>) {
   const evaluator = await getEvaluatorContext();
@@ -27,6 +28,7 @@ export default async function EvaluatorReviewsPage({
     jobId: requestedJobId,
     applicantNumber: requestedApplicantNumber,
     page: requestedPage,
+    status: requestedStatus,
   } = await searchParams;
   const selectedJobId =
     typeof requestedJobId === "string" ? requestedJobId : undefined;
@@ -39,6 +41,9 @@ export default async function EvaluatorReviewsPage({
     typeof requestedPage === "string" ? Number(requestedPage) : 1;
   const page =
     Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const selectedStatus = reviewQueueStatus(
+    typeof requestedStatus === "string" ? requestedStatus : undefined,
+  );
 
   const [jobsResult, applicantLookupResult] = await Promise.all([
     evaluator.supabase
@@ -56,14 +61,19 @@ export default async function EvaluatorReviewsPage({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const queuePageResult = selectedJobId
-    ? await evaluator.supabase
+  const queueQuery = selectedJobId
+    ? evaluator.supabase
         .from("v_evaluator_review_queue")
         .select(
           "application_id, applicant_number, application_status, applied_at, job_id, job_title, position_title, position_track, review_kind",
           { count: "exact" },
         )
         .eq("job_id", selectedJobId)
+    : null;
+  const queuePageResult = queueQuery
+    ? await (selectedStatus
+        ? queueQuery.eq("application_status", selectedStatus)
+        : queueQuery)
         .order("applied_at", { ascending: false })
         .range(
           (page - 1) * REVIEW_QUEUE_PAGE_SIZE,
@@ -109,8 +119,8 @@ export default async function EvaluatorReviewsPage({
     1,
     Math.ceil(waitingCount / REVIEW_QUEUE_PAGE_SIZE),
   );
-  if (selectedJobId && page > totalPages && waitingCount > 0) {
-    redirect(`/evaluator/reviews?jobId=${selectedJobId}&page=${totalPages}`);
+  if (selectedJobId && page > totalPages) {
+    redirect(reviewQueueHref(selectedJobId, totalPages, selectedStatus));
   }
 
   const applicants = queuePageResult.data ?? [];
@@ -242,6 +252,7 @@ export default async function EvaluatorReviewsPage({
         selectedJobId={selectedJobId}
         totalPages={totalPages}
         waitingCount={waitingCount}
+        selectedStatus={selectedStatus}
       />
     </>
   );

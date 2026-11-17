@@ -5,6 +5,7 @@ import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import type { PublicViews } from "@/types/database-views";
+import { REVIEW_QUEUE_STATUS_OPTIONS, reviewQueueHref, type ReviewQueueStatus } from "../queue";
 
 type ReviewQueueJob = PublicViews["v_evaluator_review_queue_summary"]["Row"];
 type ReviewQueueApplicant = PublicViews["v_evaluator_review_queue"]["Row"];
@@ -16,6 +17,7 @@ export function ReviewQueueList({
   page,
   totalPages,
   waitingCount,
+  selectedStatus,
 }: {
   jobs: ReviewQueueJob[];
   applicants: ReviewQueueApplicant[];
@@ -23,6 +25,7 @@ export function ReviewQueueList({
   page: number;
   totalPages: number;
   waitingCount: number;
+  selectedStatus?: ReviewQueueStatus;
 }) {
   if (!selectedJobId) {
     if (!jobs.length) {
@@ -92,9 +95,26 @@ export function ReviewQueueList({
   }
 
   const selectedJob = jobs.find((job) => job.job_id === selectedJobId);
+  const statusFilter = (
+    <nav aria-label="Filter applications by status" className="mt-7">
+      <p className="mb-2 text-sm font-semibold text-ink">Application status</p>
+      <div className="flex flex-wrap gap-2">
+        {[{ value: undefined, label: "All statuses" }, ...REVIEW_QUEUE_STATUS_OPTIONS].map((option) => (
+          <Link
+            aria-current={selectedStatus === option.value ? "page" : undefined}
+            className={`inline-flex min-h-10 items-center rounded-sm border px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
+            href={reviewQueueHref(selectedJobId, 1, option.value)}
+            key={option.value ?? "ALL"}
+          >
+            {option.label}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
   if (!selectedJob || !applicants.length) {
     return (
-      <div className="mt-7">
+      <>{selectedJob && statusFilter}<div className="mt-7">
         <EmptyState
           action={
             <Link
@@ -104,15 +124,15 @@ export function ReviewQueueList({
               Back to job postings
             </Link>
           }
-          description="This posting no longer has applicants waiting for review."
-          title="Queue is clear"
+          description={selectedStatus ? "Choose another status to see applicants in this posting." : "This posting no longer has applicants waiting for review."}
+          title={selectedStatus ? "No applicants with this status" : "Queue is clear"}
         />
-      </div>
+      </div></>
     );
   }
 
   return (
-    <div className="mt-7 overflow-hidden rounded-sm border border-line bg-panel">
+    <>{statusFilter}<div className="mt-5 overflow-hidden rounded-sm border border-line bg-panel">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-5 py-4">
         <div>
           <h2 className="font-semibold text-ink">Applicants</h2>
@@ -138,7 +158,7 @@ export function ReviewQueueList({
               <span>Applied {formatDate(item.applied_at)}</span>
               <WorkflowStatusTag status={item.application_status} />
             </div>
-            <Link className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}`}>Review applicant <ArrowRightIcon aria-hidden="true" className="size-4" /></Link>
+            <Link className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}${selectedStatus ? `&status=${selectedStatus}` : ""}`}>Review applicant <ArrowRightIcon aria-hidden="true" className="size-4" /></Link>
           </article>
         ))}
       </div>
@@ -201,7 +221,7 @@ export function ReviewQueueList({
                 <td className="px-5 py-4 text-right">
                   <Link
                     className="inline-flex min-h-10 items-center justify-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
-                    href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}`}
+                    href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Review applicant
                   </Link>
@@ -215,7 +235,7 @@ export function ReviewQueueList({
         <Link
           aria-disabled={page <= 1}
           className={`text-sm font-semibold ${page <= 1 ? "pointer-events-none text-muted" : "text-primary hover:text-primary-dark"}`}
-          href={`/evaluator/reviews?jobId=${selectedJobId}&page=${Math.max(1, page - 1)}`}
+          href={reviewQueueHref(selectedJobId, Math.max(1, page - 1), selectedStatus)}
         >
           Previous
         </Link>
@@ -225,11 +245,11 @@ export function ReviewQueueList({
         <Link
           aria-disabled={page >= totalPages}
           className={`text-sm font-semibold ${page >= totalPages ? "pointer-events-none text-muted" : "text-primary hover:text-primary-dark"}`}
-          href={`/evaluator/reviews?jobId=${selectedJobId}&page=${Math.min(totalPages, page + 1)}`}
+          href={reviewQueueHref(selectedJobId, Math.min(totalPages, page + 1), selectedStatus)}
         >
           Next
         </Link>
       </div>
-    </div>
+    </div></>
   );
 }
