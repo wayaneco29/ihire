@@ -65,13 +65,12 @@ export function ReferencesStep({
           contentPadding={false}
           header={
             <h4
-              className="mb-4 text-sm font-semibold text-ink"
+              className="mb-4 text-primary-dark font-semibold text-ink px-4 py-3 bg-primary-light"
               id={`reference-heading-${index + 1}`}
             >
               Reference {index + 1}
             </h4>
           }
-          headerClassName="p-4 pb-0 sm:p-5 sm:pb-0"
           key={index}
         >
           <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">

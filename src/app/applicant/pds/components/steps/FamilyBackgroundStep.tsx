@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dayjs from "dayjs";
-import { PlusIcon, UserIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, type Resolver } from "react-hook-form";
 import { FormDatePicker, FormInput, FormSelect } from "@/components/form";
@@ -15,6 +15,7 @@ import { createStepTwoDefaults } from "./step-two-defaults";
 import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
 import { NAME_EXTENSION_OPTIONS } from "@/constants/pds-options";
+import { PdsPersonPlusIcon } from "../PdsPersonPlusIcon";
 
 type Props = {
   draftData: Json;
@@ -177,14 +178,7 @@ export function FamilyBackgroundStep({
           control={control}
           createRow={() => ({ full_name: "", date_of_birth: null })}
           emptyDescription="Add a child if this applies to you. You'll enter their name and date of birth."
-          emptyIcon={
-            <span className="relative grid size-12 place-items-center">
-              <UserIcon aria-hidden="true" className="size-10 stroke-[1.75]" />
-              <span className="absolute -bottom-0.5 -right-1 grid size-6 place-items-center rounded-full bg-primary text-on-primary">
-                <PlusIcon aria-hidden="true" className="size-4 stroke-[2.5]" />
-              </span>
-            </span>
-          }
+          emptyIcon={<PdsPersonPlusIcon />}
           emptyTitle="No children added yet"
           label="Child"
           name="children"

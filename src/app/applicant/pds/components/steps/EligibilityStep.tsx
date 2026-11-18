@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import dayjs from "dayjs";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, type Resolver } from "react-hook-form";
 import { FormDatePicker, FormInput } from "@/components/form";
 import { DynamicRows } from "../DynamicRows";
+import { PdsSectionCard } from "../PdsSectionCard";
+import { PdsPersonPlusIcon } from "../PdsPersonPlusIcon";
 import type { Json } from "@/types/database";
 import { savePdsEligibilityStep } from "../../actions/steps-four-five";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
@@ -74,72 +77,75 @@ export function EligibilityStep({
 
   return (
     <form className="space-y-7" onSubmit={handleSubmit(submitStep)}>
-      <div>
-        <h3 className="text-base font-semibold text-ink">
-          Civil service eligibility
-        </h3>
-        <p className="mt-1 text-sm leading-6 text-muted">
+      <PdsSectionCard title="Civil service eligibility">
+        <p className="mb-4 text-sm leading-6 text-muted">
           Add each eligibility you hold. Leave this section empty if you have
           none.
         </p>
-      </div>
 
-      <DynamicRows
-        addLabel="Add eligibility"
-        control={control}
-        createRow={() => ({
-          eligibility_name: "",
-          rating: null,
-          exam_date: null,
-          exam_place: "",
-          license_no: "",
-          license_valid_until: null,
-        })}
-        label="Eligibility"
-        maxRows={100}
-        name="eligibility"
-        renderRow={(index) => (
-          <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
-            <FormInput
-              control={control}
-              label="Career service / eligibility name"
-              name={`eligibility.${index}.eligibility_name`}
-              required
-            />
-            <FormInput
-              control={control}
-              label="Rating"
-              max={100}
-              min={0}
-              name={`eligibility.${index}.rating`}
-              step="0.01"
-              type="number"
-            />
-            <FormDatePicker
-              control={control}
-              format="MMMM D, YYYY"
-              label="Date of examination / conferment"
-              name={`eligibility.${index}.exam_date`}
-            />
-            <FormInput
-              control={control}
-              label="Place of examination / conferment"
-              name={`eligibility.${index}.exam_place`}
-            />
-            <FormInput
-              control={control}
-              label="License No."
-              name={`eligibility.${index}.license_no`}
-            />
-            <FormDatePicker
-              control={control}
-              format="MMMM D, YYYY"
-              label="License validity date"
-              name={`eligibility.${index}.license_valid_until`}
-            />
-          </div>
-        )}
-      />
+        <DynamicRows
+          addButtonPlacement="last-row"
+          addLabel="Add eligibility"
+          addButtonVariant="filled"
+          addIcon={<PlusIcon aria-hidden="true" className="size-4" />}
+          control={control}
+          createRow={() => ({
+            eligibility_name: "",
+            rating: null,
+            exam_date: null,
+            exam_place: "",
+            license_no: "",
+            license_valid_until: null,
+          })}
+          label="Eligibility"
+          maxRows={100}
+          emptyDescription="Add a civil service eligibility if you have one."
+          emptyIcon={<PdsPersonPlusIcon />}
+          emptyTitle="No eligibility records yet"
+          name="eligibility"
+          renderRow={(index) => (
+            <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
+              <FormInput
+                control={control}
+                label="Eligibility name"
+                name={`eligibility.${index}.eligibility_name`}
+                required
+              />
+              <FormInput
+                control={control}
+                label="Rating"
+                max={100}
+                min={0}
+                name={`eligibility.${index}.rating`}
+                step="0.01"
+                type="number"
+              />
+              <FormDatePicker
+                control={control}
+                format="MMMM D, YYYY"
+                label="Date of examination"
+                name={`eligibility.${index}.exam_date`}
+              />
+              <FormInput
+                control={control}
+                label="Place of examination"
+                name={`eligibility.${index}.exam_place`}
+              />
+              <FormInput
+                control={control}
+                label="License No."
+                name={`eligibility.${index}.license_no`}
+              />
+              <FormDatePicker
+                control={control}
+                format="MMMM D, YYYY"
+                label="License validity date"
+                name={`eligibility.${index}.license_valid_until`}
+              />
+            </div>
+          )}
+        />
+      </PdsSectionCard>
 
       <PdsStepFooter
         isFirstStep={false}

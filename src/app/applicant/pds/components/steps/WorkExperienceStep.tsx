@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dayjs from "dayjs";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, type Resolver } from "react-hook-form";
 import {
@@ -13,6 +14,8 @@ import {
 } from "@/components/form";
 import { APPOINTMENT_STATUS_OPTIONS } from "@/constants/pds-options";
 import { DynamicRows } from "../DynamicRows";
+import { PdsSectionCard } from "../PdsSectionCard";
+import { PdsPersonPlusIcon } from "../PdsPersonPlusIcon";
 import type { Json } from "@/types/database";
 import { savePdsWorkExperienceStep } from "../../actions/steps-four-five";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
@@ -77,112 +80,117 @@ export function WorkExperienceStep({
 
   return (
     <form className="space-y-7" onSubmit={handleSubmit(submitStep)}>
-      <div>
-        <h3 className="text-base font-semibold text-ink">Work experience</h3>
-        <p className="mt-1 text-sm leading-6 text-muted">
+      <PdsSectionCard title="Work experience">
+        <p className="mb-4 text-sm leading-6 text-muted">
           Add each role with the most recent start date first. The saved list
           will be sorted this way. Leave the end date blank for a current
           position. This section may be left empty.
         </p>
-      </div>
 
-      <DynamicRows
-        addLabel="Add work experience"
-        control={control}
-        createRow={() => ({
-          date_from: null,
-          date_to: null,
-          position_title: "",
-          agency_company: "",
-          monthly_salary: null,
-          salary_grade_step: "",
-          appointment_status: "",
-          appointment_status_other: "",
-          is_gov_service: null,
-          duties_description: "",
-        })}
-        label="Work experience"
-        maxRows={100}
-        name="workExperience"
-        renderRow={(index) => {
-          const status = values.workExperience?.[index]?.appointment_status;
-          return (
-            <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
-              <FormDatePicker
-                control={control}
-                format="MMMM D, YYYY"
-                label="From"
-                name={`workExperience.${index}.date_from`}
-                required
-              />
-              <FormDatePicker
-                control={control}
-                format="MMMM D, YYYY"
-                hint="Leave blank if you currently hold this position."
-                label="To"
-                name={`workExperience.${index}.date_to`}
-              />
-              <FormInput
-                control={control}
-                label="Position title"
-                name={`workExperience.${index}.position_title`}
-                required
-              />
-              <FormInput
-                control={control}
-                label="Agency / company"
-                name={`workExperience.${index}.agency_company`}
-                required
-              />
-              <FormInput
-                control={control}
-                label="Monthly salary"
-                min={0}
-                name={`workExperience.${index}.monthly_salary`}
-                step="0.01"
-                type="number"
-              />
-              <FormInput
-                control={control}
-                label="Salary grade / step"
-                name={`workExperience.${index}.salary_grade_step`}
-              />
-              <FormSelect
-                allowClear
-                control={control}
-                label="Status of appointment"
-                name={`workExperience.${index}.appointment_status`}
-                options={[...APPOINTMENT_STATUS_OPTIONS]}
-                placeholder="Choose status"
-              />
-              {status === "Other" && (
-                <FormInput
+        <DynamicRows
+          addButtonPlacement="last-row"
+          addLabel="Add work experience"
+          addButtonVariant="filled"
+          addIcon={<PlusIcon aria-hidden="true" className="size-4" />}
+          control={control}
+          createRow={() => ({
+            date_from: null,
+            date_to: null,
+            position_title: "",
+            agency_company: "",
+            monthly_salary: null,
+            salary_grade_step: "",
+            appointment_status: "",
+            appointment_status_other: "",
+            is_gov_service: null,
+            duties_description: "",
+          })}
+          label="Work experience"
+          maxRows={100}
+          emptyDescription="Add a current or previous position if this applies to you."
+          emptyIcon={<PdsPersonPlusIcon />}
+          emptyTitle="No work experience added yet"
+          name="workExperience"
+          renderRow={(index) => {
+            const status = values.workExperience?.[index]?.appointment_status;
+            return (
+              <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                <FormDatePicker
                   control={control}
-                  label="Please specify appointment status"
-                  name={`workExperience.${index}.appointment_status_other`}
+                  format="MMMM D, YYYY"
+                  label="From"
+                  name={`workExperience.${index}.date_from`}
                   required
                 />
-              )}
-              <FormRadioYesNo
-                control={control}
-                label="Government service"
-                name={`workExperience.${index}.is_gov_service`}
-                required
-              />
-              <div className="sm:col-span-2 lg:col-span-3">
-                <FormTextArea
+                <FormDatePicker
                   control={control}
-                  label="Brief description of duties"
-                  maxLength={3000}
-                  name={`workExperience.${index}.duties_description`}
-                  rows={3}
-                  showCount
+                  format="MMMM D, YYYY"
+                  hint="Leave blank if you currently hold this position."
+                  label="To"
+                  name={`workExperience.${index}.date_to`}
                 />
+                <FormInput
+                  control={control}
+                  label="Position title"
+                  name={`workExperience.${index}.position_title`}
+                  required
+                />
+                <FormInput
+                  control={control}
+                  label="Agency / company"
+                  name={`workExperience.${index}.agency_company`}
+                  required
+                />
+                <FormInput
+                  control={control}
+                  label="Monthly salary"
+                  min={0}
+                  name={`workExperience.${index}.monthly_salary`}
+                  step="0.01"
+                  type="number"
+                />
+                <FormInput
+                  control={control}
+                  label="Salary grade / step"
+                  name={`workExperience.${index}.salary_grade_step`}
+                />
+                <FormSelect
+                  allowClear
+                  control={control}
+                  label="Status of appointment"
+                  name={`workExperience.${index}.appointment_status`}
+                  options={[...APPOINTMENT_STATUS_OPTIONS]}
+                  placeholder="Choose status"
+                />
+                {status === "Other" && (
+                  <FormInput
+                    control={control}
+                    label="Please specify appointment status"
+                    name={`workExperience.${index}.appointment_status_other`}
+                    required
+                  />
+                )}
+                <FormRadioYesNo
+                  control={control}
+                  label="Government service"
+                  name={`workExperience.${index}.is_gov_service`}
+                  required
+                />
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <FormTextArea
+                    control={control}
+                    label="Brief description of duties"
+                    maxLength={3000}
+                    name={`workExperience.${index}.duties_description`}
+                    rows={3}
+                    showCount
+                  />
+                </div>
               </div>
-            </div>
-          );
-        }}
-      />
+            );
+          }}
+        />
+      </PdsSectionCard>
 
       <PdsStepFooter
         isFirstStep={false}
