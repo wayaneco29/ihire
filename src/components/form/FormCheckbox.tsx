@@ -33,10 +33,12 @@ export function FormCheckbox<T extends FieldValues>(
             onBlur={field.onBlur}
             onChange={(event) => field.onChange(event.target.checked)}
           >
-            <span className="text-sm font-medium text-ink">
-              {label}
-              {required && <span className="ml-1 text-danger">*</span>}
-            </span>
+            {label && (
+              <span className="text-sm font-medium text-ink">
+                {label}
+                {required && <span className="ml-1 text-danger">*</span>}
+              </span>
+            )}
           </Checkbox>
           {(fieldState.error?.message || hint) && (
             <p

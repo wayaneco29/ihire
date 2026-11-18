@@ -21,7 +21,7 @@ export function FieldFrame({
     <div className="min-w-0">
       {label && (
         <label
-          className="mb-1.5 block text-sm font-medium text-ink"
+          className="mb-1.5 block text-xs font-medium text-ink"
           htmlFor={id}
           id={`${id}-label`}
         >
@@ -32,7 +32,7 @@ export function FieldFrame({
       {children}
       {(error || hint) && (
         <p
-          className={`mt-1.5 text-xs leading-5 ${error ? "text-danger" : "text-muted"}`}
+          className={`mt-1.5 text-[10px] leading-2.5 ${error ? "text-danger" : "text-muted"}`}
           id={error ? `${id}-error` : `${id}-hint`}
           role={error ? "alert" : undefined}
         >

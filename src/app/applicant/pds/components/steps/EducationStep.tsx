@@ -28,6 +28,7 @@ import {
 } from "./step-three-defaults";
 import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
+import { FieldFrame } from "@/components/form/FieldFrame";
 
 type Props = {
   draftData: Json;
@@ -51,9 +52,9 @@ function EducationFields({
   });
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2.5">
       {graduateStudies && (
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
           <FormSelect
             control={control}
             label="Graduate degree type"
@@ -65,12 +66,14 @@ function EducationFields({
             placeholder="Choose degree type"
             required
           />
-          <FormCheckbox
-            control={control}
-            label="I completed this degree"
-            name={`education.${index}.graduate_degree_completed`}
-            required
-          />
+          <FieldFrame label="I completed this degree" id="mxJgoo">
+            <FormCheckbox
+              control={control}
+              label=""
+              name={`education.${index}.graduate_degree_completed`}
+              required
+            />
+          </FieldFrame>
           {!degreeCompleted && (
             <FormInput
               control={control}
@@ -153,11 +156,6 @@ function GraduationYearField({
     <FormYearPicker
       control={control}
       disabled={periodFrom == null}
-      hint={
-        periodFrom == null
-          ? "Enter the period start year first."
-          : "Leave blank if you didn’t graduate."
-      }
       label="Year graduated"
       maxYear={new Date().getFullYear()}
       minYear={periodFrom ?? 1900}
@@ -216,16 +214,6 @@ export function EducationStep({
 
   return (
     <form className="space-y-7" onSubmit={handleSubmit(submitStep)}>
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-          Educational background
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Open each level you attended and fill it in. Skip any level you didn’t
-          attend, and add one entry for every graduate degree.
-        </p>
-      </div>
-
       <div className="space-y-3">
         {fixedEducationOptions.map(({ label, value }, index) => {
           const row = educationValues[index];
@@ -255,7 +243,7 @@ export function EducationStep({
           return (
             <PdsSectionCard
               aria-label={`${title} education`}
-              contentClassName="border-t border-line-subtle p-4 sm:p-5"
+              contentClassName="border-t border-line-subtle gap-x-4! gap-y-2.5 p-4 sm:p-5"
               contentId={`education-${value.toLowerCase()}-content`}
               contentPadding={false}
               header={
@@ -264,7 +252,9 @@ export function EducationStep({
                   aria-expanded={openLevel === value}
                   className="flex min-h-[4.5rem] w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary active:!transform-none sm:px-5"
                   onClick={() =>
-                    setOpenLevel((current) => (current === value ? null : value))
+                    setOpenLevel((current) =>
+                      current === value ? null : value,
+                    )
                   }
                   type="button"
                   variant="unstyled"
@@ -300,7 +290,7 @@ export function EducationStep({
                   </span>
                 </Button>
               }
-              headerClassName="p-0"
+              headerClassName="p-0 bg-primary-light"
               key={value}
             >
               {openLevel === value ? (
@@ -349,21 +339,21 @@ export function EducationStep({
               contentClassName="px-4 pb-4 pt-0 sm:px-5 sm:pb-5"
               contentPadding={false}
               header={
-                <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="mb-4 flex items-center justify-between gap-3 border-b border-line-subtle px-4 py-3 sm:px-5 bg-primary-light">
                   <h4 className="text-sm font-semibold text-ink">
                     Graduate study {graduateIndex + 1}
                   </h4>
                   <Button
-                    className="!h-auto !rounded-sm !px-6 !py-2 !text-xs"
+                    className="text-danger! enabled:hover:bg-danger/10! text-sm!"
                     onClick={() => remove(index)}
                     type="button"
-                    variant="danger"
+                    size="sm"
+                    variant="ghost"
                   >
                     Remove
                   </Button>
                 </div>
               }
-              headerClassName="p-4 pb-0 sm:p-5 sm:pb-0"
               key={field.id}
             >
               <div className="grid grid-cols-1 gap-x-4">

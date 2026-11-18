@@ -79,13 +79,6 @@ export function QuestionnaireStep({
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit(submitStep)}>
-      <div className="mb-6">
-        <h3 className="text-base font-semibold text-ink">Questionnaire</h3>
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Answer all twelve items. Follow-up fields appear when you answer Yes.
-        </p>
-      </div>
-
       {PDS_QUESTIONNAIRE_ITEMS.map((item, index) => {
         const answer = values.questionnaire[index]?.answer;
         return (

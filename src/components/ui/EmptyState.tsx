@@ -6,6 +6,9 @@ type EmptyStateProps = {
   title: string;
   description?: string;
   icon?: ReactNode;
+  iconClassName?: string;
+  contentClassName?: string;
+  headingClassName?: string;
   action?: ReactNode;
   compact?: boolean;
   className?: string;
@@ -15,6 +18,9 @@ export function EmptyState({
   title,
   description,
   icon,
+  iconClassName,
+  contentClassName,
+  headingClassName,
   action,
   compact = false,
   className,
@@ -36,6 +42,7 @@ export function EmptyState({
         className={cn(
           "max-w-full",
           compact && "flex flex-col items-center gap-3",
+          contentClassName,
         )}
       >
         {icon && (
@@ -44,6 +51,7 @@ export function EmptyState({
             className={cn(
               "mx-auto mb-4 grid size-12 place-items-center rounded-sm bg-primary-light text-xl text-primary",
               compact && "mb-0 size-7 shrink-0 rounded-sm text-base",
+              iconClassName,
             )}
           >
             {icon}
@@ -54,6 +62,7 @@ export function EmptyState({
             className={cn(
               "text-base font-normal text-black/50",
               compact && "text-sm font-normal",
+              headingClassName,
             )}
           >
             {title}

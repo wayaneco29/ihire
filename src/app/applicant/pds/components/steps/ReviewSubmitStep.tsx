@@ -745,15 +745,6 @@ export function ReviewSubmitStep({
   return (
     <form className="pb-28" onSubmit={handleSubmit(submit)}>
       <div className="min-w-0">
-        <h2 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-          Review your PDS
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Check what you’ve entered, then submit. Your previously submitted
-          version stays active for your applications until you submit this
-          update.
-        </p>
-
         <div className="my-5 flex flex-wrap gap-x-6 gap-y-2 rounded-lg border border-line bg-panel px-4 py-3.5 text-sm">
           <span>
             <strong className="mr-1.5 text-lg text-ink">

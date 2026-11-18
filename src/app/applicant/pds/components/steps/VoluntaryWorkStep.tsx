@@ -24,7 +24,9 @@ function serializableValues(values: PdsStepSixValues) {
   return {
     voluntaryWork: values.voluntaryWork.map((row) => ({
       ...row,
-      date_from: row.date_from ? dayjs(row.date_from).format("YYYY-MM-DD") : null,
+      date_from: row.date_from
+        ? dayjs(row.date_from).format("YYYY-MM-DD")
+        : null,
       date_to: row.date_to ? dayjs(row.date_to).format("YYYY-MM-DD") : null,
     })),
   };
@@ -73,8 +75,8 @@ export function VoluntaryWorkStep({
       <div>
         <h3 className="text-base font-semibold text-ink">Voluntary work</h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Include the organization and address, dates, hours, and position or nature of work.
-          Leave this section empty if it does not apply.
+          Include the organization and address, dates, hours, and position or
+          nature of work. Leave this section empty if it does not apply.
         </p>
       </div>
 
@@ -92,7 +94,7 @@ export function VoluntaryWorkStep({
         maxRows={100}
         name="voluntaryWork"
         renderRow={(index) => (
-          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
               <FormTextArea
                 control={control}
@@ -140,7 +142,7 @@ export function VoluntaryWorkStep({
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "All changes saved"
-              : autosave.message ?? "Your draft saves automatically."
+              : (autosave.message ?? "Your draft saves automatically.")
         }
         submitMessage={submitMessage}
       />

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { HashtagIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { StartPdsUpdateButton } from "../pds/components/StartPdsUpdateButton";
@@ -22,13 +23,13 @@ export default async function ApplicantProfilePage() {
   const draft = versions?.find((version) => version.status === "DRAFT");
 
   return (
-    <div className="min-h-[calc(100vh-4.5rem)] bg-profile-canvas px-4 py-6 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 lg:-mx-10 lg:px-10">
+    <div className="min-h-[calc(100vh-4.5rem)] bg-canvas px-4 py-6 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 lg:-mx-10 lg:px-10">
       <PageHeader
         actions={
           submitted ? (
             draft ? (
               <Link
-                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href="/applicant/pds"
               >
                 Continue PDS update
@@ -42,48 +43,67 @@ export default async function ApplicantProfilePage() {
         eyebrow="Applicant workspace"
         title="My profile"
       />
-      <div className="mt-7 inline-flex items-center gap-3 rounded-sm bg-primary-light/60 px-3.5 py-3 border border-primary/20 w-full">
-        <HashtagIcon aria-hidden="true" className="size-8 text-primary" />
-        <span>
-          <span className="block text-[10px] font-semibold uppercase tracking-widest text-profile-muted">
-            Applicant number
-          </span>
-          <span className="mt-0.5 block font-[Bricolage_Grotesque] text-lg font-semibold tracking-wide text-ink">
-            {applicant.applicant.applicant_number}
-          </span>
-        </span>
-      </div>
+      <div className="mx-auto mt-6 max-w-6xl">
+        <SurfaceCard as="section" className="overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-l-4 border-primary px-4 py-4 sm:px-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary-light text-primary">
+                <HashtagIcon aria-hidden="true" className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm text-muted">Applicant number</p>
+                <p className="mt-0.5 break-all font-[Bricolage_Grotesque] text-xl font-semibold tracking-wide text-ink">
+                  {applicant.applicant.applicant_number}
+                </p>
+              </div>
+            </div>
+            {submitted && (
+              <div className="flex items-center gap-3 border-t border-line-subtle pt-4 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0">
+                <WorkflowStatusTag label="Submitted" status="SUBMITTED" />
+                <div>
+                  <p className="text-sm font-medium text-ink">
+                    Personal Data Sheet
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    Version {submitted.version_no}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </SurfaceCard>
 
-      {versionsError ? (
-        <div className="mt-7">
-          <EmptyState
-            description="Your saved PDS is unchanged. Refresh this page to try loading it again."
-            title="Profile temporarily unavailable"
+        {versionsError ? (
+          <div className="mt-6">
+            <EmptyState
+              description="Your saved PDS is unchanged. Refresh this page to try loading it again."
+              title="Profile temporarily unavailable"
+            />
+          </div>
+        ) : !submitted ? (
+          <div className="mt-6">
+            <EmptyState
+              action={
+                <Link
+                  className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href="/applicant/pds"
+                >
+                  Complete your PDS
+                </Link>
+              }
+              description="Submit your Personal Data Sheet to create your applicant profile."
+              title="No submitted PDS yet"
+            />
+          </div>
+        ) : (
+          <ProfileContent
+            applicant={applicant}
+            hasDraft={Boolean(draft)}
+            pdsVersionId={submitted.id}
+            versionNumber={submitted.version_no}
           />
-        </div>
-      ) : !submitted ? (
-        <div className="mt-7">
-          <EmptyState
-            action={
-              <Link
-                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
-                href="/applicant/pds"
-              >
-                Complete your PDS
-              </Link>
-            }
-            description="Submit your Personal Data Sheet to create your applicant profile."
-            title="No submitted PDS yet"
-          />
-        </div>
-      ) : (
-        <ProfileContent
-          applicant={applicant}
-          hasDraft={Boolean(draft)}
-          pdsVersionId={submitted.id}
-          versionNumber={submitted.version_no}
-        />
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -154,16 +174,6 @@ async function ProfileContent({
 
   return (
     <>
-      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-profile-line py-3">
-        <WorkflowStatusTag status="SUBMITTED" />
-        <p className="text-sm text-profile-muted">
-          Submitted Personal Data Sheet
-          <span className="mx-2 text-profile-muted" aria-hidden="true">
-            /
-          </span>
-          Version {versionNumber}
-        </p>
-      </div>
       <ProfileDetails
         education={educationResult.data ?? []}
         experience={experienceResult.data ?? []}

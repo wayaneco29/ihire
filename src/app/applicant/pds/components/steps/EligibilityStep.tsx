@@ -24,7 +24,9 @@ function serializableValues(values: PdsStepFourValues) {
   return {
     eligibility: values.eligibility.map((row) => ({
       ...row,
-      exam_date: row.exam_date ? dayjs(row.exam_date).format("YYYY-MM-DD") : null,
+      exam_date: row.exam_date
+        ? dayjs(row.exam_date).format("YYYY-MM-DD")
+        : null,
       license_valid_until: row.license_valid_until
         ? dayjs(row.license_valid_until).format("YYYY-MM-DD")
         : null,
@@ -77,7 +79,8 @@ export function EligibilityStep({
           Civil service eligibility
         </h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Add each eligibility you hold. Leave this section empty if you have none.
+          Add each eligibility you hold. Leave this section empty if you have
+          none.
         </p>
       </div>
 
@@ -96,7 +99,7 @@ export function EligibilityStep({
         maxRows={100}
         name="eligibility"
         renderRow={(index) => (
-          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
             <FormInput
               control={control}
               label="Career service / eligibility name"
@@ -147,7 +150,7 @@ export function EligibilityStep({
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "All changes saved"
-              : autosave.message ?? "Your draft saves automatically."
+              : (autosave.message ?? "Your draft saves automatically.")
         }
         submitMessage={submitMessage}
       />

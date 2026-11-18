@@ -58,14 +58,6 @@ export function ReferencesStep({
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit(submitStep)}>
-      <div>
-        <h3 className="text-base font-semibold text-ink">References</h3>
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Enter exactly three people who are not related to you by consanguinity
-          or affinity.
-        </p>
-      </div>
-
       {values.references.map((_, index) => (
         <PdsSectionCard
           aria-labelledby={`reference-heading-${index + 1}`}
@@ -82,19 +74,12 @@ export function ReferencesStep({
           headerClassName="p-4 pb-0 sm:p-5 sm:pb-0"
           key={index}
         >
-          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
             <FormInput
               control={control}
               label="Full name"
               name={`references.${index}.name`}
               required
-            />
-            <FormTextArea
-              control={control}
-              label="Office / residential address"
-              name={`references.${index}.address`}
-              required
-              rows={2}
             />
             <FormInput
               control={control}
@@ -102,6 +87,15 @@ export function ReferencesStep({
               label="Contact no. and/or email"
               name={`references.${index}.contact`}
               required
+            />
+          </div>
+          <div className="grid grid-cols-1 mt-2.5">
+            <FormTextArea
+              control={control}
+              label="Office / residential address"
+              name={`references.${index}.address`}
+              required
+              rows={2}
             />
           </div>
         </PdsSectionCard>
@@ -123,7 +117,7 @@ export function ReferencesStep({
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "All changes saved"
-              : autosave.message ?? "Your draft saves automatically."
+              : (autosave.message ?? "Your draft saves automatically.")
         }
         submitMessage={submitMessage}
       />

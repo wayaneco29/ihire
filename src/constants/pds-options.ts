@@ -33,7 +33,9 @@ JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC
 MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW
 PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM
 TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW
-`.trim().split(/\s+/);
+`
+  .trim()
+  .split(/\s+/);
 
 const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -53,6 +55,20 @@ export const BLOOD_TYPE_OPTIONS = [
   { label: "AB−", value: "AB-" },
   { label: "O+", value: "O+" },
   { label: "O−", value: "O-" },
+] as const;
+
+export const NAME_EXTENSION_OPTIONS = [
+  { label: "JR", value: "JR" },
+  { label: "SR", value: "SR" },
+  { label: "I", value: "I" },
+  { label: "II", value: "II" },
+  { label: "III", value: "III" },
+  { label: "IV", value: "IV" },
+  { label: "V", value: "V" },
+  { label: "VI", value: "VI" },
+  { label: "VIII", value: "VIII" },
+  { label: "IX", value: "IX" },
+  { label: "X", value: "X" },
 ] as const;
 
 export const CIVIL_STATUS_OPTIONS = [

@@ -12,7 +12,10 @@ const addressSchema = yup.object({
   street: optionalText(),
   subdivision_village: optionalText(),
   barangay: yup.string().trim().required("Barangay is required."),
-  city_municipality: yup.string().trim().required("City or municipality is required."),
+  city_municipality: yup
+    .string()
+    .trim()
+    .required("City or municipality is required."),
   province: yup.string().trim().required("Province is required."),
   zip_code: yup.string().trim().required("ZIP code is required."),
 });
@@ -25,13 +28,23 @@ export const pdsStepOneSchema = yup.object({
       middle_name: optionalText(),
       name_extension: optionalText(),
       date_of_birth: pdsDateSchema,
-      place_of_birth: yup.string().trim().required("Place of birth is required."),
+      place_of_birth: yup
+        .string()
+        .trim()
+        .required("Place of birth is required."),
       sex_at_birth: yup
         .mixed<"MALE" | "FEMALE">()
         .oneOf(["MALE", "FEMALE"], "Choose a sex at birth.")
         .required("Sex at birth is required."),
       civil_status: yup
-        .mixed<"SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "SOLO_PARENT" | "OTHER">()
+        .mixed<
+          | "SINGLE"
+          | "MARRIED"
+          | "WIDOWED"
+          | "SEPARATED"
+          | "SOLO_PARENT"
+          | "OTHER"
+        >()
         .oneOf(
           ["SINGLE", "MARRIED", "WIDOWED", "SEPARATED", "SOLO_PARENT", "OTHER"],
           "Choose a civil status.",
@@ -263,7 +276,10 @@ export const pdsStepFourSchema = yup.object({
     .of(
       yup
         .object({
-          eligibility_name: yup.string().trim().required("Eligibility name is required."),
+          eligibility_name: yup
+            .string()
+            .trim()
+            .required("Eligibility name is required."),
           rating: yup
             .number()
             .transform((value, originalValue) =>
@@ -302,8 +318,14 @@ export const pdsStepFiveSchema = yup.object({
               );
             },
           ),
-          position_title: yup.string().trim().required("Position title is required."),
-          agency_company: yup.string().trim().required("Agency / company is required."),
+          position_title: yup
+            .string()
+            .trim()
+            .required("Position title is required."),
+          agency_company: yup
+            .string()
+            .trim()
+            .required("Agency / company is required."),
           monthly_salary: yup
             .number()
             .transform((value, originalValue) =>

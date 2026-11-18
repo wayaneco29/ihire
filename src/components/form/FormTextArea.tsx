@@ -16,16 +16,8 @@ type FormTextAreaProps<T extends FieldValues> = FormControlProps<T> & {
 export function FormTextArea<T extends FieldValues>(
   props: FormTextAreaProps<T>,
 ) {
-  const {
-    control,
-    name,
-    label,
-    id,
-    hint,
-    required,
-    rules,
-    ...textAreaProps
-  } = props;
+  const { control, name, label, id, hint, required, rules, ...textAreaProps } =
+    props;
   const textAreaId = fieldId(name, id);
 
   return (
@@ -43,7 +35,13 @@ export function FormTextArea<T extends FieldValues>(
         >
           <Input.TextArea
             {...textAreaProps}
-            aria-describedby={fieldState.error ? `${textAreaId}-error` : hint ? `${textAreaId}-hint` : undefined}
+            aria-describedby={
+              fieldState.error
+                ? `${textAreaId}-error`
+                : hint
+                  ? `${textAreaId}-hint`
+                  : undefined
+            }
             aria-invalid={fieldState.invalid}
             aria-labelledby={`${textAreaId}-label`}
             aria-required={required}

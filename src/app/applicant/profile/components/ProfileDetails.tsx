@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import {
   AcademicCapIcon,
@@ -11,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { formatDate } from "@/utils/format-date";
 import type { Tables } from "@/types/database";
 
@@ -19,6 +18,16 @@ type Education = Tables<"pds_education">;
 type WorkExperience = Tables<"pds_work_experience">;
 type Training = Tables<"pds_learning_development">;
 type OtherInfo = Tables<"pds_other_info">;
+
+const PROFILE_SECTIONS = {
+  personal: { id: "personal-information", title: "Personal information" },
+  education: { id: "education", title: "Educational background" },
+  experience: { id: "work-experience", title: "Work experience" },
+  learning: { id: "learning-development", title: "Learning and development" },
+  skills: { id: "skills-hobbies", title: "Skills and hobbies" },
+} as const;
+
+const PROFILE_SECTION_LINKS = Object.values(PROFILE_SECTIONS);
 
 function InfoValue({
   label,
@@ -29,7 +38,7 @@ function InfoValue({
 }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-profile-muted">{label}</dt>
+      <dt className="text-xs font-medium text-muted">{label}</dt>
       <dd className="mt-1 break-words text-sm text-ink">{value || "—"}</dd>
     </div>
   );
@@ -50,30 +59,30 @@ function ProfileSection({
 }) {
   return (
     <section
-      className="scroll-mt-5 overflow-hidden rounded-sm! border border-profile-line bg-profile-panel shadow-card"
+      aria-labelledby={`${id}-heading`}
+      className="scroll-mt-24 border-b border-line-subtle py-6 first:pt-5 last:border-b-0 last:pb-5"
       id={id}
     >
-      <h2>
-        <span className="flex min-h-[3.25rem] w-full items-center justify-between gap-3 border-b border-profile-line px-4 py-3 text-left sm:px-4">
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="grid size-8 shrink-0 place-items-center rounded-sm bg-primary-light text-sm text-primary"
-            >
-              <span className="[&>svg]:size-4">{icon}</span>
-            </span>
-            <span className="truncate text-sm font-semibold text-ink">
-              {title}
-            </span>
-            {count !== undefined && (
-              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-panel-muted text-[11px] font-medium tabular-nums text-profile-muted">
-                {count}
-              </span>
-            )}
-          </span>
+      <header className="mb-4 flex flex-wrap items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="grid size-9 shrink-0 place-items-center rounded-md bg-primary-light text-primary [&>svg]:size-4"
+        >
+          {icon}
         </span>
-      </h2>
-      <div className="px-4 py-4 sm:px-4">{children}</div>
+        <h2
+          className="font-[Bricolage_Grotesque] text-base font-semibold text-ink"
+          id={`${id}-heading`}
+        >
+          {title}
+        </h2>
+        {count !== undefined && (
+          <span className="rounded-full border border-line px-2 py-0.5 text-xs tabular-nums text-muted">
+            {count}
+          </span>
+        )}
+      </header>
+      {children}
     </section>
   );
 }
@@ -96,9 +105,9 @@ export function ProfileDetails({
   hasDraft: boolean;
 }) {
   return (
-    <div className="mt-5 items-start gap-4">
+    <div className="mt-6 grid items-start gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-6">
       {hasDraft && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 md:col-span-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 lg:col-span-2">
           <div className="min-w-0">
             <p className="text-sm font-medium text-warning">
               PDS update in progress
@@ -112,12 +121,34 @@ export function ProfileDetails({
         </div>
       )}
 
-      <div>
-        <div className="mt-4 space-y-3">
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <SurfaceCard className="p-2" tone="muted">
+          <p className="px-3 py-2 text-xs font-semibold text-muted">
+            On this page
+          </p>
+          <nav aria-label="Profile sections">
+            <ul className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
+              {PROFILE_SECTION_LINKS.map((section) => (
+                <li className="shrink-0" key={section.id}>
+                  <a
+                    className="block whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted hover:bg-panel hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    href={`#${section.id}`}
+                  >
+                    {section.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </SurfaceCard>
+      </aside>
+
+      <div className="min-w-0">
+        <SurfaceCard className="overflow-hidden px-4 sm:px-6">
           <ProfileSection
             icon={<UserIcon className="size-4" />}
-            id="personal-information"
-            title="Personal information"
+            id={PROFILE_SECTIONS.personal.id}
+            title={PROFILE_SECTIONS.personal.title}
           >
             <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
               <InfoValue
@@ -152,12 +183,12 @@ export function ProfileDetails({
 
           <ProfileSection
             count={education.length}
-            id="education"
-            title="Educational background"
+            id={PROFILE_SECTIONS.education.id}
+            title={PROFILE_SECTIONS.education.title}
             icon={<AcademicCapIcon className="size-4" />}
           >
             {education.length ? (
-              <ul className="divide-y divide-profile-line">
+              <ul className="divide-y divide-line-subtle">
                 {education.map((item) => (
                   <li className="py-4 first:pt-1 last:pb-0" key={item.id}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -165,19 +196,19 @@ export function ProfileDetails({
                         <p className="font-medium text-ink">
                           {item.school_name || item.level.replaceAll("_", " ")}
                         </p>
-                        <p className="mt-1 text-sm text-profile-muted">
+                        <p className="mt-1 text-sm text-muted">
                           {item.degree_course ||
                             item.highest_level_units_earned ||
                             "No course details provided"}
                         </p>
                       </div>
-                      <span className="text-sm text-profile-muted">
+                      <span className="text-sm text-muted">
                         {item.period_from ?? "—"} –{" "}
                         {item.period_to ?? "Present"}
                       </span>
                     </div>
                     {item.honors_received && (
-                      <p className="mt-2 text-sm text-profile-muted">
+                      <p className="mt-2 text-sm text-muted">
                         Honors: {item.honors_received}
                       </p>
                     )}
@@ -187,6 +218,7 @@ export function ProfileDetails({
             ) : (
               <EmptyState
                 compact
+                className="[&_h2]:text-muted"
                 icon={<InboxIcon className="size-4" />}
                 title="No education records yet."
               />
@@ -195,12 +227,12 @@ export function ProfileDetails({
 
           <ProfileSection
             count={experience.length}
-            id="work-experience"
-            title="Work experience"
+            id={PROFILE_SECTIONS.experience.id}
+            title={PROFILE_SECTIONS.experience.title}
             icon={<BriefcaseIcon className="size-4" />}
           >
             {experience.length ? (
-              <ul className="mt-3 divide-y divide-profile-line">
+              <ul className="mt-3 divide-y divide-line-subtle">
                 {experience.map((item) => (
                   <li className="py-4 first:pt-1 last:pb-0" key={item.id}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -208,11 +240,11 @@ export function ProfileDetails({
                         <p className="font-medium text-ink">
                           {item.position_title}
                         </p>
-                        <p className="mt-1 text-sm text-profile-muted">
+                        <p className="mt-1 text-sm text-muted">
                           {item.agency_company}
                         </p>
                       </div>
-                      <span className="text-sm text-profile-muted">
+                      <span className="text-sm text-muted">
                         {formatDate(item.date_from, "MMM YYYY")} –{" "}
                         {item.date_to
                           ? formatDate(item.date_to, "MMM YYYY")
@@ -220,7 +252,7 @@ export function ProfileDetails({
                       </span>
                     </div>
                     {item.duties_description && (
-                      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-profile-muted">
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">
                         {item.duties_description}
                       </p>
                     )}
@@ -230,6 +262,7 @@ export function ProfileDetails({
             ) : (
               <EmptyState
                 compact
+                className="[&_h2]:text-muted"
                 icon={<InboxIcon className="size-4" />}
                 title="No work experience records yet."
               />
@@ -238,12 +271,12 @@ export function ProfileDetails({
 
           <ProfileSection
             count={trainings.length}
-            id="learning-development"
-            title="Learning and development"
+            id={PROFILE_SECTIONS.learning.id}
+            title={PROFILE_SECTIONS.learning.title}
             icon={<BookOpenIcon className="size-4" />}
           >
             {trainings.length ? (
-              <ul className="mt-3 divide-y divide-profile-line">
+              <ul className="mt-3 divide-y divide-line-subtle">
                 {trainings.map((item) => (
                   <li
                     className="flex flex-wrap justify-between gap-2 py-3 first:pt-1 last:pb-0"
@@ -251,11 +284,11 @@ export function ProfileDetails({
                   >
                     <div>
                       <p className="font-medium text-ink">{item.title}</p>
-                      <p className="mt-1 text-sm text-profile-muted">
+                      <p className="mt-1 text-sm text-muted">
                         {item.conducted_by || item.ld_type || "Training"}
                       </p>
                     </div>
-                    <span className="text-sm text-profile-muted">
+                    <span className="text-sm text-muted">
                       {formatDate(item.date_from)}
                       {item.date_to ? ` – ${formatDate(item.date_to)}` : ""}
                       {item.hours !== null ? ` · ${item.hours} hours` : ""}
@@ -266,6 +299,7 @@ export function ProfileDetails({
             ) : (
               <EmptyState
                 compact
+                className="[&_h2]:text-muted"
                 icon={<InboxIcon className="size-4" />}
                 title="No learning and development records yet."
               />
@@ -274,8 +308,8 @@ export function ProfileDetails({
 
           <ProfileSection
             count={skills.length}
-            id="skills-hobbies"
-            title="Skills and hobbies"
+            id={PROFILE_SECTIONS.skills.id}
+            title={PROFILE_SECTIONS.skills.title}
             icon={<SparklesIcon className="size-4" />}
           >
             {skills.length ? (
@@ -297,7 +331,7 @@ export function ProfileDetails({
               />
             )}
           </ProfileSection>
-        </div>
+        </SurfaceCard>
       </div>
     </div>
   );

@@ -63,6 +63,7 @@ export function FormYearPicker<T extends FieldValues>(
             className="w-full"
             disabled={disabled}
             disabledDate={disabledDate}
+            size="medium"
             id={pickerId}
             onBlur={field.onBlur}
             onChange={(value) => field.onChange(value?.year() ?? null)}

@@ -42,7 +42,7 @@ export function FormInput<T extends FieldValues>(props: FormInputProps<T>) {
             id={inputId}
             name={field.name}
             onBlur={field.onBlur}
-            size="small"
+            size="medium"
             onChange={field.onChange}
             ref={field.ref}
             value={(field.value ?? "") as InputProps["value"]}

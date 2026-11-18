@@ -25,7 +25,9 @@ function serializableValues(values: PdsStepSevenValues) {
   return {
     learningDevelopment: values.learningDevelopment.map((row) => ({
       ...row,
-      date_from: row.date_from ? dayjs(row.date_from).format("YYYY-MM-DD") : null,
+      date_from: row.date_from
+        ? dayjs(row.date_from).format("YYYY-MM-DD")
+        : null,
       date_to: row.date_to ? dayjs(row.date_to).format("YYYY-MM-DD") : null,
     })),
   };
@@ -76,8 +78,8 @@ export function LearningDevelopmentStep({
           Learning and development
         </h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Record training programs, seminars, workshops, and other learning activities.
-          Leave the section empty if you have none.
+          Record training programs, seminars, workshops, and other learning
+          activities. Leave the section empty if you have none.
         </p>
       </div>
 
@@ -99,10 +101,10 @@ export function LearningDevelopmentStep({
         renderRow={(index) => {
           const type = values.learningDevelopment?.[index]?.ld_type;
           return (
-            <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
               <FormInput
                 control={control}
-                label="Title of learning and development program"
+                label="Title of program"
                 name={`learningDevelopment.${index}.title`}
                 required
               />
@@ -161,7 +163,7 @@ export function LearningDevelopmentStep({
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "All changes saved"
-              : autosave.message ?? "Your draft saves automatically."
+              : (autosave.message ?? "Your draft saves automatically.")
         }
         submitMessage={submitMessage}
       />

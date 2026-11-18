@@ -80,8 +80,9 @@ export function WorkExperienceStep({
       <div>
         <h3 className="text-base font-semibold text-ink">Work experience</h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Add each role with the most recent start date first. The saved list will be sorted this way.
-          Leave the end date blank for a current position. This section may be left empty.
+          Add each role with the most recent start date first. The saved list
+          will be sorted this way. Leave the end date blank for a current
+          position. This section may be left empty.
         </p>
       </div>
 
@@ -106,7 +107,7 @@ export function WorkExperienceStep({
         renderRow={(index) => {
           const status = values.workExperience?.[index]?.appointment_status;
           return (
-            <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
               <FormDatePicker
                 control={control}
                 format="MMMM D, YYYY"
@@ -192,7 +193,7 @@ export function WorkExperienceStep({
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "All changes saved"
-              : autosave.message ?? "Your draft saves automatically."
+              : (autosave.message ?? "Your draft saves automatically.")
         }
         submitMessage={submitMessage}
       />

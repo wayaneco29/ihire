@@ -15,6 +15,7 @@ import {
   BLOOD_TYPE_OPTIONS,
   CIVIL_STATUS_OPTIONS,
   COUNTRY_OPTIONS,
+  NAME_EXTENSION_OPTIONS,
 } from "@/constants/pds-options";
 import type { Json } from "@/types/database";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
@@ -104,28 +105,31 @@ export function PersonalInformationStep({
   return (
     <form className="space-y-8" onSubmit={handleSubmit(submitStep)}>
       <PdsSectionCard title="Personal details">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
             name="personalInfo.surname"
             required
+            placeholder="Enter Surname"
           />
           <FormInput
             control={control}
             label="First name"
             name="personalInfo.first_name"
             required
+            placeholder="Enter First name"
           />
           <FormInput
             control={control}
             label="Middle name"
             name="personalInfo.middle_name"
+            placeholder="Enter Middle name"
           />
-          <FormInput
+          <FormSelect
             control={control}
-            hint="For example, Jr. or Sr."
             label="Name extension"
+            options={[...NAME_EXTENSION_OPTIONS]}
             name="personalInfo.name_extension"
           />
           <FormDatePicker
@@ -197,7 +201,7 @@ export function PersonalInformationStep({
       </PdsSectionCard>
 
       <PdsSectionCard title="Citizenship and identification">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <FormRadio
             control={control}
             label="Citizenship"
@@ -261,7 +265,7 @@ export function PersonalInformationStep({
       </PdsSectionCard>
 
       <PdsSectionCard title="Contact details">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Telephone No."

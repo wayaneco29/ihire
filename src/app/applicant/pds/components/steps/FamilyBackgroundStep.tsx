@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import dayjs from "dayjs";
+import { PlusIcon, UserIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, type Resolver } from "react-hook-form";
-import { FormDatePicker, FormInput } from "@/components/form";
+import { FormDatePicker, FormInput, FormSelect } from "@/components/form";
 import { DynamicRows } from "../DynamicRows";
 import type { Json } from "@/types/database";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
@@ -13,6 +14,7 @@ import { savePdsFamilyStep } from "../../actions/steps-one-three";
 import { createStepTwoDefaults } from "./step-two-defaults";
 import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
+import { NAME_EXTENSION_OPTIONS } from "@/constants/pds-options";
 
 type Props = {
   draftData: Json;
@@ -74,7 +76,7 @@ export function FamilyBackgroundStep({
   return (
     <form className="space-y-8" onSubmit={handleSubmit(submitStep)}>
       <PdsSectionCard title="Spouse">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -90,10 +92,10 @@ export function FamilyBackgroundStep({
             label="Middle name"
             name="familyBackground.spouse_middle_name"
           />
-          <FormInput
+          <FormSelect
             control={control}
-            hint="For example, Jr. or Sr."
             label="Name extension"
+            options={[...NAME_EXTENSION_OPTIONS]}
             name="familyBackground.spouse_name_extension"
           />
           <FormInput
@@ -121,7 +123,7 @@ export function FamilyBackgroundStep({
       </PdsSectionCard>
 
       <PdsSectionCard title="Father">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -137,17 +139,17 @@ export function FamilyBackgroundStep({
             label="Middle name"
             name="familyBackground.father_middle_name"
           />
-          <FormInput
+          <FormSelect
             control={control}
-            hint="For example, Jr. or Sr."
             label="Name extension"
+            options={[...NAME_EXTENSION_OPTIONS]}
             name="familyBackground.father_name_extension"
           />
         </div>
       </PdsSectionCard>
 
       <PdsSectionCard title="Mother's maiden name">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -166,18 +168,24 @@ export function FamilyBackgroundStep({
         </div>
       </PdsSectionCard>
 
-      <section>
-        <div className="mb-4">
-          <h3 className="text-base font-semibold text-ink">Children</h3>
-          <p className="mt-1 text-sm text-muted">
-            Add each child&apos;s full name and date of birth. Leave this
-            section empty if not applicable.
-          </p>
-        </div>
+      <PdsSectionCard title="Children">
         <DynamicRows
+          addButtonPlacement="last-row"
           addLabel="Add child"
+          addButtonVariant="filled"
+          addIcon={<PlusIcon aria-hidden="true" className="size-4" />}
           control={control}
           createRow={() => ({ full_name: "", date_of_birth: null })}
+          emptyDescription="Add a child if this applies to you. You'll enter their name and date of birth."
+          emptyIcon={
+            <span className="relative grid size-12 place-items-center">
+              <UserIcon aria-hidden="true" className="size-10 stroke-[1.75]" />
+              <span className="absolute -bottom-0.5 -right-1 grid size-6 place-items-center rounded-full bg-primary text-on-primary">
+                <PlusIcon aria-hidden="true" className="size-4 stroke-[2.5]" />
+              </span>
+            </span>
+          }
+          emptyTitle="No children added yet"
           label="Child"
           name="children"
           renderRow={(index) => (
@@ -185,6 +193,7 @@ export function FamilyBackgroundStep({
               <FormInput
                 control={control}
                 label="Full name"
+                placeholder="Enter full name"
                 name={`children.${index}.full_name`}
                 required
               />
@@ -197,7 +206,7 @@ export function FamilyBackgroundStep({
             </div>
           )}
         />
-      </section>
+      </PdsSectionCard>
 
       <PdsStepFooter
         isFirstStep={false}

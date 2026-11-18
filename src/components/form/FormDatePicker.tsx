@@ -61,6 +61,7 @@ export function FormDatePicker<T extends FieldValues>(
             aria-labelledby={`${pickerId}-label`}
             aria-required={required}
             className="w-full"
+            size="medium"
             id={pickerId}
             onChange={(value) =>
               field.onChange(
