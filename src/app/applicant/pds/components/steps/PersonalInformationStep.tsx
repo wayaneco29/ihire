@@ -26,6 +26,7 @@ import {
 import { savePdsPersonalStep } from "../../actions/steps-one-three";
 import { AddressFields } from "./AddressFields";
 import { createStepOneDefaults } from "./step-one-defaults";
+import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
@@ -102,11 +103,8 @@ export function PersonalInformationStep({
 
   return (
     <form className="space-y-8" onSubmit={handleSubmit(submitStep)}>
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
-          Personal details
-        </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3  p-4">
+      <PdsSectionCard title="Personal details">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -196,13 +194,10 @@ export function PersonalInformationStep({
             placeholder="Choose blood type"
           />
         </div>
-      </section>
+      </PdsSectionCard>
 
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
-          Citizenship and identification
-        </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
+      <PdsSectionCard title="Citizenship and identification">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
           <FormRadio
             control={control}
             label="Citizenship"
@@ -263,13 +258,10 @@ export function PersonalInformationStep({
             name="personalInfo.agency_employee_no"
           />
         </div>
-      </section>
+      </PdsSectionCard>
 
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
-          Contact details
-        </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
+      <PdsSectionCard title="Contact details">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Telephone No."
@@ -290,20 +282,14 @@ export function PersonalInformationStep({
             type="email"
           />
         </div>
-      </section>
+      </PdsSectionCard>
 
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100 p-4 text-primary-dark">
-          Residential address
-        </h3>
+      <PdsSectionCard title="Residential address">
         <AddressFields control={control} prefix="addresses.residential" />
-      </section>
+      </PdsSectionCard>
 
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100  p-4 text-primary-dark">
-          Permanent address
-        </h3>
-        <div className="p-4">
+      <PdsSectionCard title="Permanent address">
+        <div>
           <FormCheckbox
             control={control}
             hint="We will use the residential address above for both address records."
@@ -316,7 +302,7 @@ export function PersonalInformationStep({
           disabled={sameAsResidential}
           prefix="addresses.permanent"
         />
-      </section>
+      </PdsSectionCard>
 
       <PdsStepFooter
         isFirstStep

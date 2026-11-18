@@ -18,6 +18,7 @@ import { savePdsQuestionnaireStep } from "../../actions/steps-eight-nine";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
 import { pdsStepNineSchema, type PdsStepNineValues } from "../../schema";
 import { createStepNineDefaults } from "./step-nine-defaults";
+import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
@@ -88,9 +89,8 @@ export function QuestionnaireStep({
       {PDS_QUESTIONNAIRE_ITEMS.map((item, index) => {
         const answer = values.questionnaire[index]?.answer;
         return (
-          <section
+          <PdsSectionCard
             aria-labelledby={`pds-question-${item.code}`}
-            className="rounded-sm border border-line bg-panel p-4 sm:p-5"
             key={item.code}
           >
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem] md:items-start">
@@ -166,7 +166,7 @@ export function QuestionnaireStep({
                 )}
               </div>
             )}
-          </section>
+          </PdsSectionCard>
         );
       })}
 

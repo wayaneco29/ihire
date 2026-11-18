@@ -9,6 +9,7 @@ import { savePdsReferencesStep } from "../../actions/steps-ten-eleven";
 import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
 import { pdsStepTenSchema, type PdsStepTenValues } from "../../schema";
 import { createStepTenDefaults } from "./step-ten-defaults";
+import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
@@ -66,17 +67,21 @@ export function ReferencesStep({
       </div>
 
       {values.references.map((_, index) => (
-        <section
+        <PdsSectionCard
           aria-labelledby={`reference-heading-${index + 1}`}
-          className="rounded-sm border border-line bg-panel p-4 sm:p-5"
+          contentClassName="px-4 pb-4 pt-0 sm:px-5 sm:pb-5"
+          contentPadding={false}
+          header={
+            <h4
+              className="mb-4 text-sm font-semibold text-ink"
+              id={`reference-heading-${index + 1}`}
+            >
+              Reference {index + 1}
+            </h4>
+          }
+          headerClassName="p-4 pb-0 sm:p-5 sm:pb-0"
           key={index}
         >
-          <h4
-            className="mb-4 text-sm font-semibold text-ink"
-            id={`reference-heading-${index + 1}`}
-          >
-            Reference {index + 1}
-          </h4>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <FormInput
               control={control}
@@ -99,7 +104,7 @@ export function ReferencesStep({
               required
             />
           </div>
-        </section>
+        </PdsSectionCard>
       ))}
 
       <FormCheckbox

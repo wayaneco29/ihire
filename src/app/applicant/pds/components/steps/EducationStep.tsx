@@ -26,6 +26,7 @@ import {
   createEmptyEducationRow,
   createStepThreeDefaults,
 } from "./step-three-defaults";
+import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
@@ -252,56 +253,58 @@ export function EducationStep({
             row.year_graduated !== row.period_to;
 
           return (
-            <section
+            <PdsSectionCard
               aria-label={`${title} education`}
-              className="overflow-hidden rounded-sm shadow bg-panel"
+              contentClassName="border-t border-line-subtle p-4 sm:p-5"
+              contentId={`education-${value.toLowerCase()}-content`}
+              contentPadding={false}
+              header={
+                <Button
+                  aria-controls={`education-${value.toLowerCase()}-content`}
+                  aria-expanded={openLevel === value}
+                  className="flex min-h-[4.5rem] w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary active:!transform-none sm:px-5"
+                  onClick={() =>
+                    setOpenLevel((current) => (current === value ? null : value))
+                  }
+                  type="button"
+                  variant="unstyled"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-primary-dark sm:text-base">
+                      {title}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-muted sm:text-sm">
+                      {subtitle || "Add school and years attended"}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
+                        graduationPeriodMismatch
+                          ? "border-warning/20 bg-warning/10 text-warning"
+                          : "border-line bg-panel-muted text-muted"
+                      }`}
+                    >
+                      {graduationPeriodMismatch
+                        ? "Check years"
+                        : hasDetails
+                          ? "In progress"
+                          : "Not started"}
+                    </span>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className={`size-4 text-muted transition-transform ${
+                        openLevel === value ? "rotate-180" : ""
+                      }`}
+                    />
+                  </span>
+                </Button>
+              }
+              headerClassName="p-0"
               key={value}
             >
-              <Button
-                aria-controls={`education-${value.toLowerCase()}-content`}
-                aria-expanded={openLevel === value}
-                className="flex min-h-[4.5rem] w-full items-center cursor-pointer justify-between gap-3 px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary active:!transform-none sm:px-5"
-                onClick={() =>
-                  setOpenLevel((current) => (current === value ? null : value))
-                }
-                type="button"
-                variant="unstyled"
-              >
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-primary-dark sm:text-base">
-                    {title}
-                  </span>
-                  <span className="mt-0.5 block truncate text-xs text-muted sm:text-sm">
-                    {subtitle || "Add school and years attended"}
-                  </span>
-                </span>
-                <span className="flex shrink-0 items-center gap-2">
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
-                      graduationPeriodMismatch
-                        ? "border-warning/20 bg-warning/10 text-warning"
-                        : "border-line bg-panel-muted text-muted"
-                    }`}
-                  >
-                    {graduationPeriodMismatch
-                      ? "Check years"
-                      : hasDetails
-                        ? "In progress"
-                        : "Not started"}
-                  </span>
-                  <ChevronDownIcon
-                    aria-hidden="true"
-                    className={`size-4 text-muted transition-transform ${
-                      openLevel === value ? "rotate-180" : ""
-                    }`}
-                  />
-                </span>
-              </Button>
-              {openLevel === value && (
-                <div
-                  className="border-t border-line-subtle p-4 sm:p-5"
-                  id={`education-${value.toLowerCase()}-content`}
-                >
+              {openLevel === value ? (
+                <>
                   <EducationFields control={control} index={index} />
                   {graduationPeriodMismatch && (
                     <p className="mt-1 rounded-md bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
@@ -309,9 +312,9 @@ export function EducationStep({
                       period ends in {row.period_to}. Check both years.
                     </p>
                   )}
-                </div>
-              )}
-            </section>
+                </>
+              ) : null}
+            </PdsSectionCard>
           );
         })}
       </div>
@@ -341,23 +344,28 @@ export function EducationStep({
         </div>
         <div className="mt-4 space-y-3">
           {graduateStudyIndexes.map(({ field, index }, graduateIndex) => (
-            <div
-              className="rounded-lg border border-line bg-panel p-4 sm:p-5"
+            <PdsSectionCard
+              aria-label={`Graduate study ${graduateIndex + 1}`}
+              contentClassName="px-4 pb-4 pt-0 sm:px-5 sm:pb-5"
+              contentPadding={false}
+              header={
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h4 className="text-sm font-semibold text-ink">
+                    Graduate study {graduateIndex + 1}
+                  </h4>
+                  <Button
+                    className="!h-auto !rounded-sm !px-6 !py-2 !text-xs"
+                    onClick={() => remove(index)}
+                    type="button"
+                    variant="danger"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              }
+              headerClassName="p-4 pb-0 sm:p-5 sm:pb-0"
               key={field.id}
             >
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h4 className="text-sm font-semibold text-ink">
-                  Graduate study {graduateIndex + 1}
-                </h4>
-                <Button
-                  className="!h-auto !rounded-sm !px-6 !py-2 !text-xs"
-                  onClick={() => remove(index)}
-                  type="button"
-                  variant="danger"
-                >
-                  Remove
-                </Button>
-              </div>
               <div className="grid grid-cols-1 gap-x-4">
                 <EducationFields
                   control={control}
@@ -365,7 +373,7 @@ export function EducationStep({
                   index={index}
                 />
               </div>
-            </div>
+            </PdsSectionCard>
           ))}
         </div>
       </section>

@@ -11,6 +11,7 @@ import { usePdsStepAutosave } from "../../hooks/usePdsStepAutosave";
 import { pdsStepTwoSchema, type PdsStepTwoValues } from "../../schema";
 import { savePdsFamilyStep } from "../../actions/steps-one-three";
 import { createStepTwoDefaults } from "./step-two-defaults";
+import { PdsSectionCard } from "../PdsSectionCard";
 import { PdsStepFooter } from "../PdsStepFooter";
 
 type Props = {
@@ -72,11 +73,8 @@ export function FamilyBackgroundStep({
 
   return (
     <form className="space-y-8" onSubmit={handleSubmit(submitStep)}>
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100 p-4 text-primary-dark">
-          Spouse
-        </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
+      <PdsSectionCard title="Spouse">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -120,13 +118,10 @@ export function FamilyBackgroundStep({
             type="tel"
           />
         </div>
-      </section>
+      </PdsSectionCard>
 
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100 p-4 text-primary-dark">
-          Father
-        </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
+      <PdsSectionCard title="Father">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -149,13 +144,10 @@ export function FamilyBackgroundStep({
             name="familyBackground.father_name_extension"
           />
         </div>
-      </section>
+      </PdsSectionCard>
 
-      <section className="rounded-sm bg-white shadow">
-        <h3 className="mb-4 text-base font-semibold border-b border-gray-100 p-4 text-primary-dark">
-          Mother&apos;s maiden name
-        </h3>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
+      <PdsSectionCard title="Mother's maiden name">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
           <FormInput
             control={control}
             label="Surname"
@@ -172,7 +164,7 @@ export function FamilyBackgroundStep({
             name="familyBackground.mother_middle_name"
           />
         </div>
-      </section>
+      </PdsSectionCard>
 
       <section>
         <div className="mb-4">

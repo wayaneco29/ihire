@@ -14,7 +14,7 @@ type Props = {
 
 export function AddressFields({ control, disabled = false, prefix }: Props) {
   return (
-    <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 p-4">
+    <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
       <FormInput
         control={control}
         disabled={disabled}

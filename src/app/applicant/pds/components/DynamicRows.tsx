@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
+import { PdsSectionCard } from "./PdsSectionCard";
 import {
   useFieldArray,
   type Control,
@@ -46,26 +47,31 @@ export function DynamicRows<
   return (
     <section aria-label={label} className="space-y-4">
       {fields.map((field, index) => (
-        <div
-          className="rounded-sm border border-line bg-panel p-4 sm:p-5"
+        <PdsSectionCard
+          aria-label={`${label} ${index + 1}`}
+          contentClassName="px-4 pb-4 pt-0 sm:px-5 sm:pb-5"
+          contentPadding={false}
+          header={
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-ink">
+                {label} {index + 1}
+              </h3>
+              <Button
+                className="!text-danger enabled:hover:!bg-danger/10"
+                disabled={fields.length <= minRows}
+                onClick={() => remove(index)}
+                size="sm"
+                variant="ghost"
+              >
+                Remove
+              </Button>
+            </div>
+          }
+          headerClassName="p-4 pb-0 sm:p-5 sm:pb-0"
           key={field.id}
         >
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-ink">
-              {label} {index + 1}
-            </h3>
-            <Button
-              className="!text-danger enabled:hover:!bg-danger/10"
-              disabled={fields.length <= minRows}
-              onClick={() => remove(index)}
-              size="sm"
-              variant="ghost"
-            >
-              Remove
-            </Button>
-          </div>
           {renderRow(index)}
-        </div>
+        </PdsSectionCard>
       ))}
 
       <Button

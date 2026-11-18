@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Json } from "@/types/database";
+import { PdsFormNavigationContext } from "../components/PdsForm";
 import { savePdsStepDraft } from "../actions/navigation";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -18,6 +19,7 @@ export function usePdsStepAutosave(
   values: Record<string, unknown>,
 ) {
   const serialized = JSON.stringify(values) ?? "{}";
+  const registerNavigationSave = useContext(PdsFormNavigationContext);
   const latest = useRef<SaveSnapshot>({ pdsVersionId, step, serialized });
   const pending = useRef(false);
   const saving = useRef(false);
@@ -65,6 +67,13 @@ export function usePdsStepAutosave(
     return successful;
   }, []);
 
+  const saveBeforeLeaving = useCallback(async () => {
+    const saved = await flush();
+    return saved
+      ? (JSON.parse(latest.current.serialized) as Record<string, Json>)
+      : false;
+  }, [flush]);
+
   useEffect(() => {
     latest.current = { pdsVersionId, step, serialized };
     pending.current = true;
@@ -81,6 +90,12 @@ export function usePdsStepAutosave(
       window.clearTimeout(timeout);
     };
   }, [flush, pdsVersionId, serialized, step]);
+
+  useEffect(() => {
+    if (!registerNavigationSave) return;
+    registerNavigationSave(saveBeforeLeaving);
+    return () => registerNavigationSave(null);
+  }, [registerNavigationSave, saveBeforeLeaving]);
 
   return { flush, status, message };
 }
