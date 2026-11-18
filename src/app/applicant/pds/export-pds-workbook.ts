@@ -570,42 +570,60 @@ const questionnaireCheckboxes: Record<
   "40C": [1041, 1044],
 };
 
-async function fillQuestionnaireControls(zip: JSZip, entries: Questionnaire[]) {
-  const checked = new Set<number>();
-  const allIds = new Set(Object.values(questionnaireCheckboxes).flat());
-  for (const entry of entries) {
-    const pair = questionnaireCheckboxes[entry.question_code];
-    if (pair && typeof entry.answer === "boolean")
-      checked.add(pair[entry.answer ? 0 : 1]);
-  }
-  const read = async (path: string) => {
-    const file = zip.file(path);
-    if (!file) throw new Error(`PDS template control file ${path} is missing.`);
-    return file.async("string");
-  };
-  const vmlPath = "xl/drawings/vmlDrawing2.vml";
-  const vml = await read(vmlPath);
-  zip.file(
-    vmlPath,
-    vml.replace(
-      /<v:shape\b([^>]*\bid="Check_x0020_Box_x0020_(\d+)"[^>]*)>([\s\S]*?)<\/v:shape>/g,
-      (shape, attributes: string, id: string, body: string) => {
-        if (!allIds.has(Number(id))) return shape;
-        const content = body
-          .replace(/<x:Checked>[^<]*<\/x:Checked>/g, "")
-          .replace(
-            "</x:ClientData>",
-            `${checked.has(Number(id)) ? "<x:Checked>1</x:Checked>" : ""}</x:ClientData>`,
-          );
-        return `<v:shape${attributes}>${content}</v:shape>`;
-      },
-    ),
-  );
+// Keys are Excel control names. Checkboxes take a boolean and dropdowns take a list index.
+type FormControls = Map<string, boolean | number>;
 
-  // Excel also stores checkbox state in control properties; keep both formats
-  // consistent so opening the file does not restore the template's old state.
-  const sheet = await read("xl/worksheets/sheet4.xml");
-  const relationships = await read("xl/worksheets/_rels/sheet4.xml.rels");
+function personalControls(
+  person: PersonalInfo | null,
+  countryIndex: number,
+): FormControls {
+  const dual = person?.citizenship === "DUAL";
+  const civil = person?.civil_status;
+  return new Map<string, boolean | number>([
+    ["Check Box 25", person?.sex_at_birth === "MALE"],
+    ["Check Box 26", person?.sex_at_birth === "FEMALE"],
+    ["Check Box 21", person?.citizenship === "FILIPINO"],
+    ["Check Box 22", dual],
+    ["Check Box 39", dual && person.dual_citizenship_by === "BY_BIRTH"],
+    ["Check Box 40", dual && person.dual_citizenship_by === "BY_NATURALIZATION"],
+    ["Drop Down 31", countryIndex],
+    ["Check Box 34", civil === "SINGLE"],
+    ["Check Box 35", civil === "MARRIED"],
+    ["Check Box 36", civil === "WIDOWED"],
+    ["Check Box 37", civil === "OTHER" || civil === "SOLO_PARENT"],
+    ["Check Box 38", civil === "SEPARATED"],
+  ]);
+}
+
+function questionnaireControls(entries: Questionnaire[]): FormControls {
+  const answers = new Map<string, boolean>(
+    entries.map((entry) => [entry.question_code, entry.answer]),
+  );
+  const controls: FormControls = new Map();
+  for (const [code, [yes, no]] of Object.entries(questionnaireCheckboxes)) {
+    const answer = answers.get(code);
+    controls.set(`Check Box ${yes}`, answer === true);
+    controls.set(`Check Box ${no}`, answer === false);
+  }
+  return controls;
+}
+
+function readTemplateXml(zip: JSZip, path: string) {
+  const file = zip.file(path);
+  if (!file) throw new Error(`PDS template file ${path} is missing.`);
+  return file.async("string");
+}
+
+async function writeFormControls(
+  zip: JSZip,
+  sheetNumber: 1 | 4,
+  sheet: string,
+  controls: FormControls,
+) {
+  const relationships = await readTemplateXml(
+    zip,
+    `xl/worksheets/_rels/sheet${sheetNumber}.xml.rels`,
+  );
   const targets = new Map<string, string>();
   for (const match of relationships.matchAll(/<Relationship\b[^>]*\/>/g)) {
     const id = /\bId="([^"]+)"/.exec(match[0])?.[1];
@@ -613,25 +631,56 @@ async function fillQuestionnaireControls(zip: JSZip, entries: Questionnaire[]) {
     if (id && target)
       targets.set(id, posix.normalize(`xl/worksheets/${target}`));
   }
-  for (const match of sheet.matchAll(/<control\b[^>]*>/g)) {
-    const id = Number(/\bname="Check Box (\d+)"/.exec(match[0])?.[1]);
-    if (!allIds.has(id)) continue;
-    const relationship = /\br:id="([^"]+)"/.exec(match[0])?.[1];
-    const path = relationship ? targets.get(relationship) : undefined;
+  // Excel keeps each control's state in both the VML drawing and a ctrlProp part.
+  const drawingId = /<legacyDrawing\b[^>]*\br:id="([^"]+)"/.exec(sheet)?.[1];
+  const vmlPath = targets.get(drawingId ?? "");
+  if (!vmlPath)
+    throw new Error(`PDS sheet C${sheetNumber} has no control drawing.`);
+  const vml = await readTemplateXml(zip, vmlPath);
+  const updatedDrawing = vml.replace(
+    /<v:shape\b[^>]*\bid="([^"]+)"[^>]*>[\s\S]*?<\/v:shape>/g,
+    (shape, id: string) => {
+      const value = controls.get(id.replaceAll("_x0020_", " "));
+      if (value === undefined) return shape;
+      if (typeof value === "number") {
+        return shape.replace(
+          /<x:Sel>[^<]*<\/x:Sel>/,
+          `<x:Sel>${value}</x:Sel>`,
+        );
+      }
+      const unchecked = shape.replace(/<x:Checked>[^<]*<\/x:Checked>/g, "");
+      return value
+        ? unchecked.replace(
+            /(?=<x:NoThreeD\s*\/>|<\/x:ClientData>)/,
+            "<x:Checked>1</x:Checked>",
+          )
+        : unchecked;
+    },
+  );
+  zip.file(vmlPath, updatedDrawing);
+
+  for (const [tag] of sheet.matchAll(/<control\b[^>]*>/g)) {
+    const name = /\bname="([^"]+)"/.exec(tag)?.[1] ?? "";
+    const value = controls.get(name);
+    if (value === undefined) continue;
+    const relationship = /\br:id="([^"]+)"/.exec(tag)?.[1];
+    const path = targets.get(relationship ?? "");
     if (!path?.startsWith("xl/ctrlProps/"))
-      throw new Error(`PDS checkbox ${id} has no control properties.`);
-    const xml = await read(path);
-    // Match Excel's own serialization: place checked after objectType and
-    // omit it for unchecked controls. The previous explicit Unchecked output
-    // caused Excel to reject the downloaded workbook.
-    zip.file(
-      path,
-      xml.replace(
-        /<formControlPr\b([^>]*?)(\/?>)/,
-        (_match, attributes: string, ending: string) =>
-          `<formControlPr${attributes.replace(/\s+checked="[^"]*"/g, "").replace(/\bobjectType="CheckBox"/, () => `objectType="CheckBox"${checked.has(id) ? ' checked="Checked"' : ""}`)}${ending}`,
-      ),
-    );
+      throw new Error(`PDS control ${name} has no control properties.`);
+    const xml = await readTemplateXml(zip, path);
+    if (typeof value === "number") {
+      zip.file(path, xml.replace(/\bsel="[^"]*"/, `sel="${value}"`));
+    } else {
+      // Excel omits the checked attribute for an unchecked box.
+      const unchecked = xml.replace(/\s+checked="[^"]*"/, "");
+      const updated = value
+        ? unchecked.replace(
+            'objectType="CheckBox"',
+            'objectType="CheckBox" checked="Checked"',
+          )
+        : unchecked;
+      zip.file(path, updated);
+    }
   }
 }
 
@@ -807,103 +856,47 @@ function decodeXml(value: string) {
     .replace(/&amp;/g, "&");
 }
 
-function sharedStringAt(sharedStringsXml: string, index: number) {
-  const item = [...sharedStringsXml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)][
-    index
-  ]?.[1];
-  return item
-    ? [...item.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)]
-        .map((part) => decodeXml(part[1]))
-        .join("")
-    : "";
+function readTextRuns(xml: string) {
+  return Array.from(
+    xml.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g),
+    ([, text]) => decodeXml(text),
+  ).join("").trim();
 }
 
-function selectedFormControls(
-  vml: string,
+function selectCitizenshipCountry(
   person: PersonalInfo | null,
-  sheetXml: string,
+  sheet: string,
   sharedStrings: string,
+  cells: SheetCells,
 ) {
-  const checked = new Set<number>();
-  if (person) {
-    if (person.sex_at_birth === "MALE") checked.add(25);
-    if (person.sex_at_birth === "FEMALE") checked.add(26);
-    if (person.citizenship === "FILIPINO") checked.add(21);
-    if (person.citizenship === "DUAL") checked.add(22);
-    if (person.dual_citizenship_by === "BY_BIRTH") checked.add(39);
-    if (person.dual_citizenship_by === "BY_NATURALIZATION") checked.add(40);
-    const civilCheckbox: Partial<Record<PersonalInfo["civil_status"], number>> =
-      {
-        SINGLE: 34,
-        MARRIED: 35,
-        WIDOWED: 36,
-        SEPARATED: 38,
-        OTHER: 37,
-        SOLO_PARENT: 37,
-      };
-    const civilId = civilCheckbox[person.civil_status];
-    if (civilId) checked.add(civilId);
-  }
+  const saved = person?.dual_citizenship_country?.trim();
+  if (person?.citizenship !== "DUAL" || !saved) return 0;
+  const code = saved.toUpperCase();
+  const country = COUNTRY_OPTIONS.find((option) => option.value === code)?.label ?? saved;
 
-  let updated = vml.replace(
-    /<v:shape\b([^>]*\bid="Check_x0020_Box_x0020_(\d+)"[^>]*)>([\s\S]*?)<\/v:shape>/g,
-    (shape, opening: string, id: string, body: string) => {
-      const clientData = body.replace(
-        /(<x:ClientData\b[^>]*>[\s\S]*?)(<\/x:ClientData>)/,
-        (_match, before: string, close: string) => {
-          const withoutChecked = before.replace(
-            /<x:Checked>[^<]*<\/x:Checked>/g,
-            "",
-          );
-          return `${withoutChecked}${checked.has(Number(id)) ? "<x:Checked>1</x:Checked>" : ""}${close}`;
-        },
-      );
-      return `<v:shape${opening}>${clientData}</v:shape>`;
-    },
+  // Drop Down 31 uses C1!Q11:Q216. The prompt in Q11 counts as item 1.
+  const firstRow = 11;
+  const lastRow = 216;
+  const strings = Array.from(
+    sharedStrings.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g),
+    ([, item]) => readTextRuns(item),
   );
-
-  if (person?.citizenship === "DUAL" && person.dual_citizenship_country) {
-    const rows = new Map<number, string>();
-    for (const cell of sheetXml.matchAll(
-      /<c\b[^>/]*\br="Q(\d+)"[^>/]*>([\s\S]*?)<\/c>/g,
-    )) {
-      const row = Number(cell[1]);
-      const value = /<v>(\d+)<\/v>/.exec(cell[2])?.[1];
-      const inline = /<t\b[^>]*>([\s\S]*?)<\/t>/.exec(cell[2])?.[1];
-      const label =
-        value === undefined
-          ? inline
-            ? decodeXml(inline)
-            : ""
-          : sharedStringAt(sharedStrings, Number(value));
-      if (label) rows.set(row, label.trim());
-    }
-    const optionLabel =
-      COUNTRY_OPTIONS.find(
-        (option) => option.value === person.dual_citizenship_country,
-      )?.label ?? person.dual_citizenship_country;
-    const normalize = (value: string) =>
-      value
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/^the\s+/, "")
-        .replace(/[^a-z0-9]/g, "");
-    const target = normalize(optionLabel);
-    const match = [...rows].find(
-      ([, label]) =>
-        normalize(label) === target ||
-        normalize(label).includes(target) ||
-        target.includes(normalize(label)),
-    );
-    if (match) {
-      updated = updated.replace(
-        /(<v:shape\b[^>]*\bid="Drop_x0020_Down_x0020_31"[^>]*>[\s\S]*?<x:Sel>)[^<]*(<\/x:Sel>)/,
-        `$1${match[0] - 10}$2`,
-      );
-    }
+  const names = new Intl.Collator("en", { sensitivity: "base" });
+  const countryCells = /<c\b[^>/]*\br="Q(\d+)"[^>/]*>([\s\S]*?)<\/c>/g;
+  for (const [, rowText, content] of sheet.matchAll(countryCells)) {
+    const row = Number(rowText);
+    if (row <= firstRow || row > lastRow) continue;
+    const index = /<v>(\d+)<\/v>/.exec(content)?.[1];
+    const label =
+      index === undefined ? readTextRuns(content) : strings[Number(index)];
+    if (label && names.compare(label, country) === 0) return row - firstRow + 1;
   }
-  return updated;
+
+  // Q14 is an empty item in this template. Use it for a country the form
+  // accepts but the workbook omits, such as the United States.
+  const emptyRow = 14;
+  setCell(cells, `Q${emptyRow}`, country);
+  return emptyRow - firstRow + 1;
 }
 
 function inlineCell(address: string, value: string | number) {
@@ -1065,9 +1058,6 @@ export async function createPdsWorkbook(
     join(process.cwd(), "src/templates/pds/pds-template.xlsx"),
   );
   const zip = await JSZip.loadAsync(template);
-  const sharedStrings = await zip.file("xl/sharedStrings.xml")?.async("string");
-  if (!sharedStrings)
-    throw new Error("PDS template shared strings are missing.");
   const sheets = {
     C1: new Map<string, CellValue>(),
     C2: new Map<string, CellValue>(),
@@ -1079,29 +1069,26 @@ export async function createPdsWorkbook(
   fillEligibilityAndWork(sheets, continuations, data);
   fillVoluntaryLearningAndOther(sheets, continuations, data);
   fillQuestionnaireAndReferences(sheets, continuations, data);
-  await fillQuestionnaireControls(zip, data.questionnaire);
 
-  const firstSheetFile = zip.file("xl/worksheets/sheet1.xml");
-  const controlsFile = zip.file("xl/drawings/vmlDrawing1.vml");
-  if (firstSheetFile && controlsFile) {
-    zip.file(
-      "xl/drawings/vmlDrawing1.vml",
-      selectedFormControls(
-        await controlsFile.async("string"),
+  for (const [index, name] of (["C1", "C2", "C3", "C4"] as const).entries()) {
+    const path = `xl/worksheets/sheet${index + 1}.xml`;
+    const xml = await readTemplateXml(zip, path);
+    if (name === "C1") {
+      const countryIndex = selectCitizenshipCountry(
         data.personal,
-        await firstSheetFile.async("string"),
-        sharedStrings,
-      ),
-    );
-  }
-  for (const [index, name] of ["C1", "C2", "C3", "C4"].entries()) {
-    const file = zip.file(`xl/worksheets/sheet${index + 1}.xml`);
-    if (!file) throw new Error(`PDS template sheet ${name} is missing.`);
-    const xml = await file.async("string");
-    zip.file(
-      `xl/worksheets/sheet${index + 1}.xml`,
-      applySheetCells(xml, sheets[name as keyof typeof sheets]),
-    );
+        xml,
+        await readTemplateXml(zip, "xl/sharedStrings.xml"),
+        sheets.C1,
+      );
+      await writeFormControls(
+        zip, 1, xml, personalControls(data.personal, countryIndex),
+      );
+    } else if (name === "C4") {
+      await writeFormControls(
+        zip, 4, xml, questionnaireControls(data.questionnaire),
+      );
+    }
+    zip.file(path, applySheetCells(xml, sheets[name]));
   }
 
   await removeInvalidC4PrinterSettings(zip);
