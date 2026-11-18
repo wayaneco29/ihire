@@ -38,8 +38,10 @@ function InfoValue({
 }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-muted">{label}</dt>
-      <dd className="mt-1 break-words text-sm text-ink">{value || "—"}</dd>
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="mt-1 wrap-break-words text-sm text-ink font-medium uppercase">
+        {value || "—"}
+      </dd>
     </div>
   );
 }
@@ -60,29 +62,25 @@ function ProfileSection({
   return (
     <section
       aria-labelledby={`${id}-heading`}
-      className="scroll-mt-24 border-b border-line-subtle py-6 first:pt-5 last:border-b-0 last:pb-5"
+      className="scroll-mt-24 first:pt-5 pb-5"
       id={id}
     >
-      <header className="mb-4 flex flex-wrap items-center gap-3">
-        <span
-          aria-hidden="true"
-          className="grid size-9 shrink-0 place-items-center rounded-md bg-primary-light text-primary [&>svg]:size-4"
-        >
-          {icon}
-        </span>
+      <header className="mb-2 flex flex-wrap items-center gap-3">
         <h2
-          className="font-[Bricolage_Grotesque] text-base font-semibold text-ink"
+          className="font-[Bricolage_Grotesque] text-sm font-semibold text-primary-dark"
           id={`${id}-heading`}
         >
           {title}
         </h2>
         {count !== undefined && (
-          <span className="rounded-full border border-line px-2 py-0.5 text-xs tabular-nums text-muted">
+          <span className="rounded-full bg-primary px-2 py-0.5 text-xs tabular-nums text-white">
             {count}
           </span>
         )}
       </header>
-      {children}
+      <div className="from-primary/5 bg-linear-to-r to-primary/10 rounded-sm p-4">
+        {children}
+      </div>
     </section>
   );
 }
@@ -105,7 +103,7 @@ export function ProfileDetails({
   hasDraft: boolean;
 }) {
   return (
-    <div className="mt-6 grid items-start gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-6">
+    <div className="mt-6">
       {hasDraft && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 lg:col-span-2">
           <div className="min-w-0">
@@ -120,30 +118,7 @@ export function ProfileDetails({
           <WorkflowStatusTag status="DRAFT" />
         </div>
       )}
-
-      <aside className="lg:sticky lg:top-24 lg:self-start">
-        <SurfaceCard className="p-2" tone="muted">
-          <p className="px-3 py-2 text-xs font-semibold text-muted">
-            On this page
-          </p>
-          <nav aria-label="Profile sections">
-            <ul className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
-              {PROFILE_SECTION_LINKS.map((section) => (
-                <li className="shrink-0" key={section.id}>
-                  <a
-                    className="block whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted hover:bg-panel hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    href={`#${section.id}`}
-                  >
-                    {section.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </SurfaceCard>
-      </aside>
-
-      <div className="min-w-0">
+      <div className="mt-6">
         <SurfaceCard className="overflow-hidden px-4 sm:px-6">
           <ProfileSection
             icon={<UserIcon className="size-4" />}
@@ -153,7 +128,7 @@ export function ProfileDetails({
             <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
               <InfoValue
                 label="Date of birth"
-                value={formatDate(personal?.date_of_birth)}
+                value={formatDate(personal?.date_of_birth, "MMMM DD, YYYY")}
               />
               <InfoValue
                 label="Place of birth"
@@ -193,7 +168,7 @@ export function ProfileDetails({
                   <li className="py-4 first:pt-1 last:pb-0" key={item.id}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <p className="font-medium text-ink">
+                        <p className="font-medium text-ink text-sm">
                           {item.school_name || item.level.replaceAll("_", " ")}
                         </p>
                         <p className="mt-1 text-sm text-muted">
@@ -263,8 +238,9 @@ export function ProfileDetails({
               <EmptyState
                 compact
                 className="[&_h2]:text-muted"
-                icon={<InboxIcon className="size-4" />}
+                icon={<InboxIcon className="size-6" />}
                 title="No work experience records yet."
+                iconClassName="mb-0!"
               />
             )}
           </ProfileSection>
@@ -300,8 +276,9 @@ export function ProfileDetails({
               <EmptyState
                 compact
                 className="[&_h2]:text-muted"
-                icon={<InboxIcon className="size-4" />}
+                icon={<InboxIcon className="size-6" />}
                 title="No learning and development records yet."
+                iconClassName="mb-0!"
               />
             )}
           </ProfileSection>
@@ -326,8 +303,9 @@ export function ProfileDetails({
             ) : (
               <EmptyState
                 compact
-                icon={<InboxIcon className="size-4" />}
+                icon={<InboxIcon className="size-6" />}
                 title="No skills or hobbies listed yet."
+                iconClassName="mb-0!"
               />
             )}
           </ProfileSection>
