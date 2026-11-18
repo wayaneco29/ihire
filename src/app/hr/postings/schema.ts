@@ -5,7 +5,12 @@ export const HIRING_TRACKS = ["TEACHING", "NON_TEACHING"] as const;
 export type HiringTrack = (typeof HIRING_TRACKS)[number];
 
 export const postingSchema = yup.object({
-  title: yup.string().trim().min(3).max(160).required("Enter a job title."),
+  title: yup
+    .string()
+    .trim()
+    .min(3, "Must at least 3 characters")
+    .max(160)
+    .required("Enter a job title."),
   description: yup
     .string()
     .trim()
@@ -23,9 +28,12 @@ export const postingSchema = yup.object({
   deadline: yup
     .string()
     .defined()
-    .test("valid-deadline", "Enter a valid deadline.", (value) =>
-      !value || Number.isFinite(Date.parse(value)),
-    ),
+    .test(
+      "valid-deadline",
+      "Enter a valid deadline.",
+      (value) => !value || Number.isFinite(Date.parse(value)),
+    )
+    .required("Deadline is required"),
   status: yup
     .mixed<(typeof JOB_STATUSES)[number]>()
     .oneOf(JOB_STATUSES, "Choose a posting status.")

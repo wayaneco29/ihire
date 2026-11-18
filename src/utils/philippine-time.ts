@@ -7,24 +7,31 @@ export function philippineToday(): string {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(new Date());
-  const fields = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const fields = Object.fromEntries(
+    parts.map(({ type, value }) => [type, value]),
+  );
   return `${fields.year}-${fields.month}-${fields.day}`;
 }
 
 export function validIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00Z`);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  return (
+    Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
 }
 
 export function shiftIsoDate(value: string, days: number): string {
   return new Date(Date.parse(`${value}T00:00:00Z`) + days * 86_400_000)
-    .toISOString().slice(0, 10);
+    .toISOString()
+    .slice(0, 10);
 }
 
 export function formatPhilippineDay(value: string): string {
-  return new Intl.DateTimeFormat("en-PH", { dateStyle: "full", timeZone: "UTC" })
-    .format(new Date(`${value}T00:00:00Z`));
+  return new Intl.DateTimeFormat("en-PH", {
+    dateStyle: "full",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
 }
 
 export function formatPhilippineTime(value: string): string {
@@ -49,7 +56,9 @@ export function formatPhilippineDateTimeInput(value: string | null): string {
     minute: "2-digit",
     hourCycle: "h23",
   }).formatToParts(date);
-  const fields = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const fields = Object.fromEntries(
+    parts.map(({ type, value }) => [type, value]),
+  );
   return `${fields.year}-${fields.month}-${fields.day}T${fields.hour}:${fields.minute}`;
 }
 
@@ -73,16 +82,19 @@ export function isFuturePhilippineDateTime(value: string): boolean {
   const fields = Object.fromEntries(
     dateParts.map(({ type, value }) => [type, value]),
   );
-  return `${fields.year}-${fields.month}-${fields.day}T${fields.hour}:${fields.minute}` === value;
+  return (
+    `${fields.year}-${fields.month}-${fields.day}T${fields.hour}:${fields.minute}` ===
+    value
+  );
 }
 
 export function formatPhilippineDateTime(value: string): string {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return "—";
   const formatted = new Intl.DateTimeFormat("en-PH", {
-    dateStyle: "medium",
+    dateStyle: "long",
     timeStyle: "short",
     timeZone: PHILIPPINE_TIME_ZONE,
   }).format(date);
-  return `${formatted} (Philippine time)`;
+  return `${formatted}`;
 }

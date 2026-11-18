@@ -51,7 +51,7 @@ export function Sidebar() {
             <ul className="mt-2 space-y-1">
               {section.items.map(({ label, href, icon: Icon, available }) => {
                 const itemClasses =
-                  "flex min-h-11 w-full items-center gap-3 rounded-xs border-l-2 px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+                  "flex min-h-11 w-full items-center font-[Bricolage_Grotesque] gap-3 rounded-xs border-l-2 px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
                 const isApplicantOverview = href === "/applicant";
                 const isActive = isApplicantOverview
                   ? pathname === href || pathname === "/applicant/dashboard"
@@ -122,7 +122,7 @@ export function Sidebar() {
             )}
             <Button
               block
-              className="!flex !h-11 !items-center !justify-start !rounded-sm !border-0 !bg-transparent !px-3 !text-muted !shadow-none hover:!bg-panel-muted hover:!text-ink"
+              className="flex min-h-11 w-full items-center gap-3 font-[Bricolage_Grotesque] rounded-sm px-3 py-2 text-left text-sm! transition-colors text-red-500/80 hover:text-red-500/95 hover:bg-red-50"
               disabled={loading}
               icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
               onClick={handleSignOut}

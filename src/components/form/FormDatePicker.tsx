@@ -14,6 +14,7 @@ type FormDatePickerProps<T extends FieldValues> = FormControlProps<T> & {
   disabled?: boolean;
   valueFormat?: string;
   popupClassName?: string;
+  disabledDate?: (date: Dayjs) => boolean;
 };
 
 export function FormDatePicker<T extends FieldValues>(
@@ -28,6 +29,7 @@ export function FormDatePicker<T extends FieldValues>(
     required,
     rules,
     valueFormat,
+    disabledDate,
     ...pickerProps
   } = props;
   const pickerId = fieldId(name, id);
@@ -54,6 +56,7 @@ export function FormDatePicker<T extends FieldValues>(
                   ? `${pickerId}-hint`
                   : undefined
             }
+            disabledDate={disabledDate}
             aria-invalid={fieldState.invalid}
             aria-labelledby={`${pickerId}-label`}
             aria-required={required}

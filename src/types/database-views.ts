@@ -173,6 +173,21 @@ export type PublicViews = {
         ComputedFields: never;
         Relationships: [];
     };
+    "v_applicant_document_resubmissions": {
+        Row: {
+            "applicant_id": string;
+            "document_id": string;
+            "document_type_id": string;
+            "document_type_name": string;
+            "due_at": string | null;
+            "request_id": string;
+            "requested_at": string;
+            "resubmission_submitted_at": string | null;
+            "resubmission_submitted_document_id": string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
     "v_anonymized_education": {
         Row: {
             "application_id": string;

@@ -12,6 +12,7 @@ import {
 } from "./components/DocumentTypeCard";
 import { SubmitDocumentsButton } from "./components/SubmitDocumentsButton";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
+import { formatPhilippineDateTime } from "@/utils/philippine-time";
 
 export default async function ApplicantDocumentsPage() {
   const applicant = await getApplicantContext();
@@ -22,6 +23,7 @@ export default async function ApplicantDocumentsPage() {
     documentsResult,
     pdsVersionsResult,
     documentStatusResult,
+    resubmissionsResult,
   ] = await Promise.all([
     applicant.supabase
       .from("document_types")
@@ -45,6 +47,11 @@ export default async function ApplicantDocumentsPage() {
       .select("status, required_document_count, verified_required_count")
       .eq("applicant_id", applicant.applicant.id)
       .maybeSingle(),
+    applicant.supabase
+      .from("v_applicant_document_resubmissions")
+      .select(
+        "document_type_id, document_type_name, due_at, resubmission_submitted_at",
+      ),
   ]);
 
   if (
@@ -169,12 +176,28 @@ export default async function ApplicantDocumentsPage() {
   const optionalTypes = prioritizedDocumentTypes.filter(
     (type) => !type.is_required && type.id !== trainingCertificateType?.id,
   );
-  const resubmissionTypes = prioritizedDocumentTypes.filter((type) =>
-    (documentsByType.get(type.id) ?? []).some(
-      (document) =>
-        document.supersededByVersion === null &&
-        ["REJECTED", "FOR_RESUBMISSION"].includes(document.status),
-    ),
+  const latestResubmissionByType = new Map(
+    (resubmissionsResult.data ?? []).map((request) => [
+      request.document_type_id,
+      request,
+    ]),
+  );
+  const resubmissionTypes = prioritizedDocumentTypes.filter(
+    (type) => {
+      if (!type.is_required) return false;
+
+      const latestDocument = documentsByType.get(type.id)?.[0];
+      if (latestDocument?.status === "VERIFIED") return false;
+
+      return (
+        latestResubmissionByType.has(type.id) ||
+        (documentsByType.get(type.id) ?? []).some(
+          (document) =>
+            document.supersededByVersion === null &&
+            ["REJECTED", "FOR_RESUBMISSION"].includes(document.status),
+        )
+      );
+    },
   );
   const requiredCount = requiredTypes.filter(
     (type) => documentsByType.get(type.id)?.[0],
@@ -236,8 +259,8 @@ export default async function ApplicantDocumentsPage() {
               <p className="mt-1 text-sm text-muted">
                 {documentStatusResult.data.verified_required_count} of{" "}
                 {documentStatusResult.data.required_document_count} required
-                documents verified. You can apply only after all required
-                documents are approved.
+                documents verified. Required documents submitted for review
+                also meet the application requirement.
               </p>
             </div>
             <WorkflowStatusTag status={documentStatusResult.data.status} />
@@ -258,8 +281,23 @@ export default async function ApplicantDocumentsPage() {
                 </h2>
                 <p className="mt-0.5 text-sm text-ink">
                   The Document Reviewer sent it back for resubmission. Upload a
-                  corrected copy.
+                  corrected copy and submit it for review.
                 </p>
+                <ul className="mt-2 space-y-1 text-sm text-ink">
+                  {resubmissionTypes.map((type) => {
+                    const request = latestResubmissionByType.get(type.id);
+                    return (
+                      <li key={type.id}>
+                        <span className="font-medium">{type.name}:</span>{" "}
+                        {request?.resubmission_submitted_at
+                          ? `replacement submitted ${formatPhilippineDateTime(request.resubmission_submitted_at)} and is awaiting review.`
+                          : request?.due_at
+                            ? `submit by ${formatPhilippineDateTime(request.due_at)} (Philippine time) to keep your filed application active.`
+                            : "upload a corrected copy before applying."}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
               <a
                 className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-sm bg-primary px-6 text-sm! font-medium text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"

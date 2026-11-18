@@ -33,6 +33,15 @@ export type ApplicantItem = {
 };
 
 type ApplicantFilter = "QUALIFIED" | "HIRED" | "NOT_SELECTED";
+type HiringReadiness = {
+  intake_closed: boolean;
+  pending_applications: number;
+  pending_required_documents: number;
+  pending_document_corrections: number;
+  hired_count: number;
+  slot_count: number;
+  can_hire: boolean;
+};
 const FILTERS: { id: ApplicantFilter; label: string }[] = [
   { id: "QUALIFIED", label: "Qualified for hire" },
   { id: "HIRED", label: "Hired" },
@@ -64,10 +73,14 @@ function trainingLabel(hours: number | null) {
 export function PostingApplicants({
   applicants,
   assessmentScoresUnavailable,
+  hiringReadiness,
+  initialApplicationId = null,
   slots,
 }: Readonly<{
   applicants: ApplicantItem[];
   assessmentScoresUnavailable: boolean;
+  hiringReadiness: HiringReadiness | null;
+  initialApplicationId?: string | null;
   slots: number;
 }>) {
   const [filter, setFilter] = useState<ApplicantFilter>("QUALIFIED");
@@ -76,7 +89,9 @@ export function PostingApplicants({
   const [educationFilter, setEducationFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
-  const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
+  const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(
+    initialApplicationId,
+  );
   const [feedback, setFeedback] = useState<{
     success: boolean;
     message: string;
@@ -88,6 +103,10 @@ export function PostingApplicants({
     (applicant) => applicant.application_status === "HIRED",
   ).length;
   const slotsFull = hiredCount >= slots;
+  const canHire =
+    hiringReadiness?.can_hire === true &&
+    !slotsFull &&
+    !assessmentScoresUnavailable;
   const selectedApplicant =
     applicants.find((applicant) => applicant.application_id === selectedApplicantId) ?? null;
   const positions = useMemo(
@@ -290,6 +309,59 @@ export function PostingApplicants({
           type="warning"
         />
       )}
+      {!hiringReadiness ? (
+        <Alert
+          className="mb-4"
+          message="Hiring readiness could not be checked. Refresh the page before making a hiring decision."
+          showIcon
+          type="warning"
+        />
+      ) : (
+        <section
+          aria-labelledby="hiring-readiness-heading"
+          className="mb-4 rounded-sm border border-line bg-panel px-4 py-4"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2
+                className="text-sm font-semibold text-ink"
+                id="hiring-readiness-heading"
+              >
+                Hiring readiness
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                {assessmentScoresUnavailable
+                  ? "Applicant score data is unavailable; refresh before making a hiring decision."
+                  : `Intake is ${hiringReadiness.intake_closed ? "closed" : "open"}.`}
+                {!assessmentScoresUnavailable && hiringReadiness.can_hire
+                  ? " Reviews and required document checks are resolved; qualified applicants can be hired."
+                  : !assessmentScoresUnavailable
+                    ? " Hiring is enabled after intake closes and all active applications and required document correction windows are resolved."
+                    : ""}
+              </p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${canHire ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
+            >
+              {canHire ? "Ready to hire" : "Hiring on hold"}
+            </span>
+          </div>
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+            <ReadinessCount
+              label="Applications awaiting evaluation"
+              value={hiringReadiness.pending_applications}
+            />
+            <ReadinessCount
+              label="Required documents awaiting verification"
+              value={hiringReadiness.pending_required_documents}
+            />
+            <ReadinessCount
+              label="Open correction windows"
+              value={hiringReadiness.pending_document_corrections}
+            />
+          </dl>
+        </section>
+      )}
       <p className="mb-3 text-sm text-muted">
         Applicants are ranked by total criterion points, including education,
         training certificates, experience, and evaluator scores. Equal totals
@@ -425,7 +497,7 @@ export function PostingApplicants({
             evaluated={selectedApplicant.application_status === "QUALIFIED"}
             onDecide={decide}
             pending={isWorking && workingId === selectedApplicant.application_id}
-            slotsFull={slotsFull}
+            canHire={canHire}
             terminal={["HIRED", "NOT_SELECTED"].includes(selectedApplicant.application_status)}
           />
         )}
@@ -439,14 +511,14 @@ function ApplicantDetails({
   evaluated,
   onDecide,
   pending,
-  slotsFull,
+  canHire,
   terminal,
 }: Readonly<{
   applicant: ApplicantItem;
   evaluated: boolean;
   onDecide: (applicationId: string) => void;
   pending: boolean;
-  slotsFull: boolean;
+  canHire: boolean;
   terminal: boolean;
 }>) {
   return (
@@ -529,7 +601,7 @@ function ApplicantDetails({
             description="This uses one hiring slot. If it fills the last slot, all remaining qualified applicants will be marked Not Selected."
           >
             <Button
-              disabled={slotsFull || pending}
+              disabled={!canHire || pending}
               loading={pending}
               size="sm"
               variant="filled"
@@ -539,6 +611,15 @@ function ApplicantDetails({
           </Popconfirm>
         )}
       </div>
+    </div>
+  );
+}
+
+function ReadinessCount({ label, value }: Readonly<{ label: string; value: number }>) {
+  return (
+    <div className="rounded-sm bg-panel-muted/60 px-3 py-2">
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="mt-1 font-semibold tabular-nums text-ink">{value}</dd>
     </div>
   );
 }

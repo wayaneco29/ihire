@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
+import { getPostingApplicantStatuses } from "../postings/data";
 import { HrDashboardView } from "./components/HrDashboardView";
 
 function daysUntilDeadline(deadline: string, now: number) {
@@ -38,13 +39,10 @@ async function HrDashboardContent() {
     .select("id, title, slots, status, deadline")
     .order("created_at", { ascending: false });
   const jobIds = (postings ?? []).map((posting) => posting.id);
-  const applicationsResult = jobIds.length
-    ? await hr.supabase
-        .from("v_anonymized_applicants")
-        .select("job_id, application_status")
-        .in("job_id", jobIds)
-        .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
-    : { data: [], error: null };
+  const applicationsResult = await getPostingApplicantStatuses(
+    hr.supabase,
+    jobIds,
+  );
 
   if (postingsError || applicationsResult.error) {
     return (
@@ -60,17 +58,15 @@ async function HrDashboardContent() {
   const applications = applicationsResult.data ?? [];
   const applicationStats = new Map<
     string,
-    { applicants: number; qualified: number; hired: number }
+    { applicants: number; hired: number }
   >();
 
   for (const application of applications) {
     const stats = applicationStats.get(application.job_id) ?? {
       applicants: 0,
-      qualified: 0,
       hired: 0,
     };
     stats.applicants += 1;
-    if (application.application_status === "QUALIFIED") stats.qualified += 1;
     if (application.application_status === "HIRED") stats.hired += 1;
     applicationStats.set(application.job_id, stats);
   }
@@ -93,7 +89,6 @@ async function HrDashboardContent() {
     .map((posting) => {
       const stats = applicationStats.get(posting.id) ?? {
         applicants: 0,
-        qualified: 0,
         hired: 0,
       };
       const deadlineTimestamp = posting.deadline
@@ -112,7 +107,6 @@ async function HrDashboardContent() {
       return {
         id: posting.id,
         title: posting.title,
-        slots: posting.slots,
         deadlineDate: hasValidDeadline ? formatDate(posting.deadline) : null,
         deadlinePassed:
           deadlineTimestamp !== null &&
@@ -122,7 +116,6 @@ async function HrDashboardContent() {
           ? daysUntilDeadline(posting.deadline, now)
           : null,
         applicants: stats.applicants,
-        qualified: stats.qualified,
         isOpen,
       };
     });

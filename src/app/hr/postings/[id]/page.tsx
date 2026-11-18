@@ -6,6 +6,7 @@ import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { calculatePublicTeachingExperience } from "@/utils/calculate-public-teaching-experience";
 import { PostingApplicants } from "./components/PostingApplicants";
+import { CloseIntakeButton } from "./components/CloseIntakeButton";
 
 function daysUntilDeadline(deadline: string, now: number) {
   const deadlineDate = new Date(deadline);
@@ -27,10 +28,14 @@ function daysUntilDeadline(deadline: string, now: number) {
 
 export default async function HrPostingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
 }) {
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const hr = await getHrContext();
   if (!hr) redirect("/login");
 
@@ -42,6 +47,14 @@ export default async function HrPostingDetailPage({
     .eq("id", id)
     .maybeSingle();
   if (postingError || !posting) notFound();
+
+  const { data: hiringReadinessRows, error: hiringReadinessError } =
+    await hr.supabase.rpc("get_posting_hiring_readiness", {
+      p_job_id: posting.id,
+    });
+  const hiringReadiness = hiringReadinessError
+    ? null
+    : (hiringReadinessRows?.[0] ?? null);
 
   const applicantColumns =
     "application_id, applicant_number, application_status, applied_at, education_levels, experience_years, training_hours, skills, position_title, position_track";
@@ -265,6 +278,16 @@ export default async function HrPostingDetailPage({
       }).sort((a, b) => a.title.localeCompare(b.title));
     })()
   }));
+  const requestedApplicationId =
+    typeof query.applicationId === "string" &&
+    /^[0-9a-f-]{36}$/i.test(query.applicationId)
+      ? query.applicationId
+      : null;
+  const initialApplicationId = applicantItems.some(
+    (applicant) => applicant.application_id === requestedApplicationId,
+  )
+    ? requestedApplicationId
+    : null;
   const hiredCount = applicantItems.filter(
     (applicant) => applicant.application_status === "HIRED",
   ).length;
@@ -299,12 +322,17 @@ export default async function HrPostingDetailPage({
         title={posting.title}
         description={posting.description ?? undefined}
         actions={
-          <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            href={`/hr/postings/${posting.id}/edit`}
-          >
-            Edit posting
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            {posting.status === "OPEN" && !posting.deadline && (
+              <CloseIntakeButton jobId={posting.id} />
+            )}
+            <Link
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              href={`/hr/postings/${posting.id}/edit`}
+            >
+              Edit posting
+            </Link>
+          </div>
         }
       />
       <Link
@@ -393,6 +421,8 @@ export default async function HrPostingDetailPage({
         <PostingApplicants
           applicants={applicantItems}
           assessmentScoresUnavailable={rankingDataUnavailable}
+          hiringReadiness={hiringReadiness}
+          initialApplicationId={initialApplicationId}
           slots={posting.slots}
         />
       )}

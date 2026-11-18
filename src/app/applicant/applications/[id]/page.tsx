@@ -32,7 +32,7 @@ export default async function ApplicantApplicationDetailPage({
   const { data: application, error } = await applicant.supabase
     .from("applications")
     .select(
-      "id, job_id, position_id, pds_version_id, status, applied_at, scheduled_assessment_at",
+      "id, job_id, position_id, pds_version_id, status, status_reason, applied_at, scheduled_assessment_at",
     )
     .eq("id", id)
     .eq("applicant_id", applicant.applicant.id)
@@ -505,6 +505,23 @@ export default async function ApplicantApplicationDetailPage({
               </p>
             )}
           </div>
+        </section>
+      )}
+
+      {application.status === "REJECTED" && application.status_reason && (
+        <section
+          aria-labelledby="application-closed-reason"
+          className="mt-5 rounded-sm border border-warning/30 bg-warning/10 p-4 sm:p-5"
+        >
+          <h2
+            className="text-sm font-semibold text-ink"
+            id="application-closed-reason"
+          >
+            Application update
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-ink">
+            {application.status_reason}
+          </p>
         </section>
       )}
 

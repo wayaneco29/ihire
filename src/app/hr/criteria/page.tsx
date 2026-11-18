@@ -18,12 +18,12 @@ export default async function HrPositionCriteriaPage() {
       hr.supabase
         .from("positions")
         .select(
-          "id, title, application_type_id, base_qualification_level, base_training_increment_level, base_experience_increment_level",
+          "id, title, application_type_id, is_active, base_qualification_level, base_training_increment_level, base_experience_increment_level",
         )
         .order("title"),
       hr.supabase
         .from("position_criteria")
-        .select("id, position_id, title, display_order")
+        .select("id, position_id, criterion_key, title, display_order")
         .order("position_id")
         .order("display_order"),
       hr.supabase.from("application_type").select("id, name"),

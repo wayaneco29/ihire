@@ -15,14 +15,11 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
     .maybeSingle();
   if (error || !posting) notFound();
 
-  const [positionsResult, selectedResult] = await Promise.all([
-    getConfiguredPositions(hr.supabase),
-    hr.supabase
-      .from("job_posting_positions")
-      .select("position_id")
-      .eq("job_id", id),
-  ]);
-  if (positionsResult.error || !positionsResult.data || selectedResult.error) {
+  const selectedResult = await hr.supabase
+    .from("job_posting_positions")
+    .select("position_id")
+    .eq("job_id", id);
+  if (selectedResult.error) {
     return (
       <>
         <PageHeader
@@ -42,6 +39,24 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
   const positionIds = (selectedResult.data ?? []).map(
     (selection) => selection.position_id,
   );
+  const positionsResult = await getConfiguredPositions(hr.supabase, positionIds);
+  if (positionsResult.error || !positionsResult.data) {
+    return (
+      <>
+        <PageHeader
+          description="Update position details and applicable roles."
+          eyebrow="HR workspace"
+          title="Edit job posting"
+        />
+        <div className="mt-7">
+          <EmptyState
+            description="Refresh the page to try loading position selections again."
+            title="Position selections unavailable"
+          />
+        </div>
+      </>
+    );
+  }
   const selectedPositionsResult = positionIds.length
     ? await hr.supabase
         .from("positions")

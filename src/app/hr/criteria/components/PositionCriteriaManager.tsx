@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Alert, Modal, Table, type TableColumnsType } from "antd";
+import {
+  Alert,
+  Modal,
+  Popconfirm,
+  Table,
+  type TableColumnsType,
+} from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
@@ -14,7 +20,9 @@ import {
 } from "@/utils/format-position-standards";
 import {
   positionSchema,
+  positionTitleFormSchema,
   positionScoringStandardsSchema,
+  type PositionTitleFormValues,
   positionWeightFormSchema,
   type PositionScoringStandardsValues,
   type PositionValues,
@@ -24,9 +32,12 @@ import {
   createPosition,
   savePositionScoringStandards,
   savePositionWeights,
+  setPositionActive,
+  updatePositionTitle,
 } from "../actions";
 
 type Criterion = {
+  criterion_key: string;
   id: string;
   position_id: string;
   title: string;
@@ -36,6 +47,7 @@ type Criterion = {
 type Position = {
   id: string;
   title: string;
+  is_active: boolean;
   applicationType: string;
   base_qualification_level: number | null;
   base_training_increment_level: number | null;
@@ -333,6 +345,146 @@ function CreatePositionForm({
   );
 }
 
+function PositionTitleEditor({ position }: { position: Position }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState<{
+    text: string;
+    isError: boolean;
+  } | null>(null);
+  const form = useForm<PositionTitleFormValues>({
+    resolver: yupResolver(
+      positionTitleFormSchema,
+    ) as Resolver<PositionTitleFormValues>,
+    defaultValues: { title: position.title },
+  });
+
+  async function submit(values: PositionTitleFormValues) {
+    setMessage(null);
+    const result = await updatePositionTitle(position.id, values);
+    setMessage({ text: result.message, isError: !result.success });
+    if (result.success) {
+      setOpen(false);
+      router.refresh();
+    }
+  }
+
+  return (
+    <>
+      <Button
+        onClick={() => {
+          form.reset({ title: position.title });
+          setMessage(null);
+          setOpen(true);
+        }}
+        size="sm"
+        variant="bordered"
+      >
+        Edit title
+      </Button>
+      <Modal
+        centered
+        destroyOnHidden
+        footer={null}
+        onCancel={() => {
+          if (!form.formState.isSubmitting) setOpen(false);
+        }}
+        open={open}
+        title={`Edit ${position.title}`}
+      >
+        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
+          <FormInput
+            autoComplete="off"
+            control={form.control}
+            label="Position title"
+            maxLength={160}
+            name="title"
+            required
+          />
+          <p className="text-xs leading-5 text-muted">
+            Positions already used by a posting keep their saved title. Archive
+            one and add a new position if its title must change.
+          </p>
+          {message && (
+            <Alert
+              message={message.text}
+              showIcon
+              type={message.isError ? "error" : "success"}
+            />
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              disabled={form.formState.isSubmitting}
+              onClick={() => setOpen(false)}
+              variant="bordered"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={form.formState.isSubmitting}
+              variant="filled"
+            >
+              Save title
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </>
+  );
+}
+
+function PositionActiveToggle({ position }: { position: Position }) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function toggleStatus() {
+    setIsSubmitting(true);
+    setError(null);
+    const result = await setPositionActive(position.id, {
+      isActive: !position.is_active,
+    });
+    setIsSubmitting(false);
+
+    if (result.success) {
+      router.refresh();
+    } else {
+      setError(result.message);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      {error && (
+        <span className="basis-full text-right text-xs text-danger" role="alert">
+          {error}
+        </span>
+      )}
+      <Popconfirm
+        cancelText="Cancel"
+        description={
+          position.is_active
+            ? "Existing postings keep this position. It will no longer be selectable for new postings."
+            : "This position will be available for new postings again."
+        }
+        okText={position.is_active ? "Archive" : "Restore"}
+        onConfirm={toggleStatus}
+        title={position.is_active ? "Archive this position?" : "Restore this position?"}
+      >
+        <Button
+          disabled={isSubmitting}
+          loading={isSubmitting}
+          size="sm"
+          variant={position.is_active ? "bordered" : "filled"}
+        >
+          {position.is_active ? "Archive" : "Restore"}
+        </Button>
+      </Popconfirm>
+    </div>
+  );
+}
+
 function PositionWeightEditor({
   position,
   criteria,
@@ -434,7 +586,7 @@ function PositionWeightEditor({
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={Math.min(Math.max(total, 0), 100)}
-            className="h-1.5 overflow-hidden rounded-full bg-panel-muted"
+            className="h-1.5 overflow-hidden rounded-full bg-panel-muted mt-2"
             role="progressbar"
           >
             <div
@@ -449,12 +601,16 @@ function PositionWeightEditor({
           </p>
         </div>
         <form onSubmit={form.handleSubmit(submit)}>
-          <div className="grid gap-x-5 sm:grid-cols-2">
+          <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
             {criteria.map((criterion, index) => (
               <FormInput
                 control={form.control}
                 key={criterion.id}
-                label={criterion.title}
+                label={
+                  criterion.criterion_key === "CLASSROOM_OBSERVATION"
+                    ? "Classroom Observation"
+                    : criterion.title
+                }
                 max={100}
                 min={0}
                 name={`weights.${index}`}
@@ -481,11 +637,13 @@ function PositionWeightEditor({
               disabled={form.formState.isSubmitting}
               onClick={() => setOpen(false)}
               variant="bordered"
+              size="sm"
             >
               Cancel
             </Button>
             <Button
               disabled={
+                !form.formState.isDirty ||
                 !form.formState.isValid ||
                 !hasValidTotal ||
                 form.formState.isSubmitting
@@ -493,6 +651,7 @@ function PositionWeightEditor({
               type="submit"
               loading={form.formState.isSubmitting}
               variant="filled"
+              size="sm"
             >
               Save changes
             </Button>
@@ -519,8 +678,9 @@ export function PositionCriteriaManager({
 }) {
   const [isAddingPosition, setIsAddingPosition] = useState(false);
   const [filter, setFilter] = useState<
-    "all" | "teaching" | "non-teaching" | "needs-setup"
+    "all" | "teaching" | "non-teaching" | "needs-setup" | "archived"
   >("all");
+  const activePositions = positions.filter((position) => position.is_active);
   const groups = [
     {
       title: "Teaching",
@@ -537,24 +697,23 @@ export function PositionCriteriaManager({
       ),
     },
   ];
-  const configuredCount = positions.filter(
+  const configuredCount = activePositions.filter(
     (position) => profileByPosition[position.id],
   ).length;
   const visibleGroups = groups
-    .filter(
-      (group) =>
-        filter === "all" ||
-        filter === "needs-setup" ||
-        group.applicationType === filter,
-    )
     .map((group) => ({
       ...group,
       positions: group.positions.filter(
-        (position) =>
-          filter !== "needs-setup" || !profileByPosition[position.id],
+        (position) => {
+          if (filter === "needs-setup") {
+            return position.is_active && !profileByPosition[position.id];
+          }
+          if (filter === "archived") return !position.is_active;
+          return filter === "all" || group.applicationType === filter;
+        },
       ),
     }))
-    .filter((group) => filter !== "needs-setup" || group.positions.length > 0);
+    .filter((group) => group.positions.length > 0);
   const rows: CriteriaTableRow[] = visibleGroups.flatMap((group) => [
     {
       key: `group-${group.applicationType}`,
@@ -597,7 +756,14 @@ export function PositionCriteriaManager({
             </span>
           </span>
         ) : (
-          <span className="font-semibold text-ink">{title}</span>
+          <span className="flex items-center gap-2 font-semibold text-ink">
+            {title}
+            {!row.position?.is_active && (
+              <StatusTag className="border-line bg-panel-muted text-muted">
+                Archived
+              </StatusTag>
+            )}
+          </span>
         ),
     },
     {
@@ -668,7 +834,7 @@ export function PositionCriteriaManager({
     {
       title: "",
       key: "actions",
-      width: 260,
+      width: 390,
       align: "right",
       fixed: "right",
       className: "pr-6!",
@@ -676,6 +842,8 @@ export function PositionCriteriaManager({
       render: (_, row) =>
         row.position ? (
           <div className="flex flex-wrap justify-end gap-2">
+            <PositionTitleEditor position={row.position} />
+            <PositionActiveToggle position={row.position} />
             <PositionScoringStandardsEditor
               educationLevels={educationLevels}
               position={row.position}
@@ -705,7 +873,12 @@ export function PositionCriteriaManager({
     {
       key: "needs-setup" as const,
       label: "Needs setup",
-      count: positions.length - configuredCount,
+      count: activePositions.length - configuredCount,
+    },
+    {
+      key: "archived" as const,
+      label: "Archived",
+      count: positions.length - activePositions.length,
     },
   ];
 
@@ -714,22 +887,22 @@ export function PositionCriteriaManager({
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm bg-panel px-5 py-4 shadow">
         <div className="flex items-baseline gap-3">
           <strong className="text-xl text-ink">
-            {configuredCount} of {positions.length}
+            {configuredCount} of {activePositions.length}
           </strong>
-          <span className="text-sm text-muted">positions fully set up</span>
+          <span className="text-sm text-muted">active positions fully set up</span>
         </div>
         <div
           className="h-2 min-w-32 flex-1 overflow-hidden rounded-full bg-panel-muted"
           role="progressbar"
           aria-label="Positions fully set up"
           aria-valuemin={0}
-          aria-valuemax={positions.length}
+          aria-valuemax={activePositions.length}
           aria-valuenow={configuredCount}
         >
           <div
             className="h-full rounded-full bg-primary transition-[width]"
             style={{
-              width: `${positions.length ? (configuredCount / positions.length) * 100 : 0}%`,
+              width: `${activePositions.length ? (configuredCount / activePositions.length) * 100 : 0}%`,
             }}
           />
         </div>
@@ -772,7 +945,7 @@ export function PositionCriteriaManager({
               : "criteria-position-row"
           }
           rowKey="key"
-          scroll={{ x: 1085 }}
+          scroll={{ x: 1230 }}
         />
       </div>
     </section>

@@ -234,6 +234,7 @@ export type ApplicationsTable = {
         "position_id": string | null;
         "scheduled_assessment_at": string | null;
         "status": PublicEnums["application_status"];
+        "status_reason": string | null;
     };
     ComputedFields: never;
     Insert: {
@@ -246,6 +247,7 @@ export type ApplicationsTable = {
         "position_id"?: string | null;
         "scheduled_assessment_at"?: string | null;
         "status"?: PublicEnums["application_status"];
+        "status_reason"?: string | null;
     };
     Update: {
         "applicant_id"?: string;
@@ -257,6 +259,7 @@ export type ApplicationsTable = {
         "position_id"?: string | null;
         "scheduled_assessment_at"?: string | null;
         "status"?: PublicEnums["application_status"];
+        "status_reason"?: string | null;
     };
     Relationships: [
         {
@@ -336,6 +339,9 @@ export type DocumentReviewsTable = {
         "remarks": string | null;
         "reviewed_at": string;
         "status": PublicEnums["document_status"];
+        "resubmission_due_at": string | null;
+        "resubmission_submitted_at": string | null;
+        "resubmission_submitted_document_id": string | null;
     };
     ComputedFields: never;
     Insert: {
@@ -347,6 +353,9 @@ export type DocumentReviewsTable = {
         "remarks"?: string | null;
         "reviewed_at"?: string;
         "status": PublicEnums["document_status"];
+        "resubmission_due_at"?: string | null;
+        "resubmission_submitted_at"?: string | null;
+        "resubmission_submitted_document_id"?: string | null;
     };
     Update: {
         "confirmed_total_units"?: number | null;
@@ -357,6 +366,9 @@ export type DocumentReviewsTable = {
         "remarks"?: string | null;
         "reviewed_at"?: string;
         "status"?: PublicEnums["document_status"];
+        "resubmission_due_at"?: string | null;
+        "resubmission_submitted_at"?: string | null;
+        "resubmission_submitted_document_id"?: string | null;
     };
     Relationships: [
         {
@@ -388,6 +400,17 @@ export type DocumentReviewsTable = {
             ];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: [
+                "id"
+            ];
+        },
+        {
+            foreignKeyName: "document_reviews_resubmission_submitted_document_id_fkey";
+            columns: [
+                "resubmission_submitted_document_id"
+            ];
+            isOneToOne: false;
+            referencedRelation: "documents";
             referencedColumns: [
                 "id"
             ];

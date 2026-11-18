@@ -10,12 +10,10 @@ type PostingFilter = "all" | "open" | "closed";
 type PostingProgress = {
   id: string;
   title: string;
-  slots: number;
   deadlineDate: string | null;
   deadlinePassed: boolean;
   daysRemaining: number | null;
   applicants: number;
-  qualified: number;
   isOpen: boolean;
 };
 
@@ -109,32 +107,6 @@ export function HrDashboardView({
           <div>
             <h2 className="text-xl font-semibold text-ink">Posting progress</h2>
             <p className="mt-1 text-sm text-muted">Soonest deadline first.</p>
-            <ul
-              aria-label="Posting progress legend"
-              className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted"
-            >
-              <li className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="size-2.5 rounded-sm bg-line-strong"
-                />
-                Open slots
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="size-2.5 rounded-sm bg-success/50"
-                />
-                Applicants
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="size-2.5 rounded-sm bg-primary-dark"
-                />
-                Qualified
-              </li>
-            </ul>
           </div>
 
           <nav
@@ -226,14 +198,8 @@ export function HrDashboardView({
                       >
                         {posting.applicants}
                       </span>{" "}
-                      of {posting.slots} slots applied
-                      <span className="text-muted"> · </span>
-                      <span
-                        className={`font-semibold ${posting.isOpen ? "text-ink" : "text-muted-strong"}`}
-                      >
-                        {posting.qualified}
-                      </span>{" "}
-                      qualified
+                      {posting.applicants === 1 ? "applicant" : "applicants"}{" "}
+                      applied
                     </p>
 
                     <div className="col-start-2 row-start-1 text-right sm:col-start-3 sm:row-start-auto">

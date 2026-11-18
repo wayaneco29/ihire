@@ -39,6 +39,33 @@ export type PublicFunctions = {
         };
         Returns: string;
     };
+    "apply_to_job_with_review_status": {
+        Args: {
+            "p_job_id": string;
+            "p_position_id": string;
+        };
+        Returns: string;
+    };
+    "get_posting_hiring_readiness": {
+        Args: {
+            "p_job_id": string;
+        };
+        Returns: {
+            "can_hire": boolean;
+            "hired_count": number;
+            "intake_closed": boolean;
+            "pending_applications": number;
+            "pending_document_corrections": number;
+            "pending_required_documents": number;
+            "slot_count": number;
+        }[];
+    };
+    "close_job_posting_intake": {
+        Args: {
+            "p_job_id": string;
+        };
+        Returns: boolean;
+    };
     "reassign_application_evaluator": {
         Args: {
             "p_application_id": string;
@@ -151,5 +178,13 @@ export type PublicFunctions = {
             "p_title": string;
         };
         Returns: string;
+    };
+    "update_hr_position": {
+      Args: {
+        "p_is_active": boolean | null;
+        "p_position_id": string;
+        "p_title": string | null;
+      };
+      Returns: undefined;
     };
 };

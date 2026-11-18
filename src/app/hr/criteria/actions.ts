@@ -6,9 +6,13 @@ import { ValidationError } from "yup";
 import { getHrContext } from "@/lib/auth/server";
 import {
   positionSchema,
+  positionActiveSchema,
   positionScoringStandardsSchema,
+  positionTitleFormSchema,
   positionWeightsSchema,
+  type PositionActiveValues,
   type PositionScoringStandardsValues,
+  type PositionTitleFormValues,
   type PositionValues,
 } from "./schema";
 
@@ -66,6 +70,103 @@ export async function createPosition(input: unknown): Promise<ActionResult> {
   revalidatePath("/hr/postings/new");
   revalidatePath("/hr/postings");
   return { success: true, message: "Position created." };
+}
+
+function positionUpdateErrorMessage(error: { code: string; message: string }) {
+  return error.code === "23505"
+    ? "A position with that title already exists for this hiring type."
+    : error.message.includes("cannot be renamed")
+      ? error.message
+      : error.code === "P0002"
+        ? "This position is unavailable. Refresh and try again."
+        : "The position could not be updated. Refresh and try again.";
+}
+
+export async function updatePositionTitle(
+  positionId: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const hr = await getHrContext();
+  if (!hr) return { success: false, message: "HR access is required." };
+  if (!/^[0-9a-f-]{36}$/i.test(positionId)) {
+    return { success: false, message: "This position is unavailable." };
+  }
+
+  let values: PositionTitleFormValues;
+  try {
+    values = await positionTitleFormSchema.validate(input, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof ValidationError
+          ? error.errors[0] ?? "Check the position details."
+          : "Check the position details.",
+    };
+  }
+
+  const { error } = await hr.supabase.rpc("update_hr_position", {
+    p_position_id: positionId,
+    p_title: values.title,
+    p_is_active: null,
+  });
+
+  if (error) {
+    return { success: false, message: positionUpdateErrorMessage(error) };
+  }
+
+  revalidatePath("/hr/criteria");
+  revalidatePath("/hr/postings");
+  revalidatePath("/hr/postings/new");
+  return { success: true, message: "Position updated." };
+}
+
+export async function setPositionActive(
+  positionId: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const hr = await getHrContext();
+  if (!hr) return { success: false, message: "HR access is required." };
+  if (!/^[0-9a-f-]{36}$/i.test(positionId)) {
+    return { success: false, message: "This position is unavailable." };
+  }
+
+  let values: PositionActiveValues;
+  try {
+    values = await positionActiveSchema.validate(input, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof ValidationError
+          ? error.errors[0] ?? "Check the position status."
+          : "Check the position status.",
+    };
+  }
+
+  const { error } = await hr.supabase.rpc("update_hr_position", {
+    p_position_id: positionId,
+    p_title: null,
+    p_is_active: values.isActive,
+  });
+
+  if (error) {
+    return { success: false, message: positionUpdateErrorMessage(error) };
+  }
+
+  revalidatePath("/hr/criteria");
+  revalidatePath("/hr/postings");
+  revalidatePath("/hr/postings/new");
+  return {
+    success: true,
+    message: values.isActive ? "Position restored." : "Position archived.",
+  };
 }
 
 export async function savePositionWeights(

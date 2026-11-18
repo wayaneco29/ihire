@@ -59,6 +59,7 @@ async function validateHiringTrack(
   supabase: NonNullable<Awaited<ReturnType<typeof getHrContext>>>["supabase"],
   positionIds: string[],
   hiringTrack: HiringTrack,
+  archivedPositionIds: string[] = [],
 ) {
   const applicationTypeName =
     hiringTrack === "TEACHING" ? "teaching" : "non-teaching";
@@ -73,20 +74,23 @@ async function validateHiringTrack(
 
   const { data: positions, error } = await supabase
     .from("positions")
-    .select("id, application_type_id")
+    .select("id, application_type_id, is_active")
     .in("id", positionIds);
 
   if (error) {
     return "The selected positions could not be verified. Refresh and try again.";
   }
+  const archivedPositionAllowlist = new Set(archivedPositionIds);
   if (
     !positions ||
     positions.length !== positionIds.length ||
     positions.some(
-      (position) => position.application_type_id !== applicationType.id,
+      (position) =>
+        position.application_type_id !== applicationType.id ||
+        (!position.is_active && !archivedPositionAllowlist.has(position.id)),
     )
   ) {
-    return "Select positions that match the chosen hiring type.";
+    return "Select active positions that match the chosen hiring type. Existing archived positions may stay on this posting.";
   }
   return null;
 }
@@ -156,10 +160,23 @@ export async function updateJobPosting(
     return { success: false, message: error instanceof Error ? error.message : "Check the posting details." };
   }
 
+  const { data: currentPositionLinks, error: currentPositionLinksError } =
+    await hr.supabase
+      .from("job_posting_positions")
+      .select("position_id")
+      .eq("job_id", jobId);
+  if (currentPositionLinksError) {
+    return {
+      success: false,
+      message: "The current positions could not be checked. Refresh and try again.",
+    };
+  }
+
   const hiringTrackMessage = await validateHiringTrack(
     hr.supabase,
     values.positionIds,
     values.hiringTrack,
+    (currentPositionLinks ?? []).map((link) => link.position_id),
   );
   if (hiringTrackMessage) {
     return { success: false, message: hiringTrackMessage };

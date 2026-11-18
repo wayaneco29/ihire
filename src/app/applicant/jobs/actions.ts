@@ -38,11 +38,11 @@ export async function applyToJob(
       message: "We could not verify your required documents. Please try again.",
     };
   }
-  if (documentStatus.status !== "APPROVED") {
+  if (!(["APPROVED", "FOR_REVIEW"] as string[]).includes(documentStatus.status)) {
     return {
       success: false,
       message:
-        "Your required documents must be approved by the Document Reviewer before you can apply.",
+        "Upload and submit all required documents for review before you apply.",
     };
   }
 
@@ -69,7 +69,7 @@ export async function applyToJob(
   }
 
   const { data: applicationId, error } = await applicant.supabase.rpc(
-    "apply_to_job",
+    "apply_to_job_with_review_status",
     {
       p_job_id: jobId,
       p_position_id: positionId,
@@ -80,9 +80,9 @@ export async function applyToJob(
       error?.code === "PGRST202"
         ? "The application service has not been updated yet. Please try again later or contact HR."
         : error?.message.includes(
-              "All required documents must be approved before applying",
+              "All required documents must be submitted for review before applying",
             )
-          ? "Your required documents must be approved by the Document Reviewer before you can apply."
+          ? "Upload and submit all required documents for review before you apply."
         : error?.message.includes(
               "Choose a position included in this job posting",
             )

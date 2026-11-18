@@ -23,7 +23,8 @@ export default async function ApplicantNotificationsPage({
     countResult,
     applicationCountResult,
     documentCountResult,
-    resubmissionCountResult,
+    resubmissionsResult,
+    latestDocumentsResult,
   ] = await Promise.all([
     applicant.supabase
       .from("notifications")
@@ -46,17 +47,44 @@ export default async function ApplicantNotificationsPage({
       .eq("user_id", applicant.user.id)
       .eq("type", "DOCUMENT_STATUS"),
     applicant.supabase
+      .from("v_applicant_document_resubmissions")
+      .select("document_type_id"),
+    applicant.supabase
       .from("documents")
-      .select("id", { count: "exact", head: true })
+      .select("document_type_id, version, status")
       .eq("applicant_id", applicant.applicant.id)
-      .eq("status", "FOR_RESUBMISSION"),
+      .order("version", { ascending: false }),
   ]);
   const totalCount = countResult.count ?? 0;
+  const latestDocumentStatusByType = new Map<string, string>();
+  for (const document of latestDocumentsResult.data ?? []) {
+    if (!latestDocumentStatusByType.has(document.document_type_id)) {
+      latestDocumentStatusByType.set(
+        document.document_type_id,
+        document.status,
+      );
+    }
+  }
+  const resubmissionTypeIds = new Set(
+    (resubmissionsResult.data ?? [])
+      .filter(
+        (request) =>
+          latestDocumentStatusByType.get(request.document_type_id) !==
+          "VERIFIED",
+      )
+      .map((request) => request.document_type_id),
+  );
+  for (const [documentTypeId, status] of latestDocumentStatusByType) {
+    if (status === "FOR_RESUBMISSION") {
+      resubmissionTypeIds.add(documentTypeId);
+    }
+  }
   const countsUnavailable = Boolean(
     countResult.error ||
     applicationCountResult.error ||
     documentCountResult.error ||
-    resubmissionCountResult.error,
+    resubmissionsResult.error ||
+    latestDocumentsResult.error,
   );
 
   return (
@@ -85,7 +113,7 @@ export default async function ApplicantNotificationsPage({
               all: totalCount,
               applications: applicationCountResult.count ?? 0,
               documents: documentCountResult.count ?? 0,
-              documentsNeedingResubmission: resubmissionCountResult.count ?? 0,
+              documentsNeedingResubmission: resubmissionTypeIds.size,
             }}
           />
           {totalCount > pageSize && (

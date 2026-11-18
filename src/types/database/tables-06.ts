@@ -175,6 +175,7 @@ export type PositionsTable = {
     base_training_increment_level: number | null;
     base_experience_increment_level: number | null;
     id: string;
+    is_active: boolean;
     title: string;
   };
   Insert: {
@@ -183,6 +184,7 @@ export type PositionsTable = {
     base_training_increment_level?: number | null;
     base_experience_increment_level?: number | null;
     id?: string;
+    is_active?: boolean;
     title: string;
   };
   Update: {
@@ -191,6 +193,7 @@ export type PositionsTable = {
     base_training_increment_level?: number | null;
     base_experience_increment_level?: number | null;
     id?: string;
+    is_active?: boolean;
     title?: string;
   };
   Relationships: [

@@ -7,6 +7,7 @@ import { Alert } from "antd";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import {
   FormCheckboxGroup,
+  FormDatePicker,
   FormInput,
   FormSelect,
   FormTextArea,
@@ -14,11 +15,13 @@ import {
 import { Button } from "@/components/ui/Button";
 import { createJobPosting, updateJobPosting } from "../actions";
 import { HIRING_TRACKS, postingSchema, type PostingValues } from "../schema";
+import dayjs from "dayjs";
 
 type PositionOption = {
   id: string;
   title: string;
   track: string;
+  is_active: boolean;
 };
 
 type Values = PostingValues;
@@ -42,6 +45,7 @@ export function PostingForm({
     setValue,
     formState: { isSubmitting },
   } = useForm<Values>({
+    mode: "onChange",
     resolver: yupResolver(postingSchema) as Resolver<Values>,
     defaultValues: posting
       ? {
@@ -198,16 +202,26 @@ export function PostingForm({
           <FormCheckboxGroup
             className={positionOptionClasses}
             control={control}
-            hint="Applicants can apply separately to each selected position."
+            hint="Applicants can apply separately to each selected position. Archived positions are available only when already linked to this posting."
             label="Applicable positions"
             name="positionIds"
             options={positions
               .filter((position) => position.track === hiringTrack)
               .map((position) => ({
                 label: (
-                  <span className="font-medium text-ink">{position.title}</span>
+                  <span className="font-medium text-ink">
+                    {position.title}
+                    {!position.is_active && (
+                      <span className="ml-2 text-xs font-normal text-muted">
+                        Archived · existing posting
+                      </span>
+                    )}
+                  </span>
                 ),
                 value: position.id,
+                disabled:
+                  !position.is_active &&
+                  !posting?.positionIds.includes(position.id),
               }))}
             required
           />
@@ -255,12 +269,13 @@ export function PostingForm({
               step={1}
               type="number"
             />
-            <FormInput
+            <FormDatePicker
               control={control}
               hint="Leave blank for no deadline."
               label="Application deadline"
               name="deadline"
-              type="datetime-local"
+              format="MMMM DD, YYYY"
+              disabledDate={(dateMap) => dayjs().isAfter(dateMap)}
             />
             <FormSelect
               control={control}
@@ -290,11 +305,7 @@ export function PostingForm({
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          loading={isSubmitting}
-          variant="filled"
-        >
+        <Button type="submit" loading={isSubmitting} variant="filled">
           {posting ? "Save changes" : "Create posting"}
         </Button>
       </div>

@@ -493,7 +493,7 @@ export default async function ApplicantJobDetailPage({
                 </Link>
               </div>
             ) : applicant.profile.has_submitted_pds ? (
-                documentStatus.status === "APPROVED" ? (
+                ["APPROVED", "FOR_REVIEW"].includes(documentStatus.status) ? (
                   positions.length ? (
                     <ApplyButton
                       jobId={job.id}
@@ -514,9 +514,9 @@ export default async function ApplicantJobDetailPage({
                       <WorkflowStatusTag status={documentStatus.status} />
                     </div>
                     <p className="mt-2 text-sm leading-6 text-muted">
-                      Your required documents must be approved before you can
-                      apply. Upload any missing documents and submit them for
-                      review.
+                      Upload every required document and submit it for review
+                      before applying. The Document Reviewer can finish
+                      verification after your application is filed.
                     </p>
                     <Link
                       className="mt-3 inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-dark"

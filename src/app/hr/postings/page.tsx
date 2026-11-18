@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
+import { getPostingApplicantStatuses } from "./data";
 import { PostingsManager } from "./components/PostingsManager";
 
 function daysUntilDeadline(deadline: string, now: number) {
@@ -49,13 +50,24 @@ export default async function HrPostingsPage() {
     );
 
   const ids = (postings ?? []).map((posting) => posting.id);
-  const { data: applications } = ids.length
-    ? await hr.supabase
-        .from("v_anonymized_applicants")
-        .select("job_id, application_status")
-        .in("job_id", ids)
-        .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
-    : { data: [] };
+  const applicationsResult = await getPostingApplicantStatuses(hr.supabase, ids);
+  if (applicationsResult.error) {
+    return (
+      <>
+        <PageHeader
+          title="Job postings"
+          description="Create positions and track evaluator outcomes for each posting."
+        />
+        <div className="mt-7">
+          <EmptyState
+            description="Refresh the page to load applicant totals again."
+            title="Applicant totals unavailable"
+          />
+        </div>
+      </>
+    );
+  }
+  const applications = applicationsResult.data ?? [];
   const stats = new Map<
     string,
     { total: number; qualified: number; hired: number }
