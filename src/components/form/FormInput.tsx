@@ -10,16 +10,8 @@ type FormInputProps<T extends FieldValues> = FormControlProps<T> &
   Omit<InputProps, "id" | "value" | "onChange" | "onBlur">;
 
 export function FormInput<T extends FieldValues>(props: FormInputProps<T>) {
-  const {
-    control,
-    name,
-    label,
-    id,
-    hint,
-    required,
-    rules,
-    ...inputProps
-  } = props;
+  const { control, name, label, id, hint, required, rules, ...inputProps } =
+    props;
   const inputId = fieldId(name, id);
 
   return (
@@ -37,13 +29,20 @@ export function FormInput<T extends FieldValues>(props: FormInputProps<T>) {
         >
           <Input
             {...inputProps}
-            aria-describedby={fieldState.error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+            aria-describedby={
+              fieldState.error
+                ? `${inputId}-error`
+                : hint
+                  ? `${inputId}-hint`
+                  : undefined
+            }
             aria-invalid={fieldState.invalid}
             aria-labelledby={`${inputId}-label`}
             aria-required={required}
             id={inputId}
             name={field.name}
             onBlur={field.onBlur}
+            size="small"
             onChange={field.onChange}
             ref={field.ref}
             value={(field.value ?? "") as InputProps["value"]}

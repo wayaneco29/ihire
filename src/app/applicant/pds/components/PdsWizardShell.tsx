@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, useTransition } from "react";
-import { ConfigProvider, Select } from "antd";
+import { ConfigProvider, Modal, Select } from "antd";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,10 @@ import { QuestionnaireStep } from "./steps/QuestionnaireStep";
 import { ReferencesStep } from "./steps/ReferencesStep";
 import { ReviewSubmitStep } from "./steps/ReviewSubmitStep";
 
-import { PdsFormNavigationContext, type SaveBeforeLeaving } from "./PdsForm";
+import {
+  PdsFormNavigationContext,
+  type PdsNavigationGuard,
+} from "./PdsForm";
 
 const STEPS = [
   "Personal Information",
@@ -57,31 +60,76 @@ export function PdsWizardShell({
   const [completedSteps, setCompletedSteps] = useState(initialCompletedSteps);
   const [currentDraftData, setCurrentDraftData] = useState(draftData);
   const [message, setMessage] = useState<string | null>(null);
+  const [isUnsavedModalOpen, setIsUnsavedModalOpen] = useState(false);
+  const [pendingStep, setPendingStep] = useState<number | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const saveBeforeLeaving = useRef<SaveBeforeLeaving | null>(null);
-  const registerSave = useCallback((save: SaveBeforeLeaving | null) => {
-    saveBeforeLeaving.current = save;
-  }, []);
+  const navigationGuard = useRef<PdsNavigationGuard | null>(null);
+  const registerNavigationGuard = useCallback(
+    (guard: PdsNavigationGuard | null) => {
+      navigationGuard.current = guard;
+    },
+    [],
+  );
   const nextAvailableStep = Math.min(11, Math.max(0, ...completedSteps) + 1);
+  const isUpdate = previousSubmittedVersion !== null;
 
   function openStep(step: number) {
     if (
       !pdsVersionId ||
       step === currentStep ||
-      (!completedSteps.includes(step) && step !== nextAvailableStep) ||
+      (!isUpdate &&
+        !completedSteps.includes(step) &&
+        step !== nextAvailableStep) ||
       isPending
     )
       return;
     setMessage(null);
+
+    if (navigationGuard.current?.hasUnsavedChanges()) {
+      setPendingStep(step);
+      setModalError(null);
+      setIsUnsavedModalOpen(true);
+      return;
+    }
+
+    navigateToStep(step);
+  }
+
+  function navigateToStep(step: number) {
+    if (!pdsVersionId) return;
+
     startTransition(async () => {
-      const snapshot = await saveBeforeLeaving.current?.();
+      const result = await setPdsWizardStep(pdsVersionId, step);
+      if (result.success) {
+        setCurrentStep(result.currentStep);
+      } else {
+        setMessage(result.message);
+      }
+    });
+  }
+
+  function dismissUnsavedModal() {
+    setIsUnsavedModalOpen(false);
+    setPendingStep(null);
+    setModalError(null);
+  }
+
+  function confirmStepChange() {
+    const step = pendingStep;
+    if (!pdsVersionId || step === null || isPending) return;
+
+    setModalError(null);
+    startTransition(async () => {
+      const snapshot = await navigationGuard.current?.saveBeforeLeaving();
       if (snapshot === false) {
-        setMessage(
-          "Your changes are still saving or could not be saved. Please try again.",
+        setModalError(
+          "Your changes could not be saved. Please try again or keep editing.",
         );
         return;
       }
+
       if (snapshot) {
         setCurrentDraftData((data) => ({
           ...(data && typeof data === "object" && !Array.isArray(data)
@@ -90,12 +138,16 @@ export function PdsWizardShell({
           [String(currentStep)]: snapshot,
         }));
       }
+
       const result = await setPdsWizardStep(pdsVersionId, step);
-      if (result.success) {
-        setCurrentStep(result.currentStep);
-      } else {
+      if (!result.success) {
+        dismissUnsavedModal();
         setMessage(result.message);
+        return;
       }
+
+      setCurrentStep(result.currentStep);
+      dismissUnsavedModal();
     });
   }
 
@@ -127,7 +179,7 @@ export function PdsWizardShell({
 
   return (
     <ConfigProvider componentSize="large" componentDisabled={isPending}>
-      <PdsFormNavigationContext.Provider value={registerSave}>
+      <PdsFormNavigationContext.Provider value={registerNavigationGuard}>
         <section className="relative min-h-[calc(100vh-4.5rem)] px-4 pb-28 pt-7 sm:-mx-6 sm:px-6 sm:pt-8 lg:-mx-10 lg:px-10">
           <div className="mx-auto grid w-full grid-cols-1 gap-7 lg:grid-cols-[15rem_minmax(0,1fr)] xl:gap-10">
             <aside className="lg:sticky lg:top-24 lg:self-start rounded-sm bg-white p-4">
@@ -146,6 +198,7 @@ export function PdsWizardShell({
                       value: step,
                       label: `${step}. ${label}`,
                       disabled:
+                        !isUpdate &&
                         step !== currentStep &&
                         step !== nextAvailableStep &&
                         !completedSteps.includes(step),
@@ -168,16 +221,16 @@ export function PdsWizardShell({
                     const canOpen =
                       !active &&
                       Boolean(pdsVersionId) &&
-                      (completed || step === nextAvailableStep);
+                      (isUpdate || completed || step === nextAvailableStep);
 
                     return (
                       <li aria-current={active ? "step" : undefined} key={label}>
                         <Button
-                          aria-label={`${label}${active ? ", current section" : completed ? ", completed" : step === nextAvailableStep ? ", ready to continue" : ", not yet available"}`}
+                          aria-label={`${label}${active ? ", current section" : completed ? ", completed" : isUpdate ? ", available" : step === nextAvailableStep ? ", ready to continue" : ", not yet available"}`}
                           className={`relative flex min-h-8 w-full items-center gap-2.5 rounded-md px-0.5 text-left text-xs leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                             active
                               ? "font-semibold text-primary-dark"
-                              : completed
+                              : completed || canOpen
                                 ? "font-medium text-ink hover:text-primary-dark"
                                 : "text-muted cursor-not-allowed"
                           } ${canOpen ? "cursor-pointer" : "cursor-default"}`}
@@ -189,7 +242,7 @@ export function PdsWizardShell({
                           <span
                             className={`relative z-10 grid size-[1.4rem] shrink-0 place-items-center rounded-full border bg-[#eaf1f1] text-[10px] ${
                               completed
-                                ? "border-primary bg-primary text-on-primary"
+                                ? `border-primary bg-primary text-on-primary ${active ? "ring-2 ring-primary-light" : ""}`
                                 : active
                                   ? "border-primary text-primary-dark ring-2 ring-primary-light"
                                   : "border-line-strong text-muted"
@@ -246,6 +299,44 @@ export function PdsWizardShell({
                   {message}
                 </p>
               )}
+              <Modal
+                centered
+                closable={!isPending}
+                footer={
+                  <div className="flex justify-end gap-3">
+                    <Button
+                      disabled={isPending}
+                      onClick={dismissUnsavedModal}
+                      variant="ghost"
+                    >
+                      Keep editing
+                    </Button>
+                    <Button
+                      disabled={isPending || pendingStep === null}
+                      loading={isPending}
+                      onClick={confirmStepChange}
+                      variant="filled"
+                    >
+                      Save and switch
+                    </Button>
+                  </div>
+                }
+                keyboard={!isPending}
+                maskClosable={!isPending}
+                onCancel={dismissUnsavedModal}
+                open={isUnsavedModalOpen}
+                title="Unsaved changes"
+              >
+                <p className="text-sm leading-6 text-ink">
+                  You have unsaved changes in this section. Save them before
+                  switching to another step?
+                </p>
+                {modalError && (
+                  <p className="mt-3 text-sm text-danger" role="alert">
+                    {modalError}
+                  </p>
+                )}
+              </Modal>
               <div aria-live="polite" className="min-w-0">
                 {currentStep === 1 && pdsVersionId ? (
                   <PersonalInformationStep

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type FieldFrameProps = {
   id: string;
-  label: string;
+  label?: string;
   required?: boolean;
   error?: string;
   hint?: string;
@@ -19,14 +19,16 @@ export function FieldFrame({
 }: FieldFrameProps) {
   return (
     <div className="min-w-0">
-      <label
-        className="mb-1.5 block text-sm font-medium text-ink"
-        htmlFor={id}
-        id={`${id}-label`}
-      >
-        {label}
-        {required && <span className="ml-1 text-danger">*</span>}
-      </label>
+      {label && (
+        <label
+          className="mb-1.5 block text-sm font-medium text-ink"
+          htmlFor={id}
+          id={`${id}-label`}
+        >
+          {label}
+          {required && <span className="ml-1 text-danger">*</span>}
+        </label>
+      )}
       {children}
       {(error || hint) && (
         <p

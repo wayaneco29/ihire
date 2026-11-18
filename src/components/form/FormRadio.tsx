@@ -7,7 +7,7 @@ import { FieldFrame } from "./FieldFrame";
 import { fieldId, type FormControlProps } from "./field-types";
 
 export type FormRadioOption = {
-  label: ReactNode;
+  label?: ReactNode;
   value: string | number | boolean;
   disabled?: boolean;
 };
@@ -18,17 +18,8 @@ type FormRadioProps<T extends FieldValues> = FormControlProps<T> & {
 };
 
 export function FormRadio<T extends FieldValues>(props: FormRadioProps<T>) {
-  const {
-    control,
-    name,
-    label,
-    id,
-    hint,
-    required,
-    rules,
-    options,
-    disabled,
-  } = props;
+  const { control, name, label, id, hint, required, rules, options, disabled } =
+    props;
   const radioId = fieldId(name, id);
 
   return (
@@ -45,7 +36,13 @@ export function FormRadio<T extends FieldValues>(props: FormRadioProps<T>) {
           required={required}
         >
           <Radio.Group
-            aria-describedby={fieldState.error ? `${radioId}-error` : hint ? `${radioId}-hint` : undefined}
+            aria-describedby={
+              fieldState.error
+                ? `${radioId}-error`
+                : hint
+                  ? `${radioId}-hint`
+                  : undefined
+            }
             aria-invalid={fieldState.invalid}
             aria-labelledby={`${radioId}-label`}
             aria-required={required}

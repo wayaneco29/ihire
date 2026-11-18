@@ -185,11 +185,8 @@ export function WorkExperienceStep({
 
       <PdsStepFooter
         isFirstStep={false}
-        isSaving={autosave.status === "saving"}
         isSubmitting={isSubmitting}
-        onBack={async () => {
-          if (await autosave.flush()) onBack();
-        }}
+        onBack={onBack}
         status={
           autosave.status === "saving"
             ? "Saving draft…"

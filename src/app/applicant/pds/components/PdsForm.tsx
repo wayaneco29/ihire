@@ -5,8 +5,12 @@ import type { Json } from "@/types/database";
 
 export type SaveBeforeLeaving = () => Promise<Record<string, Json> | false>;
 
-type RegisterSave = (save: SaveBeforeLeaving | null) => void;
+export type PdsNavigationGuard = {
+  hasUnsavedChanges: () => boolean;
+  saveBeforeLeaving: SaveBeforeLeaving;
+};
 
-export const PdsFormNavigationContext = createContext<RegisterSave | null>(
-  null,
-);
+type RegisterNavigationGuard = (guard: PdsNavigationGuard | null) => void;
+
+export const PdsFormNavigationContext =
+  createContext<RegisterNavigationGuard | null>(null);

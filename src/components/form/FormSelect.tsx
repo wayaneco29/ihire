@@ -44,13 +44,20 @@ export function FormSelect<T extends FieldValues>(props: FormSelectProps<T>) {
         >
           <Select
             {...selectProps}
-            aria-describedby={fieldState.error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
+            aria-describedby={
+              fieldState.error
+                ? `${selectId}-error`
+                : hint
+                  ? `${selectId}-hint`
+                  : undefined
+            }
             aria-invalid={fieldState.invalid}
             aria-labelledby={`${selectId}-label`}
             aria-required={required}
             className="w-full"
             id={selectId}
             onBlur={field.onBlur}
+            size="medium"
             onChange={(value) => {
               field.onChange(value);
               if (typeof value === "string") onValueChange?.(value);

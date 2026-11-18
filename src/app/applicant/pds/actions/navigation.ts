@@ -36,7 +36,7 @@ export async function setPdsWizardStep(
     return { success: false, message: "Applicant access is required." };
   }
 
-  const { data, error } = await supabase.rpc("set_pds_current_step", {
+  const { data, error } = await supabase.rpc("set_pds_current_step_v2", {
     p_pds_version_id: pdsVersionId,
     p_step_number: targetStep,
   });
@@ -73,7 +73,7 @@ export async function savePdsStepDraft(
     return { success: false, message: "Applicant access is required." };
   }
 
-  const { error } = await applicant.supabase.rpc("save_pds_step_draft", {
+  const { error } = await applicant.supabase.rpc("save_pds_step_draft_v2", {
     p_pds_version_id: pdsVersionId,
     p_step_number: step,
     p_payload: payload,

@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { Json } from "@/types/database";
 import { PdsFormNavigationContext } from "../components/PdsForm";
 import { savePdsStepDraft } from "../actions/navigation";
@@ -13,6 +21,14 @@ type SaveSnapshot = {
   serialized: string;
 };
 
+function sameSnapshot(left: SaveSnapshot, right: SaveSnapshot) {
+  return (
+    left.pdsVersionId === right.pdsVersionId &&
+    left.step === right.step &&
+    left.serialized === right.serialized
+  );
+}
+
 export function usePdsStepAutosave(
   pdsVersionId: string,
   step: number,
@@ -20,51 +36,82 @@ export function usePdsStepAutosave(
 ) {
   const serialized = JSON.stringify(values) ?? "{}";
   const registerNavigationSave = useContext(PdsFormNavigationContext);
-  const latest = useRef<SaveSnapshot>({ pdsVersionId, step, serialized });
+  const initialSnapshot = { pdsVersionId, step, serialized };
+  const latest = useRef<SaveSnapshot>(initialSnapshot);
+  const lastSaved = useRef<SaveSnapshot>(initialSnapshot);
   const pending = useRef(false);
-  const saving = useRef(false);
+  const activeFlush = useRef<Promise<boolean> | null>(null);
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [message, setMessage] = useState<string | null>(null);
 
-  const flush = useCallback(async () => {
-    if (saving.current) return false;
-    saving.current = true;
-    let successful = true;
+  useLayoutEffect(() => {
+    const snapshot = { pdsVersionId, step, serialized };
+    latest.current = snapshot;
+    pending.current = !sameSnapshot(snapshot, lastSaved.current);
+  }, [pdsVersionId, serialized, step]);
 
-    try {
+  const flush = useCallback(() => {
+    if (activeFlush.current) return activeFlush.current;
+
+    const run = async () => {
+      let successful = true;
+
       while (pending.current) {
-        pending.current = false;
         const snapshot = latest.current;
-        setStatus("saving");
-        const result = await savePdsStepDraft(
-          snapshot.pdsVersionId,
-          snapshot.step,
-          JSON.parse(snapshot.serialized) as Json,
-        );
-
-        const isLatest =
-          snapshot.pdsVersionId === latest.current.pdsVersionId &&
-          snapshot.step === latest.current.step &&
-          snapshot.serialized === latest.current.serialized;
-
-        if (isLatest) {
-          if (result.success) {
-            setStatus("saved");
-            setMessage(null);
-          } else {
-            successful = false;
-            setStatus("error");
-            setMessage(result.message ?? "Your changes could not be saved yet.");
-          }
+        if (sameSnapshot(snapshot, lastSaved.current)) {
+          pending.current = false;
+          break;
         }
 
-        if (!isLatest) pending.current = true;
-      }
-    } finally {
-      saving.current = false;
-    }
+        pending.current = false;
+        setStatus("saving");
 
-    return successful;
+        let result: Awaited<ReturnType<typeof savePdsStepDraft>>;
+        try {
+          result = await savePdsStepDraft(
+            snapshot.pdsVersionId,
+            snapshot.step,
+            JSON.parse(snapshot.serialized) as Json,
+          );
+        } catch {
+          result = {
+            success: false,
+            message: "Your changes could not be saved yet.",
+          };
+        }
+
+        const isLatest = sameSnapshot(snapshot, latest.current);
+        if (result.success) {
+          lastSaved.current = snapshot;
+          if (isLatest) {
+            setStatus("saved");
+            setMessage(null);
+          }
+        } else if (isLatest) {
+          successful = false;
+          pending.current = true;
+          setStatus("error");
+          setMessage(result.message ?? "Your changes could not be saved yet.");
+          break;
+        }
+
+        pending.current = !sameSnapshot(latest.current, lastSaved.current);
+      }
+
+      return successful;
+    };
+
+    const active = Promise.resolve().then(run);
+    activeFlush.current = active;
+    void active.then(
+      () => {
+        if (activeFlush.current === active) activeFlush.current = null;
+      },
+      () => {
+        if (activeFlush.current === active) activeFlush.current = null;
+      },
+    );
+    return active;
   }, []);
 
   const saveBeforeLeaving = useCallback(async () => {
@@ -74,28 +121,32 @@ export function usePdsStepAutosave(
       : false;
   }, [flush]);
 
-  useEffect(() => {
-    latest.current = { pdsVersionId, step, serialized };
-    pending.current = true;
+  const navigationGuard = useMemo(
+    () => ({
+      hasUnsavedChanges: () => !sameSnapshot(latest.current, lastSaved.current),
+      saveBeforeLeaving,
+    }),
+    [saveBeforeLeaving],
+  );
 
-    const resetStatus = window.setTimeout(() => {
-      if (!saving.current && pending.current) setStatus("idle");
-    }, 0);
+  useEffect(() => {
+    if (!pending.current) return;
+    setStatus("idle");
+    setMessage(null);
     const timeout = window.setTimeout(() => {
       void flush();
     }, 700);
 
     return () => {
-      window.clearTimeout(resetStatus);
       window.clearTimeout(timeout);
     };
   }, [flush, pdsVersionId, serialized, step]);
 
   useEffect(() => {
     if (!registerNavigationSave) return;
-    registerNavigationSave(saveBeforeLeaving);
+    registerNavigationSave(navigationGuard);
     return () => registerNavigationSave(null);
-  }, [registerNavigationSave, saveBeforeLeaving]);
+  }, [navigationGuard, registerNavigationSave]);
 
-  return { flush, status, message };
+  return { status, message };
 }

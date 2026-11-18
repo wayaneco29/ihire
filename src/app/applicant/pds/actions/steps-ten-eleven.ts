@@ -37,7 +37,7 @@ export async function savePdsReferencesStep(
   }
 
   const { error: draftError } = await applicant.supabase.rpc(
-    "save_pds_step_draft",
+    "save_pds_step_draft_v2",
     {
       p_pds_version_id: pdsVersionId,
       p_step_number: 10,

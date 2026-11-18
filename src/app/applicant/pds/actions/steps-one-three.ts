@@ -42,7 +42,7 @@ export async function savePdsPersonalStep(
   }
 
   const { error: draftError } = await applicant.supabase.rpc(
-    "save_pds_step_draft",
+    "save_pds_step_draft_v2",
     {
       p_pds_version_id: pdsVersionId,
       p_step_number: 1,
@@ -174,7 +174,7 @@ export async function savePdsFamilyStep(
   }
 
   const { error: draftError } = await applicant.supabase.rpc(
-    "save_pds_step_draft",
+    "save_pds_step_draft_v2",
     {
       p_pds_version_id: pdsVersionId,
       p_step_number: 2,
@@ -288,7 +288,7 @@ export async function savePdsEducationStep(
   }
 
   const { error: draftError } = await applicant.supabase.rpc(
-    "save_pds_step_draft",
+    "save_pds_step_draft_v2",
     {
       p_pds_version_id: pdsVersionId,
       p_step_number: 3,

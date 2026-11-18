@@ -8,7 +8,7 @@ import type {
 export type FormControlProps<T extends FieldValues> = {
   control: Control<T>;
   name: Path<T>;
-  label: string;
+  label?: string;
   id?: string;
   hint?: string;
   required?: boolean;

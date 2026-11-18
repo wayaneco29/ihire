@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 
 type Props = {
   isFirstStep: boolean;
-  isSaving?: boolean;
   isSubmitting: boolean;
   onBack: () => void | Promise<void>;
   submitDisabled?: boolean;
@@ -18,7 +17,6 @@ type Props = {
 
 export function PdsStepFooter({
   isFirstStep,
-  isSaving = false,
   isSubmitting,
   onBack,
   submitDisabled = false,
@@ -60,7 +58,7 @@ export function PdsStepFooter({
           )}
           {!isFirstStep && (
             <Button
-              disabled={isSubmitting || isSaving || isGoingBack}
+              disabled={isSubmitting || isGoingBack}
               loading={isGoingBack}
               onClick={handleBack}
               variant="ghost"

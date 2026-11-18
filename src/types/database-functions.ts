@@ -121,7 +121,22 @@ export type PublicFunctions = {
         };
         Returns: number;
     };
+    "set_pds_current_step_v2": {
+        Args: {
+            "p_pds_version_id": string;
+            "p_step_number": number;
+        };
+        Returns: number;
+    };
     "save_pds_step_draft": {
+        Args: {
+            "p_payload": import("./database-json").Json;
+            "p_pds_version_id": string;
+            "p_step_number": number;
+        };
+        Returns: string;
+    };
+    "save_pds_step_draft_v2": {
         Args: {
             "p_payload": import("./database-json").Json;
             "p_pds_version_id": string;

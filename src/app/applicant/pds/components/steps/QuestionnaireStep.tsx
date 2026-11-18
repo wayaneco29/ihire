@@ -93,7 +93,7 @@ export function QuestionnaireStep({
             aria-labelledby={`pds-question-${item.code}`}
             key={item.code}
           >
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem] md:items-start">
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_10rem] md:items-start">
               <h4
                 className="text-sm font-medium leading-6 text-ink"
                 id={`pds-question-${item.code}`}
@@ -105,7 +105,6 @@ export function QuestionnaireStep({
               </h4>
               <FormRadioYesNo
                 control={control}
-                label="Answer"
                 name={`questionnaire.${index}.answer`}
                 required
               />
@@ -172,17 +171,14 @@ export function QuestionnaireStep({
 
       <PdsStepFooter
         isFirstStep={false}
-        isSaving={autosave.status === "saving"}
         isSubmitting={isSubmitting}
-        onBack={async () => {
-          if (await autosave.flush()) onBack();
-        }}
+        onBack={onBack}
         status={
           autosave.status === "saving"
             ? "Saving draft…"
             : autosave.status === "saved"
               ? "All changes saved"
-              : autosave.message ?? "Your draft saves automatically."
+              : (autosave.message ?? "Your draft saves automatically.")
         }
         submitMessage={submitMessage}
       />
