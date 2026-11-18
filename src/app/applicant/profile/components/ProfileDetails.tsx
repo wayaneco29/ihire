@@ -55,13 +55,19 @@ const PROFILE_SECTIONS = {
   references: { id: "references", title: "References" },
 } as const;
 
-const PROFILE_SECTION_LINKS = Object.values(PROFILE_SECTIONS);
-
-function InfoValue({ label, value }: { label: string; value: ReactNode }) {
+function InfoValue({
+  label,
+  value,
+  className = "",
+}: {
+  label: string;
+  value: ReactNode;
+  className?: string;
+}) {
   const isEmpty = value === null || value === undefined || value === "";
 
   return (
-    <div>
+    <div className={className}>
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-1 wrap-break-words text-sm font-medium text-ink">
         {isEmpty ? "—" : value}
@@ -79,8 +85,8 @@ function InfoGroup({
 }) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-semibold text-ink">{title}</h3>
-      {children}
+      <h3 className="mb-2 text-sm font-medium text-ink">{title}</h3>
+      <div className="rounded-sm bg-primary/5 p-4 sm:p-5">{children}</div>
     </div>
   );
 }
@@ -101,18 +107,12 @@ function ProfileSection({
   return (
     <section
       aria-labelledby={id + "-heading"}
-      className="scroll-mt-24 border-b border-line-subtle py-5 last:border-b-0"
+      className="scroll-mt-24 py-5"
       id={id}
     >
       <header className="mb-3 flex flex-wrap items-center gap-3">
-        <span
-          aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-sm bg-primary-light text-primary"
-        >
-          {icon}
-        </span>
         <h2
-          className="font-[Bricolage_Grotesque] text-sm font-semibold text-primary-dark"
+          className="font-[Bricolage_Grotesque] text-base font-semibold text-primary-dark"
           id={id + "-heading"}
         >
           {title}
@@ -123,7 +123,7 @@ function ProfileSection({
           </span>
         )}
       </header>
-      <div className="rounded-sm bg-primary/5 p-4 sm:p-5">{children}</div>
+      {children}
     </section>
   );
 }
@@ -132,9 +132,9 @@ function EmptyRecords({ title }: { title: string }) {
   return (
     <EmptyState
       compact
-      className="[&_h2]:text-muted"
-      icon={<InboxIcon className="size-5" />}
-      iconClassName="mb-0!"
+      className="[&_h2]:text-muted bg-primary/5!"
+      icon={<InboxIcon className="size-6" />}
+      iconClassName="mb-0! bg-transparent!"
       title={title}
     />
   );
@@ -198,7 +198,7 @@ export function ProfileDetails({
           id={PROFILE_SECTIONS.personal.id}
           title={PROFILE_SECTIONS.personal.title}
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             <InfoGroup title="Name and personal details">
               <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
                 <InfoValue
@@ -386,7 +386,7 @@ export function ProfileDetails({
 
             <InfoGroup title="Children">
               {childrenRecords.length ? (
-                <ul className="divide-y divide-line-subtle">
+                <ul className="">
                   {childrenRecords.map((child) => (
                     <li className="py-3 first:pt-0 last:pb-0" key={child.id}>
                       <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
@@ -416,18 +416,13 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.education.title}
         >
           {education.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {education.map((item) => (
-                <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
-                  <h3 className="font-medium text-sm text-ink">
+                <li className="pb-6 first:pt-0 last:pb-0" key={item.id}>
+                  <h3 className="mb-2 text-sm font-medium text-ink">
                     {formatPdsOption(item.level, EDUCATION_LEVEL_OPTIONS)}
                   </h3>
-                  {item.school_name && (
-                    <p className="mt-1 text-sm text-muted">
-                      {item.school_name}
-                    </p>
-                  )}
-                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3 rounded-sm bg-primary/5 p-4 sm:p-5">
                     <InfoValue
                       label="Degree or course"
                       value={item.degree_course}
@@ -499,13 +494,14 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.eligibility.title}
         >
           {eligibility.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {eligibility.map((item) => (
                 <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
-                  <h3 className="font-medium text-sm text-ink">
-                    {item.eligibility_name}
-                  </h3>
-                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3 rounded-sm bg-primary/5 p-4 sm:p-5">
+                    <InfoValue
+                      label="Eligibility"
+                      value={item.eligibility_name}
+                    />
                     <InfoValue label="Rating" value={item.rating} />
                     <InfoValue
                       label="Date of examination"
@@ -539,16 +535,12 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.experience.title}
         >
           {experience.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {experience.map((item) => (
                 <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
-                  <h3 className="font-medium text-sm text-ink">
-                    {item.position_title}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted">
-                    {item.agency_company}
-                  </p>
-                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3 rounded-sm bg-primary/5 p-4 sm:p-5">
+                    <InfoValue label="Agency" value={item.agency_company} />
+                    <InfoValue label="Position" value={item.position_title} />
                     <InfoValue
                       label="Period"
                       value={
@@ -596,13 +588,15 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.voluntary.title}
         >
           {voluntaryWork.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {voluntaryWork.map((item) => (
                 <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
-                  <h3 className="font-medium text-sm text-ink">
-                    {item.organization_name_address}
-                  </h3>
-                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3 rounded-sm bg-primary/5 p-4 sm:p-5">
+                    <InfoValue
+                      className="col-span-1"
+                      label="Organization Name & Address"
+                      value={item.organization_name_address}
+                    />
                     <InfoValue
                       label="Period"
                       value={formatPdsDateRange(item.date_from, item.date_to)}
@@ -628,11 +622,11 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.learning.title}
         >
           {trainings.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {trainings.map((item) => (
                 <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
-                  <h3 className="font-medium text-sm text-ink">{item.title}</h3>
-                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3 rounded-sm bg-primary/5 p-4 sm:p-5">
+                    <InfoValue label="Title" value={item.title} />
                     <InfoValue label="Conducted by" value={item.conducted_by} />
                     <InfoValue
                       label="Learning and development type"
@@ -659,7 +653,7 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.other.title}
         >
           {otherInfo.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {otherInfo.map((item) => (
                 <li className="py-4 first:pt-0 last:pb-0" key={item.id}>
                   <h3 className="font-medium text-sm text-primary-dark">
@@ -686,13 +680,13 @@ export function ProfileDetails({
           title={PROFILE_SECTIONS.references.title}
         >
           {references.length ? (
-            <ul className="divide-y divide-line-subtle">
+            <ul className="">
               {references.map((reference, index) => (
                 <li className="py-4 first:pt-0 last:pb-0" key={reference.id}>
-                  <h3 className="mb-3 text-sm font-semibold text-primary-dark">
+                  <h3 className="mb-2 text-sm font-medium text-ink">
                     Reference {index + 1}
                   </h3>
-                  <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                  <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 rounded-sm bg-primary/5 p-4 sm:p-5">
                     <InfoValue label="Full name" value={reference.name} />
                     <InfoValue
                       label="Contact No. and/or email"
