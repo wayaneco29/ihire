@@ -121,10 +121,16 @@ async function ProfileContent({
 }) {
   const [
     personalResult,
+    familyResult,
+    addressesResult,
+    childrenResult,
     educationResult,
+    eligibilityResult,
     experienceResult,
+    voluntaryWorkResult,
     trainingsResult,
     otherInfoResult,
+    referencesResult,
   ] = await Promise.all([
     applicant.supabase
       .from("pds_personal_info")
@@ -132,12 +138,36 @@ async function ProfileContent({
       .eq("pds_version_id", pdsVersionId)
       .maybeSingle(),
     applicant.supabase
+      .from("pds_family_background")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .maybeSingle(),
+    applicant.supabase
+      .from("pds_addresses")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId),
+    applicant.supabase
+      .from("pds_children")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .order("sort_order"),
+    applicant.supabase
       .from("pds_education")
       .select("*")
       .eq("pds_version_id", pdsVersionId)
       .order("sort_order"),
     applicant.supabase
+      .from("pds_eligibility")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .order("sort_order"),
+    applicant.supabase
       .from("pds_work_experience")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
+      .order("sort_order"),
+    applicant.supabase
+      .from("pds_voluntary_work")
       .select("*")
       .eq("pds_version_id", pdsVersionId)
       .order("sort_order"),
@@ -150,16 +180,26 @@ async function ProfileContent({
       .from("pds_other_info")
       .select("*")
       .eq("pds_version_id", pdsVersionId)
-      .eq("category", "SKILL_HOBBY")
+      .order("sort_order"),
+    applicant.supabase
+      .from("pds_references")
+      .select("*")
+      .eq("pds_version_id", pdsVersionId)
       .order("sort_order"),
   ]);
 
   const loadError =
     personalResult.error ||
+    familyResult.error ||
+    addressesResult.error ||
+    childrenResult.error ||
     educationResult.error ||
+    eligibilityResult.error ||
     experienceResult.error ||
+    voluntaryWorkResult.error ||
     trainingsResult.error ||
-    otherInfoResult.error;
+    otherInfoResult.error ||
+    referencesResult.error;
 
   if (loadError) {
     return (
@@ -175,12 +215,18 @@ async function ProfileContent({
   return (
     <>
       <ProfileDetails
+        addresses={addressesResult.data ?? []}
+        childrenRecords={childrenResult.data ?? []}
         education={educationResult.data ?? []}
+        eligibility={eligibilityResult.data ?? []}
         experience={experienceResult.data ?? []}
+        family={familyResult.data}
         hasDraft={hasDraft}
+        otherInfo={otherInfoResult.data ?? []}
         personal={personalResult.data}
-        skills={otherInfoResult.data ?? []}
+        references={referencesResult.data ?? []}
         trainings={trainingsResult.data ?? []}
+        voluntaryWork={voluntaryWorkResult.data ?? []}
         versionNumber={versionNumber}
       />
     </>
