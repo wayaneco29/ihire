@@ -15,12 +15,26 @@ export type FormRadioOption = {
 type FormRadioProps<T extends FieldValues> = FormControlProps<T> & {
   options: FormRadioOption[];
   disabled?: boolean;
+  layout?: "inline" | "cards";
+  className?: string;
 };
 
 export function FormRadio<T extends FieldValues>(props: FormRadioProps<T>) {
-  const { control, name, label, id, hint, required, rules, options, disabled } =
-    props;
+  const {
+    control,
+    name,
+    label,
+    id,
+    hint,
+    required,
+    rules,
+    options,
+    disabled,
+    layout = "inline",
+    className = "",
+  } = props;
   const radioId = fieldId(name, id);
+  const cardLayout = layout === "cards";
 
   return (
     <Controller
@@ -48,13 +62,23 @@ export function FormRadio<T extends FieldValues>(props: FormRadioProps<T>) {
             aria-required={required}
             disabled={disabled}
             id={radioId}
+            className={className}
             onBlur={field.onBlur}
             onChange={(event) => field.onChange(event.target.value)}
             value={field.value}
           >
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <div
+              className={
+                cardLayout ? "grid gap-2" : "flex flex-wrap gap-x-5 gap-y-2"
+              }
+            >
               {options.map((option) => (
                 <Radio
+                  className={
+                    cardLayout
+                      ? "m-0! flex w-full items-start rounded-sm border border-line-subtle bg-panel-muted/40 px-3 py-2.5 transition-colors [&.ant-radio-wrapper-checked]:border-primary [&.ant-radio-wrapper-checked]:bg-primary-light"
+                      : undefined
+                  }
                   disabled={option.disabled}
                   key={String(option.value)}
                   value={option.value}

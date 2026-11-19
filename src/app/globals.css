@@ -240,6 +240,38 @@ button:not(:disabled):active,
   outline-offset: 2px;
 }
 
+/* Chromium can preview a saved value before the input matches :autofill.
+   Paint hovered and focused inputs so text and background stay paired. */
+input.ant-input:enabled:hover,
+input.ant-input:enabled:focus {
+  -webkit-text-fill-color: var(--app-ink);
+  caret-color: var(--app-ink);
+  box-shadow: 0 0 0 1000px var(--app-panel) inset !important;
+}
+
+input.ant-input:enabled:hover::placeholder,
+input.ant-input:enabled:focus::placeholder {
+  -webkit-text-fill-color: var(--app-muted);
+}
+
+/* Keep browser-saved values readable against the active app theme. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill,
+input:autofill,
+textarea:autofill,
+select:autofill {
+  color: var(--app-ink) !important;
+  background-color: var(--app-panel) !important;
+  -webkit-text-fill-color: var(--app-ink) !important;
+  caret-color: var(--app-ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--app-panel) inset !important;
+  box-shadow: 0 0 0 1000px var(--app-panel) inset !important;
+}
+
 .ant-picker:focus-within,
 .ant-select-selector:focus-within {
   outline: 3px solid var(--app-primary);

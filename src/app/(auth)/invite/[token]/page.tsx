@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Alert } from "antd";
 import Link from "next/link";
 import { BrandMark } from "@/components/layout/BrandMark";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { getInvitePreview } from "@/lib/invitations";
+import { InviteAccountReady } from "../components/InviteAccountReady";
 import { AcceptInviteForm } from "./components/AcceptInviteForm";
 
 export const metadata: Metadata = {
@@ -22,21 +24,29 @@ export default async function InvitePage({
         <Link className="mb-7 flex justify-center" href="/">
           <BrandMark />
         </Link>
-        {invitation ? (
+        {invitation?.status === "pending" ? (
           <AcceptInviteForm
             email={invitation.email}
             role={invitation.role}
             token={token}
           />
+        ) : invitation?.status === "accepted" ? (
+          <SurfaceCard as="section" className="p-6 sm:p-8">
+            <InviteAccountReady
+              alreadyAccepted
+              description="This invitation has already been used. Sign in with the password you created to continue."
+              email={invitation.email}
+            />
+          </SurfaceCard>
         ) : (
-          <section className="rounded-3xl border border-line bg-panel p-6 shadow-sm sm:p-8">
+          <SurfaceCard as="section" className="p-6 sm:p-8">
             <Alert
               message="Invitation unavailable"
               description="This link may have expired, been revoked, or already been used. Ask the Admin to resend it."
               showIcon
               type="warning"
             />
-          </section>
+          </SurfaceCard>
         )}
       </div>
     </main>

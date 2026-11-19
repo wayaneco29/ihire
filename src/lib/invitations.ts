@@ -13,19 +13,45 @@ export async function getInvitePreview(token: string) {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("invitations")
-    .select("email, role, expires_at, accepted_at, revoked_at")
+    .select("id, email, role, expires_at, accepted_at, revoked_at")
     .eq("token_hash", invitationTokenHash(token))
     .maybeSingle();
 
-  if (
-    error ||
-    !data ||
-    data.accepted_at ||
-    data.revoked_at ||
-    Date.parse(data.expires_at) <= Date.now()
-  ) {
+  if (error || !data || data.revoked_at) {
     return null;
   }
 
-  return { email: data.email, role: data.role, expiresAt: data.expires_at };
+  if (data.accepted_at) {
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("id, role")
+      .eq("email", data.email)
+      .maybeSingle();
+
+    if (profileError || !profile || profile.role !== data.role) return null;
+
+    const { data: accountData, error: accountError } =
+      await admin.auth.admin.getUserById(profile.id);
+    const account = accountData.user;
+    if (
+      accountError ||
+      !account ||
+      account.email?.trim().toLowerCase() !== data.email ||
+      account.app_metadata.invitation_id !== data.id ||
+      account.app_metadata.role !== data.role
+    ) {
+      return null;
+    }
+
+    return { email: data.email, role: data.role, status: "accepted" as const };
+  }
+
+  if (Date.parse(data.expires_at) <= Date.now()) return null;
+
+  return {
+    email: data.email,
+    role: data.role,
+    expiresAt: data.expires_at,
+    status: "pending" as const,
+  };
 }
