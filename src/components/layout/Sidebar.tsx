@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRightStartOnRectangleIcon,
+  LockClosedIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,9 +13,11 @@ import { Button } from "@/components/ui/Button";
 import { useAppShell } from "@/context/AppShellContext";
 import { useAuth } from "@/context/AuthContext";
 import { getNavigation } from "@/constants/navigation";
+import { useAccountSecurity } from "./AccountSecurityProvider";
 
 export function Sidebar() {
   const { setMobileNavOpen } = useAppShell();
+  const { openChangePassword } = useAccountSecurity();
   const { user, role, loading, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -31,6 +34,11 @@ export function Sidebar() {
     setMobileNavOpen(false);
     router.replace("/");
     router.refresh();
+  }
+
+  function handleChangePassword() {
+    setMobileNavOpen(false);
+    openChangePassword();
   }
 
   return (
@@ -115,6 +123,16 @@ export function Sidebar() {
 
         {user && (
           <div className="pt-2">
+            <Button
+              block
+              className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 font-[Bricolage_Grotesque]! text-left text-sm! text-muted transition-colors hover:bg-panel-muted hover:text-ink"
+              disabled={loading}
+              icon={<LockClosedIcon className="size-5" />}
+              onClick={handleChangePassword}
+              variant="unstyled"
+            >
+              Change password
+            </Button>
             {signOutError && (
               <p className="mb-2 px-3 text-xs text-danger" role="alert">
                 Sign out failed. Please try again.
