@@ -435,11 +435,11 @@ revoke all on function public.create_job_posting_with_positions(
   text, text, text, integer, public.job_status, timestamptz, uuid[]
 ) from public, anon;
 revoke all on function public.update_job_posting_with_positions(
-  uuid, text, text, integer, public.job_status, timestamptz, uuid[]
+  uuid, text, text, text, integer, public.job_status, timestamptz, uuid[]
 ) from public, anon;
 grant execute on function public.create_job_posting_with_positions(
   text, text, text, integer, public.job_status, timestamptz, uuid[]
 ) to authenticated;
 grant execute on function public.update_job_posting_with_positions(
-  uuid, text, text, integer, public.job_status, timestamptz, uuid[]
+  uuid, text, text, text, integer, public.job_status, timestamptz, uuid[]
 ) to authenticated;
