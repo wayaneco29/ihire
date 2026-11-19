@@ -1,4 +1,5 @@
 import type { PublicEnums } from "./database-enums";
+import type { Json } from "./database-json";
 
 export type PublicFunctions = {
     "education_points": {
