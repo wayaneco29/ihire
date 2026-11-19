@@ -84,12 +84,6 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
           available: true,
         },
         {
-          label: "Profile",
-          href: "/applicant/profile",
-          icon: UserIcon,
-          available: true,
-        },
-        {
           label: "Documents",
           href: "/applicant/documents",
           icon: FolderOpenIcon,

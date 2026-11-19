@@ -7,6 +7,7 @@ import { CheckIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import type { Json } from "@/types/database";
 import { setPdsWizardStep } from "../actions/navigation";
+import { PDS_STEP_TITLES } from "./pds-step-titles";
 import { PersonalInformationStep } from "./steps/PersonalInformationStep";
 import { FamilyBackgroundStep } from "./steps/FamilyBackgroundStep";
 import { EducationStep } from "./steps/EducationStep";
@@ -19,24 +20,9 @@ import { QuestionnaireStep } from "./steps/QuestionnaireStep";
 import { ReferencesStep } from "./steps/ReferencesStep";
 import { ReviewSubmitStep } from "./steps/ReviewSubmitStep";
 
-import {
-  PdsFormNavigationContext,
-  type PdsNavigationGuard,
-} from "./PdsForm";
+import { PdsFormNavigationContext, type PdsNavigationGuard } from "./PdsForm";
 
-const STEPS = [
-  "Personal Information",
-  "Family Background",
-  "Educational Background",
-  "Civil Service Eligibility",
-  "Work Experience",
-  "Voluntary Work",
-  "Learning & Development",
-  "Other Information",
-  "Questionnaire",
-  "References",
-  "Review & Submit",
-] as const;
+const STEPS = PDS_STEP_TITLES;
 
 type Props = {
   completedSteps: number[];
@@ -208,7 +194,10 @@ export function PdsWizardShell({
                 />
               </div>
 
-              <nav aria-label="PDS sections" className="relative hidden lg:block">
+              <nav
+                aria-label="PDS sections"
+                className="relative hidden lg:block"
+              >
                 <span
                   aria-hidden="true"
                   className="absolute bottom-4 left-[0.8rem] top-4 w-px bg-line-strong"
@@ -224,7 +213,10 @@ export function PdsWizardShell({
                       (isUpdate || completed || step === nextAvailableStep);
 
                     return (
-                      <li aria-current={active ? "step" : undefined} key={label}>
+                      <li
+                        aria-current={active ? "step" : undefined}
+                        key={label}
+                      >
                         <Button
                           aria-label={`${label}${active ? ", current section" : completed ? ", completed" : isUpdate ? ", available" : step === nextAvailableStep ? ", ready to continue" : ", not yet available"}`}
                           className={`relative flex min-h-8 w-full items-center gap-2.5 rounded-md px-0.5 text-left text-xs leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${

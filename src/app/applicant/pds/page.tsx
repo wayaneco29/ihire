@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowDownTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
@@ -8,6 +11,7 @@ import { getApplicantContext } from "@/lib/auth/server";
 import { hydratePdsDraftData } from "./load-draft-data";
 import { PdsWizardShell } from "./components/PdsWizardShell";
 import { StartPdsUpdateButton } from "./components/StartPdsUpdateButton";
+import { PdsProfileContent } from "./components/PdsProfileContent";
 import type { Json } from "@/types/database";
 
 function PdsUnavailable() {
@@ -37,7 +41,7 @@ export default async function ApplicantPdsPage() {
     .select("id, status, current_step, completed_steps, version_no, draft_data")
     .eq("applicant_id", applicant.applicant.id)
     .order("version_no", { ascending: false });
-
+  console.log(error);
   if (error) return <PdsUnavailable />;
 
   let draft = versions?.find((version) => version.status === "DRAFT") ?? null;
@@ -79,7 +83,7 @@ export default async function ApplicantPdsPage() {
         actions={
           submitted ? (
             <Link
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-10 items-center gap-2 rounded-sm bg-primary px-4 text-xs! font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href={`/applicant/pds/${submitted.id}/download`}
             >
               <ArrowDownTrayIcon aria-hidden="true" className="size-4" />
@@ -107,33 +111,37 @@ export default async function ApplicantPdsPage() {
         <>
           <SurfaceCard
             as="section"
-            className="mt-7 overflow-hidden rounded-2xl"
+            className="mt-7 overflow-hidden border-l-4 border-primary"
           >
-            <div className="flex items-start gap-4 p-5 sm:p-7">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-light text-primary">
+            <div className="flex items-start gap-4 p-4 sm:p-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-sm bg-primary-light text-primary">
                 <CheckCircleIcon aria-hidden="true" className="size-6" />
               </span>
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold tracking-tight text-ink">
-                  Your PDS is submitted
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-                  Version {submitted?.version_no} remains active for your
-                  applications. Start an update when you’re ready to make
-                  changes.
-                </p>
-                <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="min-w-0 flex w-full gap-4 md:gap-8">
+                <div className="flex-1">
+                  <h2 className="font-[Bricolage_Grotesque] text-base font-semibold text-primary-dark">
+                    Your PDS is submitted
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                    Version {submitted?.version_no} remains active for your
+                    applications. Start an update when you’re ready to make
+                    changes.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 flex-col">
                   <StartPdsUpdateButton className="mt-0" />
-                  <Link
-                    className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    href="/applicant/dashboard"
-                  >
-                    Go to dashboard
-                  </Link>
                 </div>
               </div>
             </div>
           </SurfaceCard>
+          {submitted && (
+            <div className="mx-auto w-full">
+              <PdsProfileContent
+                applicant={applicant}
+                pdsVersionId={submitted.id}
+              />
+            </div>
+          )}
         </>
       )}
     </>

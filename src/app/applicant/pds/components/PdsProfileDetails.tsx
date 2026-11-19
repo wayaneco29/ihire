@@ -17,7 +17,6 @@ import {
   EDUCATION_LEVEL_OPTIONS,
   OTHER_INFO_CATEGORY_OPTIONS,
 } from "@/constants/pds-options";
-import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { formatDate } from "@/utils/format-date";
@@ -140,7 +139,7 @@ function EmptyRecords({ title }: { title: string }) {
   );
 }
 
-export function ProfileDetails({
+export function PdsProfileDetails({
   personal,
   addresses,
   family,
@@ -152,8 +151,6 @@ export function ProfileDetails({
   trainings,
   otherInfo,
   references,
-  versionNumber,
-  hasDraft,
 }: {
   personal: PersonalInfo | null;
   addresses: Address[];
@@ -166,8 +163,6 @@ export function ProfileDetails({
   trainings: Training[];
   otherInfo: OtherInfo[];
   references: Reference[];
-  versionNumber: number;
-  hasDraft: boolean;
 }) {
   const residentialAddress = addresses.find(
     (address) => address.type === "RESIDENTIAL",
@@ -177,22 +172,7 @@ export function ProfileDetails({
   );
   return (
     <div className="mt-6">
-      {hasDraft && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-warning">
-              PDS update in progress
-            </p>
-            <p className="mt-1 text-sm text-warning">
-              Your submitted version {versionNumber} remains active until you
-              submit the update.
-            </p>
-          </div>
-          <WorkflowStatusTag status="DRAFT" />
-        </div>
-      )}
-
-      <SurfaceCard className="mt-2 overflow-hidden px-4 sm:px-6">
+      <SurfaceCard className="overflow-hidden px-4 sm:px-6">
         <ProfileSection
           icon={<UserIcon aria-hidden="true" className="size-4" />}
           id={PROFILE_SECTIONS.personal.id}

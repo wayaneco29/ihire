@@ -31,7 +31,13 @@ export function StartPdsUpdateButton({
 
   return (
     <div className={className}>
-      <Button loading={isPending} onClick={startUpdate} variant="filled">
+      <Button
+        loading={isPending}
+        onClick={startUpdate}
+        variant="filled"
+        className="text-xs!"
+        size="sm"
+      >
         Update PDS
       </Button>
       {message && (

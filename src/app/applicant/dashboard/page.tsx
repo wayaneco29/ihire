@@ -236,22 +236,14 @@ export default async function ApplicantDashboardPage() {
         </div>
         <Link
           className="inline-flex min-h-9 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light"
-          href={
-            pdsResult.error
-              ? "/applicant/dashboard"
-              : draft
-                ? "/applicant/pds"
-                : submitted
-                  ? "/applicant/profile"
-                  : "/applicant/pds"
-          }
+          href={pdsResult.error ? "/applicant/dashboard" : "/applicant/pds"}
         >
           {pdsResult.error
             ? "Refresh"
             : draft
               ? "Continue PDS"
               : submitted
-                ? "View profile"
+                ? "View PDS"
                 : "Start PDS"}
         </Link>
       </section>

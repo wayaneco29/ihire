@@ -149,7 +149,7 @@ export function NotificationList({
             <li key={option.id}>
               <Button
                 aria-pressed={activeFilter === option.id}
-                className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs! font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   activeFilter === option.id
                     ? "border-primary bg-primary text-on-primary"
                     : "border-line bg-panel text-muted hover:bg-panel-muted"

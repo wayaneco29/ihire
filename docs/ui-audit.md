@@ -10,7 +10,7 @@
 | Public | `/` | Project overview, sign-in and registration links. The copy still described modules as future work after the workflows had shipped. |
 | Authentication | `/login`, `/register`, `/invite/[token]` | Validation, submitting, authentication errors, invitation status and expired/invalid invitation states. |
 | Admin | `/admin/invitations`, `/admin/assignments` | Invitation list, create/revoke actions; evaluator workload totals, unassigned applications, manual reassignment, assignment history, pagination and action errors. |
-| Applicant | `/applicant`, `/applicant/dashboard`, `/applicant/pds`, `/applicant/profile` | Role redirect; dashboard summaries; 11-step PDS with validation, autosave, saved/submitted versions; profile details and unavailable/empty states. |
+| Applicant | `/applicant`, `/applicant/dashboard`, `/applicant/pds` | Role redirect; dashboard summaries; 11-step PDS with validation, autosave, saved/submitted versions, and submitted profile details; unavailable/empty states. |
 | Applicant | `/applicant/jobs`, `/applicant/jobs/[id]` | Search/filter, posting list/detail, application action, closed/full/expired states and empty results. |
 | Applicant | `/applicant/applications`, `/applicant/applications/[id]` | Application list/detail, status timeline, empty and unavailable states. |
 | Applicant | `/applicant/documents`, `/applicant/notifications` | Document upload/review status, notification list/read action, loading, empty, and unavailable states. |
