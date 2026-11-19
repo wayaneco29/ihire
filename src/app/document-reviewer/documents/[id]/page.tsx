@@ -11,7 +11,7 @@ export default async function DocumentReviewerDetailPage({
 }: Readonly<{ params: Promise<{ id: string }> }>) {
   const { id } = await params;
   const reviewer = await getDocumentReviewerContext();
-  if (!reviewer) redirect("/login");
+  if (!reviewer) redirect("/");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: documents, error } = await reviewer.supabase

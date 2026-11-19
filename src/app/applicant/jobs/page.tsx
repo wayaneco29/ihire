@@ -9,7 +9,7 @@ export default async function ApplicantJobsPage() {
   await connection();
 
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
 
   const [postingsResult, applicationsResult] = await Promise.all([
     applicant.supabase

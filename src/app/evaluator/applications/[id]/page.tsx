@@ -37,7 +37,7 @@ export default async function EvaluatorApplicationReviewPage({
     Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   const selectedStatus = reviewQueueStatus(typeof requestedStatus === "string" ? requestedStatus : undefined);
   const evaluator = await getEvaluatorContext();
-  if (!evaluator) redirect("/login");
+  if (!evaluator) redirect("/");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: application, error } = await evaluator.supabase

@@ -8,7 +8,7 @@ import { PostingForm } from "../../components/PostingForm";
 export default async function EditPostingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
   const { data: posting, error } = await hr.supabase.from("job_postings")
     .select("id, title, description, requirements, slots, status, deadline")
     .eq("id", id)

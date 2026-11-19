@@ -9,7 +9,7 @@ import { DashboardSections } from "./components/DashboardSections";
 
 export default async function ApplicantDashboardPage() {
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
 
   const [
     pdsResult,

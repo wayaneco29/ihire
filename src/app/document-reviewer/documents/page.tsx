@@ -6,7 +6,7 @@ import { DocumentReviewQueueTable } from "./components/DocumentReviewQueueTable"
 
 export default async function DocumentReviewQueuePage() {
   const reviewer = await getDocumentReviewerContext();
-  if (!reviewer) redirect("/login");
+  if (!reviewer) redirect("/");
 
   const { data: documents, error } = await reviewer.supabase
     .from("v_document_review_queue")

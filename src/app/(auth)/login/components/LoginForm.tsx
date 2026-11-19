@@ -78,37 +78,44 @@ export function LoginForm() {
           {formError && (
             <Alert className="mb-4" message={formError} showIcon type="error" />
           )}
-          <FormInput
-            autoComplete="email"
-            control={control}
-            label="Email address"
-            name="email"
-            required
-            type="email"
-          />
-          <FormInput
-            autoComplete="current-password"
-            control={control}
-            label="Password"
-            name="password"
-            required
-            type="password"
-          />
-          <Button
-            block
-            className="mt-2"
-            type="submit"
-            loading={isSubmitting}
-            variant="filled"
-          >
-            Sign in
-          </Button>
+          <div className="space-y-4">
+            <FormInput
+              autoComplete="email"
+              control={control}
+              label="Email address"
+              name="email"
+              required
+              type="email"
+              size="small"
+              className="rounded-sm!"
+            />
+            <FormInput
+              autoComplete="current-password"
+              control={control}
+              label="Password"
+              name="password"
+              required
+              type="password"
+              size="small"
+              className="rounded-sm!"
+            />
+            <Button
+              block
+              className="mt-2 text-sm!"
+              type="submit"
+              loading={isSubmitting}
+              variant="filled"
+              size="default"
+            >
+              Sign in
+            </Button>
+          </div>
         </form>
 
         <p className="mt-5 text-center text-sm text-muted">
           New applicant?{" "}
           <Link
-            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
+            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:underline hover:text-primary-dark"
             href="/register"
           >
             Create an account

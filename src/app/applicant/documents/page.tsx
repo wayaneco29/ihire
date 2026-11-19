@@ -16,7 +16,7 @@ import { formatPhilippineDateTime } from "@/utils/philippine-time";
 
 export default async function ApplicantDocumentsPage() {
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
 
   const [
     typesResult,

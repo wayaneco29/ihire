@@ -19,7 +19,7 @@ export default async function AssignmentsPage({
   }>;
 }>) {
   const admin = await getAdminContext();
-  if (!admin) redirect("/login");
+  if (!admin) redirect("/");
 
   const params = await searchParams;
   const filter = params.filter === "unassigned" ? "unassigned" : "all";

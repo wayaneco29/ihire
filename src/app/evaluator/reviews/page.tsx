@@ -22,7 +22,7 @@ export default async function EvaluatorReviewsPage({
   }>;
 }>) {
   const evaluator = await getEvaluatorContext();
-  if (!evaluator) redirect("/login");
+  if (!evaluator) redirect("/");
 
   const {
     jobId: requestedJobId,

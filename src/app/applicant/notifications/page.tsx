@@ -9,7 +9,7 @@ export default async function ApplicantNotificationsPage({
   searchParams,
 }: Readonly<{ searchParams: Promise<{ page?: string | string[] }> }>) {
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
 
   const { page: rawPage } = await searchParams;
   const requestedPage = Number(

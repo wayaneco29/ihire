@@ -10,7 +10,7 @@ export default async function ApplicantDocumentReviewPage({
 }: Readonly<{ params: Promise<{ applicantNumber: string }> }>) {
   const { applicantNumber } = await params;
   const reviewer = await getDocumentReviewerContext();
-  if (!reviewer) redirect("/login");
+  if (!reviewer) redirect("/");
 
   const [documentsResult, documentTypesResult] = await Promise.all([
     reviewer.supabase

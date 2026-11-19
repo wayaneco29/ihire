@@ -50,7 +50,8 @@ export function AcceptInviteForm({
           <Alert message={success} showIcon type="success" />
           <Link
             className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-dark"
-            href="/login"
+            href="/"
+            replace
           >
             Go to sign in
           </Link>

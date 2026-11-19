@@ -147,7 +147,7 @@
    node scripts/seed-local-admin.mjs
    ```
 
-6. Start the app with `yarn dev`, then sign in as the local Admin at `/login`.
+6. Start the app with `yarn dev`, then sign in as the local Admin at `/`.
 7. After schema changes, refresh generated types with `node scripts/generate-database-types.mjs`.
 
 The migration script uses the local database owner role needed to apply private Storage policies. Use the project scripts rather than `yarn supabase`; the Supabase CLI is a separate CLI installation.

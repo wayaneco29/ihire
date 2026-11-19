@@ -75,46 +75,52 @@ export function RegisterForm() {
               type="success"
             />
           )}
-          <FormInput
-            autoComplete="email"
-            control={control}
-            label="Email address"
-            name="email"
-            required
-            type="email"
-          />
-          <FormInput
-            autoComplete="new-password"
-            control={control}
-            label="Password"
-            name="password"
-            required
-            type="password"
-          />
-          <FormInput
-            autoComplete="new-password"
-            control={control}
-            label="Confirm password"
-            name="confirmPassword"
-            required
-            type="password"
-          />
-          <Button
-            block
-            className="mt-2"
-            type="submit"
-            loading={isSubmitting}
-            variant="filled"
-          >
-            Create applicant account
-          </Button>
+          <div className="space-y-4">
+            <FormInput
+              autoComplete="email"
+              control={control}
+              label="Email address"
+              name="email"
+              required
+              type="email"
+              className="rounded-sm!"
+            />
+            <FormInput
+              autoComplete="new-password"
+              control={control}
+              label="Password"
+              name="password"
+              required
+              type="password"
+              className="rounded-sm!"
+            />
+            <FormInput
+              autoComplete="new-password"
+              control={control}
+              label="Confirm password"
+              name="confirmPassword"
+              required
+              type="password"
+              className="rounded-sm!"
+            />
+            <Button
+              block
+              className="mt-2 text-sm!"
+              type="submit"
+              loading={isSubmitting}
+              variant="filled"
+            >
+              Create applicant account
+            </Button>
+          </div>
         </form>
 
         <p className="mt-5 text-center text-sm text-muted">
           Already registered?{" "}
           <Link
-            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:bg-primary-light hover:text-primary-dark"
-            href="/login"
+            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:underline hover:text-primary-dark"
+            href="/"
+            replace
           >
             Sign in
           </Link>

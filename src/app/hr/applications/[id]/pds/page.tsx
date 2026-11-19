@@ -11,7 +11,7 @@ import { PdsPrintButton } from "./components/PdsPrintButton";
 export default async function HrPrintablePdsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: application, error: accessError } = await hr.supabase

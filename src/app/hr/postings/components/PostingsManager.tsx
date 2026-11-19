@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
+import type { PostingDisplayStatus } from "@/utils/job-posting-status";
+import { PostingStatusPill } from "./PostingStatusPill";
 
-type PostingStatus = "DRAFT" | "OPEN" | "CLOSED";
 type SortOrder = "deadline-asc" | "deadline-desc" | "created-desc";
 
 type PostingItem = {
@@ -13,7 +14,7 @@ type PostingItem = {
   title: string;
   description: string;
   slots: number;
-  status: PostingStatus;
+  status: PostingDisplayStatus;
   deadline: string | null;
   created_at: string;
   deadlineLabel: string | null;
@@ -92,6 +93,7 @@ export function PostingsManager({
           options={[
             { label: "All statuses", value: "ALL" },
             { label: "Open", value: "OPEN" },
+            { label: "Filled", value: "FILLED" },
             { label: "Closed", value: "CLOSED" },
             { label: "Draft", value: "DRAFT" },
           ]}
@@ -167,7 +169,7 @@ export function PostingsManager({
                         >
                           {posting.title}
                         </Link>
-                        <StatusPill status={posting.status} />
+                        <PostingStatusPill status={posting.status} />
                       </div>
                       {posting.description && (
                         <p className="mt-1 truncate text-xs text-muted">
@@ -257,19 +259,3 @@ export function PostingsManager({
   );
 }
 
-function StatusPill({ status }: Readonly<{ status: PostingStatus }>) {
-  const label =
-    status === "OPEN" ? "Open" : status === "DRAFT" ? "Draft" : "Closed";
-
-  return (
-    <span
-      className={`inline-flex min-h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-semibold ${
-        status === "OPEN"
-          ? "bg-success/15 text-success"
-          : "border border-line bg-panel-muted text-muted-strong"
-      }`}
-    >
-      {label}
-    </span>
-  );
-}

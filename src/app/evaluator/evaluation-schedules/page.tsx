@@ -41,7 +41,7 @@ export async function TeachingAssessmentPage({
   showSchedule: boolean;
 }>) {
   const evaluator = await getEvaluatorContext();
-  if (!evaluator) redirect("/login");
+  if (!evaluator) redirect("/");
 
   const {
     applicantNumber: requestedApplicantNumber,

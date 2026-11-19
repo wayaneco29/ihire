@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Staff invitations" };
 
 export default async function InvitationsPage() {
   const admin = await getAdminContext();
-  if (!admin) redirect("/login");
+  if (!admin) redirect("/");
 
   const { data } = await admin.supabase
     .from("invitations")

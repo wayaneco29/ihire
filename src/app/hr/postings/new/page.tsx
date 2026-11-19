@@ -7,7 +7,7 @@ import { PostingForm } from "../components/PostingForm";
 
 export default async function NewPostingPage() {
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
   const { data: positions, error } = await getConfiguredPositions(hr.supabase);
 
   return (

@@ -37,7 +37,7 @@ export default async function HrPostingDetailPage({
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
 
   const { data: posting, error: postingError } = await hr.supabase
     .from("job_postings")

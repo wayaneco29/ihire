@@ -29,7 +29,7 @@ export function Sidebar() {
       return;
     }
     setMobileNavOpen(false);
-    router.replace("/login");
+    router.replace("/");
     router.refresh();
   }
 

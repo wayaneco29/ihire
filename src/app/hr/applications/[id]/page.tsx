@@ -19,7 +19,7 @@ export default async function HrApplicationPage({
 }) {
   const { id } = await params;
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: application, error: applicationError } = await hr.supabase

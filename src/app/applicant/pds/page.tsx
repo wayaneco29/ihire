@@ -34,7 +34,7 @@ function PdsUnavailable() {
 
 export default async function ApplicantPdsPage() {
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
 
   const { data: versions, error } = await applicant.supabase
     .from("pds_versions")

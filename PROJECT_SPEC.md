@@ -376,7 +376,7 @@ yarn install
 ### [x] Phase 3: Auth, Invites & Role-Based Routing
 - [x] 3.1 `AuthContext` (session, profile, role, `has_submitted_pds`) and a `NotificationContext` shell
 - [x] 3.2 `(auth)/register`: applicant-only sign-up (schema.ts, reusable form components)
-- [x] 3.3 `(auth)/login`: shared login for all roles with redirect by role
+- [x] 3.3 `/`: shared login for all roles with redirect by role
 - [x] 3.4 Session refresh and route protection per role (`/applicant`, `/evaluator`, `/hr`, `/admin`) using Next.js 16 `src/proxy.ts` (the installed version deprecates `middleware.ts`)
 - [x] 3.5 `admin/invitations`: create an invite (email, role HR/EVALUATOR), list, revoke, resend
 - [x] 3.6 `(auth)/invite/[token]`: accept-invite page (set password, profile created with the invited role, token validated and expired/used handling)

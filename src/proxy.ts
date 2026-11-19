@@ -69,7 +69,7 @@ export async function proxy(request: NextRequest) {
 
   if (protectedArea && !isSignedIn) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    loginUrl.pathname = "/";
     loginUrl.search = "";
     loginUrl.searchParams.set(
       "next",
@@ -97,7 +97,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (isSignedIn && (pathname === "/login" || pathname === "/register")) {
+  if (isSignedIn && (pathname === "/" || pathname === "/register")) {
     const destination = new URL(ROLE_HOME[role], request.url);
     return copyCookies(response, NextResponse.redirect(destination));
   }
@@ -107,7 +107,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/login",
+    "/",
     "/register",
     "/applicant/:path*",
     "/evaluator/:path*",

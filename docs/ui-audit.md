@@ -3,12 +3,14 @@
 **Date:** 2026-11-07  
 **Stack:** Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, Ant Design 6, React Hook Form, Supabase.
 
+**Route update (2026-11-19):** `/` now serves the shared sign-in form, and `/login` has been removed.
+
 ## Screen and route inventory
 
 | Area | Routes/screens | Main states and interactions |
 |---|---|---|
-| Public | `/` | Project overview, sign-in and registration links. The copy still described modules as future work after the workflows had shipped. |
-| Authentication | `/login`, `/register`, `/invite/[token]` | Validation, submitting, authentication errors, invitation status and expired/invalid invitation states. |
+| Public | `/` | Shared sign-in form and registration link. |
+| Authentication | `/register`, `/invite/[token]` | Registration validation and submit states; invitation status and expired/invalid invitation states. |
 | Admin | `/admin/invitations`, `/admin/assignments` | Invitation list, create/revoke actions; evaluator workload totals, unassigned applications, manual reassignment, assignment history, pagination and action errors. |
 | Applicant | `/applicant`, `/applicant/dashboard`, `/applicant/pds` | Role redirect; dashboard summaries; 11-step PDS with validation, autosave, saved/submitted versions, and submitted profile details; unavailable/empty states. |
 | Applicant | `/applicant/jobs`, `/applicant/jobs/[id]` | Search/filter, posting list/detail, application action, closed/full/expired states and empty results. |

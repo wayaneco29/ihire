@@ -7,7 +7,7 @@ import { ApplicationList } from "./components/ApplicationList";
 
 export default async function ApplicantApplicationsPage() {
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
 
   const applicationsResponse = await applicant.supabase
     .from("applications")

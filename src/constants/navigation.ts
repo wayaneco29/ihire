@@ -31,8 +31,7 @@ const publicNavigation: NavigationSection[] = [
   {
     title: "Welcome",
     items: [
-      { label: "Overview", href: "/", icon: Squares2X2Icon, available: true },
-      { label: "Sign in", href: "/login", icon: UserIcon, available: true },
+      { label: "Sign in", href: "/", icon: UserIcon, available: true },
       {
         label: "Applicant registration",
         href: "/register",

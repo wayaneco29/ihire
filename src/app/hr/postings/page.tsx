@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
+import { getPostingDisplayStatus } from "@/utils/job-posting-status";
 import { getPostingApplicantStatuses } from "./data";
 import { PostingsManager } from "./components/PostingsManager";
 
@@ -28,7 +29,7 @@ function daysUntilDeadline(deadline: string, now: number) {
 
 export default async function HrPostingsPage() {
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
   const { data: postings, error } = await hr.supabase
     .from("job_postings")
     .select("id, title, description, slots, status, deadline, created_at")
@@ -98,15 +99,15 @@ export default async function HrPostingsPage() {
       : null;
     const hasValidDeadline =
       deadlineTimestamp !== null && Number.isFinite(deadlineTimestamp);
-    const isOpen =
-      posting.status === "OPEN" &&
-      (!posting.deadline ||
-        (deadlineTimestamp !== null &&
-          Number.isFinite(deadlineTimestamp) &&
-          deadlineTimestamp > now)) &&
-      postingStats.hired < posting.slots;
-    const displayStatus: "DRAFT" | "OPEN" | "CLOSED" =
-      posting.status === "DRAFT" ? "DRAFT" : isOpen ? "OPEN" : "CLOSED";
+    const displayStatus = getPostingDisplayStatus(
+      {
+        status: posting.status,
+        deadline: posting.deadline,
+        hired: postingStats.hired,
+        slots: posting.slots,
+      },
+      now,
+    );
 
     return {
       ...posting,

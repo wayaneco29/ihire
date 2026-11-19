@@ -6,14 +6,14 @@ export default async function ApplicantHomePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, has_submitted_pds")
     .eq("id", user.id)
     .maybeSingle();
-  if (profile?.role !== "APPLICANT") redirect("/login");
+  if (profile?.role !== "APPLICANT") redirect("/");
 
   redirect(profile.has_submitted_pds ? "/applicant/dashboard" : "/applicant/pds");
 }

@@ -22,7 +22,7 @@ export default async function ApplicantJobDetailPage({
 }: Readonly<{ params: Promise<{ id: string }> }>) {
   const { id } = await params;
   const applicant = await getApplicantContext();
-  if (!applicant) redirect("/login");
+  if (!applicant) redirect("/");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const [{ data: job }, { data: application }] = await Promise.all([

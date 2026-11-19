@@ -6,7 +6,7 @@ import { PositionCriteriaManager } from "./components/PositionCriteriaManager";
 
 export default async function HrPositionCriteriaPage() {
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
 
   const [
     positionsResult,

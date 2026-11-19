@@ -32,7 +32,7 @@ async function HrDashboardContent() {
   await connection();
 
   const hr = await getHrContext();
-  if (!hr) redirect("/login");
+  if (!hr) redirect("/");
 
   const { data: postings, error: postingsError } = await hr.supabase
     .from("job_postings")
