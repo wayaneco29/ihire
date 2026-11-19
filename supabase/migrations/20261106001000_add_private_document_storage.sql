@@ -81,8 +81,9 @@ $$;
 revoke all on function private.can_access_document_path(text) from public, anon;
 grant execute on function private.can_access_document_path(text) to authenticated;
 
-alter table storage.objects enable row level security;
-grant select, insert on storage.objects to authenticated;
+-- Supabase owns storage.objects and provisions its RLS and role grants.
+-- Hosted migration roles cannot ALTER this managed table; configure access
+-- through the bucket-scoped policies below instead.
 
 create policy applicant_documents_read_authorized
 on storage.objects for select to authenticated
