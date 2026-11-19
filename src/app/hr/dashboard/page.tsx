@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
+import { getPostingDisplayStatus } from "@/utils/job-posting-status";
 import { getPostingApplicantStatuses } from "../postings/data";
 import { HrDashboardView } from "./components/HrDashboardView";
 
@@ -96,17 +97,20 @@ async function HrDashboardContent() {
         : null;
       const hasValidDeadline =
         deadlineTimestamp !== null && Number.isFinite(deadlineTimestamp);
-      const isOpen =
-        posting.status === "OPEN" &&
-        (!posting.deadline ||
-          (deadlineTimestamp !== null &&
-            Number.isFinite(deadlineTimestamp) &&
-            deadlineTimestamp > now)) &&
-        stats.hired < posting.slots;
+      const status = getPostingDisplayStatus(
+        {
+          status: posting.status,
+          deadline: posting.deadline,
+          hired: stats.hired,
+          slots: posting.slots,
+        },
+        now,
+      );
 
       return {
         id: posting.id,
         title: posting.title,
+        status,
         deadlineDate: hasValidDeadline ? formatDate(posting.deadline) : null,
         deadlinePassed:
           deadlineTimestamp !== null &&
@@ -116,7 +120,6 @@ async function HrDashboardContent() {
           ? daysUntilDeadline(posting.deadline, now)
           : null,
         applicants: stats.applicants,
-        isOpen,
       };
     });
 

@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/Button";
+import type { PostingDisplayStatus } from "@/utils/job-posting-status";
+import { PostingStatusPill } from "../../postings/components/PostingStatusPill";
 
-type PostingFilter = "all" | "open" | "closed";
+type PostingFilter = "all" | "open" | "filled" | "closed";
 
 type PostingProgress = {
   id: string;
@@ -14,7 +16,7 @@ type PostingProgress = {
   deadlinePassed: boolean;
   daysRemaining: number | null;
   applicants: number;
-  isOpen: boolean;
+  status: PostingDisplayStatus;
 };
 
 type HrDashboardViewProps = {
@@ -31,13 +33,19 @@ export function HrDashboardView({
   totalApplicants,
 }: HrDashboardViewProps) {
   const [filter, setFilter] = useState<PostingFilter>("all");
-  const openCount = postings.filter((posting) => posting.isOpen).length;
-  const closedCount = postings.length - openCount;
+  const openCount = postings.filter((posting) => posting.status === "OPEN").length;
+  const filledCount = postings.filter(
+    (posting) => posting.status === "FILLED",
+  ).length;
+  const closedCount = postings.length - openCount - filledCount;
   const visiblePostings = useMemo(
     () =>
       postings.filter((posting) => {
-        if (filter === "open") return posting.isOpen;
-        if (filter === "closed") return !posting.isOpen;
+        if (filter === "open") return posting.status === "OPEN";
+        if (filter === "filled") return posting.status === "FILLED";
+        if (filter === "closed") {
+          return posting.status === "CLOSED" || posting.status === "DRAFT";
+        }
         return true;
       }),
     [filter, postings],
@@ -52,6 +60,7 @@ export function HrDashboardView({
   const filters: { id: PostingFilter; label: string; count: number }[] = [
     { id: "all", label: "All", count: postings.length },
     { id: "open", label: "Open", count: openCount },
+    { id: "filled", label: "Filled", count: filledCount },
     { id: "closed", label: "Closed", count: closedCount },
   ];
 
@@ -148,15 +157,20 @@ export function HrDashboardView({
         ) : visiblePostings.length ? (
           <ul className="mt-3 divide-y divide-line-subtle overflow-hidden rounded-md border border-line bg-panel">
             {visiblePostings.map((posting) => {
-              const deadlineHeading = !posting.isOpen
-                ? "Closed"
-                : !posting.deadlineDate
-                  ? "No deadline"
-                  : posting.daysRemaining === 0
-                    ? "Due today"
-                    : `${posting.daysRemaining} ${
-                        posting.daysRemaining === 1 ? "day" : "days"
-                      } left`;
+              const deadlineHeading =
+                posting.status === "FILLED"
+                  ? "Hiring complete"
+                  : posting.status === "DRAFT"
+                    ? "Draft"
+                    : posting.status === "CLOSED"
+                      ? "Closed"
+                      : !posting.deadlineDate
+                        ? "No deadline"
+                        : posting.daysRemaining === 0
+                          ? "Due today"
+                          : `${posting.daysRemaining} ${
+                              posting.daysRemaining === 1 ? "day" : "days"
+                            } left`;
               const deadlineDetails = posting.deadlineDate
                 ? `${posting.deadlinePassed ? "Deadline was" : "Deadline"} ${
                     posting.deadlineDate
@@ -167,23 +181,15 @@ export function HrDashboardView({
                 <li key={posting.id}>
                   <Link
                     className={`group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-4 transition-colors hover:bg-panel-muted sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_auto_1.25rem] sm:gap-x-5 sm:px-5 ${
-                      posting.isOpen ? "" : "text-muted"
+                      posting.status === "OPEN" ? "" : "text-muted"
                     }`}
                     href={`/hr/postings/${posting.id}`}
                   >
                     <div className="min-w-0">
-                      <span
-                        className={`inline-flex min-h-6 items-center rounded-full px-2.5 text-[11px] font-semibold ${
-                          posting.isOpen
-                            ? "bg-success/15 text-success"
-                            : "border border-line bg-panel-muted text-muted-strong"
-                        }`}
-                      >
-                        {posting.isOpen ? "Open" : "Closed"}
-                      </span>
+                      <PostingStatusPill status={posting.status} />
                       <h3
                         className={`mt-1 truncate font-semibold ${
-                          posting.isOpen
+                          posting.status === "OPEN"
                             ? "text-ink group-hover:text-primary"
                             : "text-muted-strong"
                         }`}
@@ -194,7 +200,7 @@ export function HrDashboardView({
 
                     <p className="col-span-2 row-start-2 text-sm sm:col-span-1 sm:row-start-auto">
                       <span
-                        className={`font-semibold ${posting.isOpen ? "text-ink" : "text-muted-strong"}`}
+                        className={`font-semibold ${posting.status === "OPEN" ? "text-ink" : "text-muted-strong"}`}
                       >
                         {posting.applicants}
                       </span>{" "}
@@ -205,11 +211,11 @@ export function HrDashboardView({
                     <div className="col-start-2 row-start-1 text-right sm:col-start-3 sm:row-start-auto">
                       <p
                         className={`text-sm font-semibold ${
-                          posting.isOpen &&
+                          posting.status === "OPEN" &&
                           posting.daysRemaining !== null &&
                           posting.daysRemaining <= 7
                             ? "text-warning"
-                            : posting.isOpen
+                            : posting.status === "OPEN"
                               ? "text-ink"
                               : "text-muted-strong"
                         }`}

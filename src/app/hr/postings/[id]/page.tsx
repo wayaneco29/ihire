@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { calculatePublicTeachingExperience } from "@/utils/calculate-public-teaching-experience";
+import { getPostingDisplayStatus } from "@/utils/job-posting-status";
+import { PostingStatusPill } from "../components/PostingStatusPill";
 import { PostingApplicants } from "./components/PostingApplicants";
 import { CloseIntakeButton } from "./components/CloseIntakeButton";
 
@@ -299,12 +301,15 @@ export default async function HrPostingDetailPage({
   // This is request-time data for the current page render.
   // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
-  const isOpen =
-    posting.status === "OPEN" &&
-    (!posting.deadline || (hasValidDeadline && deadlineTimestamp > now)) &&
-    hiredCount < posting.slots;
-  const displayStatus =
-    posting.status === "DRAFT" ? "DRAFT" : isOpen ? "OPEN" : "CLOSED";
+  const displayStatus = getPostingDisplayStatus(
+    {
+      status: posting.status,
+      deadline: posting.deadline,
+      hired: hiredCount,
+      slots: posting.slots,
+    },
+    now,
+  );
   const daysRemaining = hasValidDeadline
     ? daysUntilDeadline(posting.deadline!, now)
     : null;
@@ -323,7 +328,7 @@ export default async function HrPostingDetailPage({
         description={posting.description ?? undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {posting.status === "OPEN" && !posting.deadline && (
+            {displayStatus === "OPEN" && !posting.deadline && (
               <CloseIntakeButton jobId={posting.id} />
             )}
             <Link
@@ -346,19 +351,7 @@ export default async function HrPostingDetailPage({
         aria-label="Posting status and hiring progress"
         className="mt-5 flex flex-col gap-3 rounded-sm border border-line bg-panel px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:px-5"
       >
-        <span
-          className={`inline-flex min-h-6 w-fit items-center rounded-full px-2.5 text-[11px] font-semibold ${
-            displayStatus === "OPEN"
-              ? "bg-success/15 text-success"
-              : "border border-line bg-panel-muted text-muted-strong"
-          }`}
-        >
-          {displayStatus === "DRAFT"
-            ? "Draft"
-            : displayStatus === "OPEN"
-              ? "Open"
-              : "Closed"}
-        </span>
+        <PostingStatusPill status={displayStatus} />
         <div className="flex items-center gap-2 text-sm">
           <span className="font-semibold text-ink">
             {hiredCount} of {posting.slots}
