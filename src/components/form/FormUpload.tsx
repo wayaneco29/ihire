@@ -133,7 +133,7 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                       </span>
                     </span>
                   </div>
-                  <span className="inline-flex min-h-9 shrink-0 items-center rounded-sm border border-line px-3 text-xs font-medium text-ink">
+                  <span className="inline-flex min-h-11 shrink-0 items-center rounded-[8px] border border-line px-4 text-sm font-semibold text-ink">
                     Choose file
                   </span>
                 </div>
@@ -158,7 +158,6 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                         : undefined
                   }
                   aria-label={`${label}${required ? ", required" : ""}`}
-                  className="min-h-11 rounded-sm px-3 text-sm font-medium"
                   disabled={uploadProps.disabled}
                   type="button"
                   variant="bordered"

@@ -280,7 +280,6 @@ export function PostingApplicants({
         return (
           <Button
             onClick={() => setSelectedApplicantId(applicant.application_id)}
-            size="sm"
             type="button"
             variant="bordered"
           >
@@ -375,10 +374,9 @@ export function PostingApplicants({
           {FILTERS.map((option) => (
             <Button
               aria-pressed={filter === option.id}
-              className={`min-h-10 rounded-full border px-6 text-sm! cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
               key={option.id}
               onClick={() => updateFilter(setFilter, option.id)}
-              size="sm"
               type="button"
               variant="unstyled"
             >
@@ -588,7 +586,7 @@ function ApplicantDetails({
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line-subtle pt-4">
         {applicant.application_status === "HIRED" && (
           <Link
-            className="inline-flex h-9 items-center justify-center rounded-[8px] border border-primary px-3.5 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href={`/hr/applications/${applicant.application_id}/pds`}
           >
             Printable PDS
@@ -603,7 +601,6 @@ function ApplicantDetails({
             <Button
               disabled={!canHire || pending}
               loading={pending}
-              size="sm"
               variant="filled"
             >
               Hire

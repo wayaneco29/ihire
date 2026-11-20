@@ -301,7 +301,7 @@ export default async function EvaluatorApplicationReviewPage({
           className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-panel p-4"
         >
           <Link
-            className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
             href={reviewQueueHref(jobId, queuePage, selectedStatus)}
           >
             Back to applicants
@@ -321,7 +321,7 @@ export default async function EvaluatorApplicationReviewPage({
               <div className="flex items-center gap-2">
                 {previousApplicant ? (
                   <Link
-                    className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                    className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                     href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(previousApplicant.application_id)}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Previous
@@ -329,7 +329,7 @@ export default async function EvaluatorApplicationReviewPage({
                 ) : null}
                 {nextApplicant ? (
                   <Link
-                    className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                    className="inline-flex min-h-11 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                     href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(nextApplicant.application_id)}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Next applicant

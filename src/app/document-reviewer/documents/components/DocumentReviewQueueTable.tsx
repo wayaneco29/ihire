@@ -52,7 +52,7 @@ const columns: ColumnsType<ReviewerApplicant> = [
     className: "pr-6!",
     render: (_, applicant) => (
       <Link
-        className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-4 text-sm font-medium text-ink hover:bg-panel-muted"
+        className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink hover:bg-panel-muted"
         href={`/document-reviewer/applicants/${encodeURIComponent(applicant.applicantNumber)}`}
       >
         Review documents

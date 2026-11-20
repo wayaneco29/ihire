@@ -233,7 +233,7 @@ export default async function EvaluatorReviewsPage({
                       </p>
                     </div>
                     <Link
-                      className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                      className="inline-flex min-h-11 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                       href={`/evaluator/applications/${application.application_id}?jobId=${application.job_id}`}
                     >
                       Enter points

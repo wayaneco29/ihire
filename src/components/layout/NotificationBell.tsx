@@ -63,10 +63,9 @@ export function NotificationBell() {
           <span className="text-xs text-muted">{unreadCount} unread</span>
           {unreadCount > 0 && (
             <Button
-              className="!h-auto !px-0 !text-xs hover:!bg-transparent"
+              className="hover:!bg-transparent"
               disabled={markingAllAsRead}
               onClick={() => void markAllNotificationsAsRead()}
-              size="sm"
               type="button"
               variant="ghost"
             >

@@ -102,7 +102,7 @@ export function ReviewQueueList({
         {[{ value: undefined, label: "All statuses" }, ...REVIEW_QUEUE_STATUS_OPTIONS].map((option) => (
           <Link
             aria-current={selectedStatus === option.value ? "page" : undefined}
-            className={`inline-flex min-h-10 items-center rounded-sm border px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
+            className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
             href={reviewQueueHref(selectedJobId, 1, option.value)}
             key={option.value ?? "ALL"}
           >
@@ -222,7 +222,7 @@ export function ReviewQueueList({
                 </td>
                 <td className="px-5 py-4 text-right">
                   <Link
-                    className="inline-flex min-h-10 items-center justify-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                    className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
                     href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Review applicant

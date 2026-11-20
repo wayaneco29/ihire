@@ -151,8 +151,6 @@ function PositionScoringStandardsEditor({
   return (
     <>
       <Button
-        className="!h-auto !px-2 text-xs!"
-        size="sm"
         onClick={() => {
           form.reset({
             baseQualificationLevel:
@@ -377,7 +375,6 @@ function PositionTitleEditor({ position }: { position: Position }) {
           setMessage(null);
           setOpen(true);
         }}
-        size="sm"
         variant="bordered"
       >
         Edit title
@@ -475,7 +472,6 @@ function PositionActiveToggle({ position }: { position: Position }) {
         <Button
           disabled={isSubmitting}
           loading={isSubmitting}
-          size="sm"
           variant={position.is_active ? "bordered" : "filled"}
         >
           {position.is_active ? "Archive" : "Restore"}
@@ -534,8 +530,6 @@ function PositionWeightEditor({
   return (
     <>
       <Button
-        className="!px-3 text-xs!"
-        size="sm"
         onClick={() => {
           form.reset({
             weights: criteria.map(
@@ -637,7 +631,6 @@ function PositionWeightEditor({
               disabled={form.formState.isSubmitting}
               onClick={() => setOpen(false)}
               variant="bordered"
-              size="sm"
             >
               Cancel
             </Button>
@@ -651,7 +644,6 @@ function PositionWeightEditor({
               type="submit"
               loading={form.formState.isSubmitting}
               variant="filled"
-              size="sm"
             >
               Save changes
             </Button>
@@ -920,7 +912,7 @@ export function PositionCriteriaManager({
           {filterOptions.map((option) => (
             <button
               aria-pressed={filter === option.key}
-              className={`min-h-10 rounded-full border px-6 text-sm! cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
               key={option.key}
               onClick={() => setFilter(option.key)}
               type="button"

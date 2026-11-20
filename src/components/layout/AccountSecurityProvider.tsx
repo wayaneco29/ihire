@@ -239,18 +239,10 @@ function ChangePasswordDialog({
               disabled={isSubmitting}
               onClick={() => handleOpenChange(false)}
               variant="bordered"
-              className="text-sm!"
-              size="sm"
             >
               Cancel
             </Button>
-            <Button
-              loading={isSubmitting}
-              type="submit"
-              className="text-sm!"
-              variant="filled"
-              size="sm"
-            >
+            <Button loading={isSubmitting} type="submit" variant="filled">
               {requiresVerification ? "Verify and update" : "Update password"}
             </Button>
           </div>

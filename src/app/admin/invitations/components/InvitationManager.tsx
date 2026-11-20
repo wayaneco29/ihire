@@ -211,11 +211,10 @@ export function InvitationManager({
           </div>
           <Button
             block
-            className="mt-5 text-sm! rounded-sm!"
+            className="mt-5"
             type="submit"
             loading={isSubmitting || isWorking}
             variant="filled"
-            size="sm"
           >
             Create one-time link
           </Button>
@@ -241,9 +240,8 @@ export function InvitationManager({
           <div className="mt-4 rounded-sm border border-primary/15 bg-primary-light/50 p-3">
             <p className="break-all text-xs leading-5 text-ink">{inviteUrl}</p>
             <Button
-              className="mt-3 text-sm!"
+              className="mt-3"
               onClick={copyInvite}
-              size="sm"
               variant="bordered"
             >
               Copy link
@@ -270,7 +268,7 @@ export function InvitationManager({
             {historyFilters.map((filter) => (
               <button
                 aria-pressed={historyFilter === filter.key}
-                className={`rounded-sm px-3 py-2 cursor-pointer text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${historyFilter === filter.key ? "bg-panel text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                className={`inline-flex min-h-11 items-center justify-center rounded-sm px-4 text-sm font-semibold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${historyFilter === filter.key ? "bg-panel text-ink shadow-sm" : "text-muted hover:text-ink"}`}
                 key={filter.key}
                 onClick={() => setHistoryFilter(filter.key)}
                 type="button"
@@ -340,9 +338,7 @@ export function InvitationManager({
                           onClick={() =>
                             runRowAction(resendInvitation, invitation.id)
                           }
-                          size="sm"
                           variant="bordered"
-                          className="text-sm!"
                         >
                           Resend
                         </Button>
@@ -352,9 +348,7 @@ export function InvitationManager({
                             onClick={() =>
                               runRowAction(revokeInvitation, invitation.id)
                             }
-                            size="sm"
                             variant="danger"
-                            className="text-sm!"
                           >
                             Revoke
                           </Button>

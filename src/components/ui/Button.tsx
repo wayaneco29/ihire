@@ -2,14 +2,12 @@ import type { ComponentPropsWithRef, ReactNode } from "react";
 import { cn } from "@/utils/cn";
 
 export type ButtonVariant = "filled" | "bordered" | "ghost" | "danger" | "unstyled";
-export type ButtonSize = "default" | "sm";
 
 export type ButtonProps = ComponentPropsWithRef<"button"> & {
   block?: boolean;
   icon?: ReactNode;
   loading?: boolean;
   variant?: ButtonVariant;
-  size?: ButtonSize;
 };
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
@@ -24,11 +22,6 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   unstyled: "",
 };
 
-const SIZE_CLASSES: Record<ButtonSize, string> = {
-  default: "h-11 px-5 text-[15px]",
-  sm: "h-9 px-3.5 text-sm",
-};
-
 export function Button({
   "aria-busy": ariaBusy,
   block = false,
@@ -37,7 +30,6 @@ export function Button({
   disabled,
   icon,
   loading = false,
-  size = "default",
   type = "button",
   variant = "filled",
   ...props
@@ -50,7 +42,7 @@ export function Button({
         isUnstyled
           ? "cursor-pointer disabled:cursor-not-allowed"
           : "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[8px] border-[1.5px] font-semibold leading-none transition-[background-color,border-color,color] duration-150 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#1766c9] disabled:cursor-not-allowed disabled:opacity-[.45]",
-        !isUnstyled && SIZE_CLASSES[size],
+        !isUnstyled && "h-11 px-4 text-sm",
         VARIANT_CLASSES[variant],
         block && "w-full",
         className,

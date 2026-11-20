@@ -109,11 +109,10 @@ export function AcceptInviteForm({
               />
               <Button
                 block
-                className="mt-2 text-sm! rounded-sm"
+                className="mt-2"
                 loading={isSubmitting}
                 type="submit"
                 variant="filled"
-                size="sm"
               >
                 Accept invitation
               </Button>

@@ -47,7 +47,7 @@ export function ApplicantNumberLookup({
           size="medium"
         />
       </div>
-      <Button disabled={pending} type="submit" variant="filled" size="default">
+      <Button disabled={pending} type="submit" variant="filled">
         {pending ? "Searching…" : "Find applicant"}
       </Button>
     </form>

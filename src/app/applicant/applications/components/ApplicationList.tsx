@@ -46,7 +46,7 @@ export function ApplicationList({
         <EmptyState
           action={
             <Link
-              className="inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+              className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
               href="/applicant/jobs"
             >
               Browse open jobs
@@ -79,7 +79,7 @@ export function ApplicationList({
             </time>
           </div>
           <Link
-            className="inline-flex min-h-10 shrink-0 items-center rounded-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-sm text-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
             href={`/applicant/applications/${scheduledAssessment.id}`}
           >
             View assessment details
@@ -113,7 +113,7 @@ export function ApplicationList({
                   </p>
                 </div>
                 <Link
-                  className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/applications/${application.id}`}
                 >
                   View details

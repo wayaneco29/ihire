@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SkeletonLoader } from "@/components/ui/SkeletonLoader";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { getPostingDisplayStatus } from "@/utils/job-posting-status";
@@ -148,7 +149,7 @@ export default function HrDashboardPage() {
         description="See applicant progress and manage your job postings."
         actions={
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href="/hr/postings/new"
           >
             Create posting
@@ -157,13 +158,11 @@ export default function HrDashboardPage() {
       />
       <Suspense
         fallback={
-          <div
-            aria-live="polite"
-            className="py-8 text-sm text-muted"
-            role="status"
-          >
-            Loading hiring dashboard…
-          </div>
+          <SkeletonLoader
+            label="Loading hiring dashboard"
+            rows={5}
+            variant="dashboard"
+          />
         }
       >
         <HrDashboardContent />

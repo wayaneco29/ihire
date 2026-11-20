@@ -231,13 +231,13 @@ export function PostingsManager({
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-4 whitespace-nowrap">
                         <Link
-                          className="inline-flex min-h-9 items-center rounded-sm px-1 text-xs font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                           href={`/hr/postings/${posting.id}/edit`}
                         >
                           Edit posting
                         </Link>
                         <Link
-                          className="inline-flex min-h-9 items-center justify-center rounded-[8px] border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                           href={`/hr/postings/${posting.id}`}
                         >
                           View applicants

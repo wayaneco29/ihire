@@ -147,7 +147,7 @@ export function DocumentReviewPanel({
       {!hideFileButton && (
         <>
           <Button
-            className="mt-4 !rounded-sm !px-4 !text-sm"
+            className="mt-4"
             disabled={viewing || pending}
             onClick={viewFile}
             type="button"

@@ -55,7 +55,7 @@ export function DashboardSections({
             Where your applications stand
           </h2>
           <Link
-            className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
             href="/applicant/applications"
           >
             View all
@@ -66,7 +66,7 @@ export function DashboardSections({
             <EmptyState
               action={
                 <Link
-                  className="inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                  className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                   href="/applicant/jobs"
                 >
                   Browse open jobs
@@ -114,7 +114,7 @@ export function DashboardSections({
             </p>
           </div>
           <Link
-            className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
             href="/applicant/documents"
           >
             Manage
@@ -154,7 +154,7 @@ export function DashboardSections({
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-semibold text-ink">Latest updates</h2>
           <Link
-            className="inline-flex min-h-9 shrink-0 items-center rounded-sm px-2 text-xs font-semibold text-primary hover:bg-primary-light"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
             href="/applicant/notifications"
           >
             {unreadCount > 0 ? `Read all ${unreadCount} unread` : "View all"}

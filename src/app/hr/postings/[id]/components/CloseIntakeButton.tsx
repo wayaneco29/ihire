@@ -33,7 +33,7 @@ export function CloseIntakeButton({ jobId }: Readonly<{ jobId: string }>) {
         onConfirm={closeIntake}
         title="Close application intake?"
       >
-        <Button disabled={pending} loading={pending} size="sm" variant="bordered">
+        <Button disabled={pending} loading={pending} variant="bordered">
           Close intake
         </Button>
       </Popconfirm>

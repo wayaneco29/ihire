@@ -325,7 +325,6 @@ export function EducationStep({
           <Button
             type="button"
             disabled={graduateStudyIndexes.length >= 20}
-            className="!h-auto !rounded-sm !px-6 !py-2.5 !text-xs"
             onClick={() => append(createEmptyEducationRow("GRADUATE_STUDIES"))}
             variant="bordered"
           >
@@ -344,10 +343,9 @@ export function EducationStep({
                     Graduate study {graduateIndex + 1}
                   </h4>
                   <Button
-                    className="text-danger! enabled:hover:bg-danger/10! text-sm!"
+                    className="text-danger! enabled:hover:bg-danger/10!"
                     onClick={() => remove(index)}
                     type="button"
-                    size="sm"
                     variant="ghost"
                   >
                     Remove

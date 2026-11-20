@@ -490,7 +490,6 @@ export function DocumentUploadForm({
               : "Upload document"}
         </Button>
         <Button
-          className="!px-3"
           disabled={busy}
           onClick={onCancel}
           type="button"

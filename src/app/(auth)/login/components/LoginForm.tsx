@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Alert } from "antd";
+import { message } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -15,7 +14,7 @@ import { loginSchema, type LoginValues } from "../schema";
 
 export function LoginForm() {
   const router = useRouter();
-  const [formError, setFormError] = useState<string | null>(null);
+  const [messageApi, contextHolder] = message.useMessage();
   const {
     control,
     handleSubmit,
@@ -26,7 +25,6 @@ export function LoginForm() {
   });
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
-    setFormError(null);
     const client = createClient();
     const { data, error } = await client.auth.signInWithPassword({
       email,
@@ -34,7 +32,7 @@ export function LoginForm() {
     });
 
     if (error) {
-      setFormError("The email or password is incorrect.");
+      messageApi.error("The email or password is incorrect.");
       return;
     }
 
@@ -67,6 +65,7 @@ export function LoginForm() {
   return (
     <AuthPageFrame>
       <section>
+        {contextHolder}
         <h1 className="text-2xl font-semibold tracking-tight text-ink">
           Welcome back
         </h1>
@@ -75,9 +74,6 @@ export function LoginForm() {
         </p>
 
         <form className="mt-7" onSubmit={onSubmit}>
-          {formError && (
-            <Alert className="mb-4" message={formError} showIcon type="error" />
-          )}
           <div className="space-y-4">
             <FormInput
               autoComplete="email"
@@ -101,11 +97,10 @@ export function LoginForm() {
             />
             <Button
               block
-              className="mt-2 text-sm!"
+              className="mt-2"
               type="submit"
               loading={isSubmitting}
               variant="filled"
-              size="default"
             >
               Sign in
             </Button>
@@ -115,7 +110,7 @@ export function LoginForm() {
         <p className="mt-5 text-center text-sm text-muted">
           New applicant?{" "}
           <Link
-            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:underline hover:text-primary-dark"
+            className="inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:underline hover:text-primary-dark"
             href="/register"
           >
             Create an account

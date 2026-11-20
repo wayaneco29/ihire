@@ -182,7 +182,6 @@ export function DocumentTypeCard({
             </p>
           </div>
           <Button
-            className="!h-10 !rounded-sm !px-6 !text-sm"
             onClick={() => setUploadOpen(!uploadOpen)}
             type="button"
             variant="filled"
@@ -244,7 +243,7 @@ export function DocumentTypeCard({
             ].map((filter) => (
               <Button
                 aria-pressed={statusFilter === filter.key}
-                className={`min-h-8 px-5 rounded-full cursor-pointer border text-xs! font-medium transition ${
+                className={`inline-flex min-h-11 items-center justify-center px-4 rounded-full cursor-pointer border text-sm font-semibold transition ${
                   statusFilter === filter.key
                     ? "border-primary bg-primary text-on-primary"
                     : "border-line text-muted hover:border-primary/40 hover:text-primary"
@@ -305,7 +304,6 @@ export function DocumentTypeCard({
                   <WorkflowStatusTag status={document.status} />
                   <div className="flex items-center gap-2">
                     <Button
-                      className="!h-9 !rounded-sm !px-2 !text-xs"
                       disabled={pending}
                       onClick={() => openDocument(document)}
                       type="button"
@@ -319,7 +317,6 @@ export function DocumentTypeCard({
                       </span>
                     ) : (
                       <Button
-                        className="!h-8 !px-5 !text-xs"
                         onClick={() => setReplacementTarget(document)}
                         type="button"
                         variant="filled"
@@ -345,7 +342,6 @@ export function DocumentTypeCard({
               Showing {visibleDocuments.length} of {filteredDocuments.length}
             </span>
             <Button
-              className="!h-9 !px-2"
               onClick={() => setShowAll(!showAll)}
               type="button"
               variant="ghost"
@@ -362,7 +358,7 @@ export function DocumentTypeCard({
         )}
         {signedUrl && (
           <a
-            className="inline-flex min-h-9 items-center py-2 text-sm font-medium text-primary hover:underline"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
             href={signedUrl}
             rel="noreferrer"
             target="_blank"
@@ -428,7 +424,7 @@ export function DocumentTypeCard({
         )}
         {signedUrl && (
           <a
-            className="mt-1 inline-flex min-h-8 items-center text-xs font-medium text-primary hover:underline"
+            className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
             href={signedUrl}
             rel="noreferrer"
             target="_blank"
@@ -445,7 +441,6 @@ export function DocumentTypeCard({
         )}
         {latest && (
           <Button
-            className="!h-8 !rounded-sm !px-2 !text-xs"
             disabled={pending}
             onClick={() => openDocument(latest)}
             type="button"
@@ -460,7 +455,6 @@ export function DocumentTypeCard({
           </span>
         ) : (
           <Button
-            className="!h-8 !px-5 !text-xs"
             onClick={() => setUploadOpen(!uploadOpen)}
             type="button"
             variant="filled"

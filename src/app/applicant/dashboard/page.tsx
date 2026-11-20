@@ -207,7 +207,7 @@ export default async function ApplicantDashboardPage() {
             </p>
           </div>
           <Link
-            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-[#10432f] transition hover:bg-emerald-50"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-[#10432f] transition hover:bg-emerald-50"
             href={
               latestApplication ? "/applicant/applications" : "/applicant/jobs"
             }
@@ -235,7 +235,7 @@ export default async function ApplicantDashboardPage() {
           </p>
         </div>
         <Link
-          className="inline-flex min-h-9 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light"
+          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
           href={pdsResult.error ? "/applicant/dashboard" : "/applicant/pds"}
         >
           {pdsResult.error

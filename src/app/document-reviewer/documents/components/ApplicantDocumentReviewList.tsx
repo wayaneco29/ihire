@@ -99,7 +99,6 @@ function DocumentRow({
         <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
           <WorkflowStatusTag status={document.documentStatus} />
           <Button
-            className="!h-8 !rounded-sm !px-2 !text-xs"
             onClick={() => onView(document)}
             type="button"
             variant="ghost"
@@ -329,7 +328,7 @@ export function ApplicantDocumentReviewList({
             )}
             {previewUrl && (
               <a
-                className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+            className="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                 download
                 href={previewUrl}
               >

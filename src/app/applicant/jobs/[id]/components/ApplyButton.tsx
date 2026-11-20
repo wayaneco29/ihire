@@ -144,7 +144,7 @@ export function ApplyButton({
       )}
       {error && <Alert message={error} showIcon type="error" />}
       <Button
-        className="min-h-11 w-full sm:w-auto"
+        className="w-full sm:w-auto"
         type="submit"
         loading={form.formState.isSubmitting}
         variant="filled"

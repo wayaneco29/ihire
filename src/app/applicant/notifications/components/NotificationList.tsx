@@ -136,7 +136,7 @@ export function NotificationList({
             </p>
           </div>
           <Link
-            className="inline-flex min-h-9 shrink-0 items-center font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
+            className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
             href="/applicant/documents"
           >
             Go to documents
@@ -149,7 +149,7 @@ export function NotificationList({
             <li key={option.id}>
               <Button
                 aria-pressed={activeFilter === option.id}
-                className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs! font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   activeFilter === option.id
                     ? "border-primary bg-primary text-on-primary"
                     : "border-line bg-panel text-muted hover:bg-panel-muted"
@@ -259,7 +259,7 @@ export function NotificationList({
                           )}
                           {!notification.is_read && (
                             <Button
-                              className="!mt-1 !h-8 !rounded-sm !px-0 !text-xs hover:!bg-transparent"
+                              className="!mt-1 hover:!bg-transparent"
                               disabled={busyId === notification.id}
                               onClick={() => void markRead(notification.id)}
                               type="button"

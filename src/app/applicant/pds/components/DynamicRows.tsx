@@ -109,10 +109,9 @@ export function DynamicRows<
                       {label} {index + 1}
                     </h3>
                     <Button
-                      className="!text-danger enabled:hover:bg-danger/10! text-sm!"
+                      className="!text-danger enabled:hover:bg-danger/10!"
                       disabled={fields.length <= minRows}
                       onClick={() => remove(index)}
-                      size="sm"
                       variant="ghost"
                     >
                       Remove

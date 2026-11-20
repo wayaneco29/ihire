@@ -46,10 +46,18 @@ async function main() {
   const admin = createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
-  const { data: existing, error: lookupError } = await admin
+  const { data: existing, error: lookupError, status: lookupStatus } = await admin
     .from('profiles').select('id,email').eq('role', 'ADMIN');
   if (lookupError) {
-    throw new AdminSetupError('Could not read admin profiles. Check the project credentials and apply the schema migrations first.');
+    const errorCode = lookupError.code || 'none';
+    const reason = lookupStatus === 0
+      ? 'No HTTP response was received; check network access, DNS, TLS, and the project URL.'
+      : errorCode === '42501'
+        ? 'The database denied access to public.profiles for service_role.'
+        : lookupStatus === 401 || lookupStatus === 403
+          ? 'Supabase rejected the configured project key.'
+          : 'Check that the profiles schema migration is applied and the table is exposed to the Data API.';
+    throw new AdminSetupError(`Could not read admin profiles (HTTP ${lookupStatus ?? 'unknown'}; code ${errorCode}). ${reason}`);
   }
 
   let userId;

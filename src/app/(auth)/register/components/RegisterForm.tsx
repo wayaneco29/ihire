@@ -105,7 +105,7 @@ export function RegisterForm() {
             />
             <Button
               block
-              className="mt-2 text-sm!"
+              className="mt-2"
               type="submit"
               loading={isSubmitting}
               variant="filled"
@@ -118,7 +118,7 @@ export function RegisterForm() {
         <p className="mt-5 text-center text-sm text-muted">
           Already registered?{" "}
           <Link
-            className="inline-flex min-h-10 items-center rounded-sm px-2 font-medium text-primary hover:underline hover:text-primary-dark"
+            className="inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:underline hover:text-primary-dark"
             href="/"
             replace
           >

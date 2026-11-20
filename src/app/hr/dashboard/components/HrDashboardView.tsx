@@ -125,7 +125,7 @@ export function HrDashboardView({
             {filters.map((option) => (
               <Button
                 aria-pressed={filter === option.id}
-                className={`inline-flex min-h-9 items-center justify-center rounded-sm px-3 text-sm font-medium transition-colors ${
+                className={`inline-flex min-h-11 items-center justify-center rounded-sm px-4 text-sm font-semibold transition-colors ${
                   filter === option.id
                     ? "bg-primary-light text-primary"
                     : "text-muted hover:bg-panel-muted hover:text-ink"
@@ -148,7 +148,7 @@ export function HrDashboardView({
               Create a posting to begin receiving applications.
             </p>
             <Link
-              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
               href="/hr/postings/new"
             >
               Create your first posting

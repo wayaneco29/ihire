@@ -447,7 +447,6 @@ export function AnonymizedApplicantReview({
                       <div className="flex items-center gap-3">
                         <WorkflowStatusTag status={document.document_status} />
                         <Button
-                          className="!rounded-sm !px-3 !text-sm"
                           disabled={isPending}
                           onClick={() => viewDocument(document)}
                           type="button"
@@ -501,7 +500,7 @@ export function AnonymizedApplicantReview({
               </div>
               <Button
                 aria-label="Close document preview"
-                className="!h-10 !rounded-sm !border-line-strong !px-3 !text-sm !text-ink hover:!bg-panel-muted"
+                className="!border-line-strong !text-ink hover:!bg-panel-muted"
                 onClick={() => setSelectedDocument(null)}
                 type="button"
                 variant="bordered"
@@ -557,7 +556,7 @@ export function AnonymizedApplicantReview({
               )}
               {previewUrl && (
                 <a
-                  className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                   download
                   href={previewUrl}
                 >

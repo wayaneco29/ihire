@@ -1,9 +1,5 @@
 import { SkeletonLoader } from "@/components/ui/SkeletonLoader";
 
 export default function Loading() {
-  return (
-    <div className="rounded-sm border border-line bg-panel p-5 sm:p-7">
-      <SkeletonLoader label="Loading your workspace" rows={3} />
-    </div>
-  );
+  return <SkeletonLoader label="Loading sign in" variant="auth" />;
 }

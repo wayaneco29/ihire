@@ -125,7 +125,7 @@ export function Sidebar() {
           <div className="pt-2">
             <Button
               block
-              className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 font-[Bricolage_Grotesque]! text-left text-sm! text-muted transition-colors hover:bg-panel-muted hover:text-ink"
+              className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
               disabled={loading}
               icon={<LockClosedIcon className="size-5" />}
               onClick={handleChangePassword}
@@ -140,7 +140,7 @@ export function Sidebar() {
             )}
             <Button
               block
-              className="flex min-h-11 w-full items-center gap-3 font-[Bricolage_Grotesque]! rounded-sm px-3 py-2 text-left text-sm! transition-colors text-red-500/80 hover:text-red-500/95 hover:bg-red-50"
+              className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-semibold text-red-500/80 transition-colors hover:text-red-500/95 hover:bg-red-50"
               disabled={loading}
               icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
               onClick={handleSignOut}

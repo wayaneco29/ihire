@@ -123,7 +123,6 @@ export function JobListClient({
         </p>
         {filteredJobs.length > 0 && (search || deadlineFilter !== "ALL") && (
           <Button
-            className="!h-10 !rounded-lg !px-3 !text-sm"
             onClick={() => {
               setSearch("");
               setDeadlineFilter("ALL");
@@ -213,7 +212,7 @@ export function JobListClient({
                     {deadlineMessage}
                   </p>
                   <Link
-                    className="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     href={`/applicant/jobs/${job.id}`}
                   >
                     {job.applied ? "View posting" : "View and apply"}
@@ -228,7 +227,7 @@ export function JobListClient({
           <EmptyState
             action={
               <Button
-                className="!rounded-lg !border-line-strong !px-4 !text-sm !text-ink hover:!bg-panel-muted"
+                className="!border-line-strong !text-ink hover:!bg-panel-muted"
                 onClick={() => {
                   setSearch("");
                   setDeadlineFilter("ALL");
