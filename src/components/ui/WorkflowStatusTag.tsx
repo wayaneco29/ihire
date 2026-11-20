@@ -8,7 +8,7 @@ const statusStyles: Record<string, string> = {
   ASSESSMENT_SCORED: "border-info/20 bg-info/10 text-info",
   FOR_REVIEW: "border-warning/30 bg-warning/10 text-warning",
   PENDING: "border-line bg-panel-muted text-muted",
-  FOR_RESUBMISSION: "border-red/30! bg-red-100 text-red-500",
+  FOR_RESUBMISSION: "border-danger/30! bg-danger/10 text-danger",
   VERIFIED: "border-primary/20 bg-primary-light text-primary",
   APPROVED: "border-primary/20 bg-primary-light text-primary",
   QUALIFIED: "border-primary/20 bg-primary-light text-primary",

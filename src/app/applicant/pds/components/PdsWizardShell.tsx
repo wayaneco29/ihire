@@ -164,11 +164,11 @@ export function PdsWizardShell({
       : [];
 
   return (
-    <ConfigProvider componentSize="large" componentDisabled={isPending}>
+    <ConfigProvider componentSize="medium" componentDisabled={isPending}>
       <PdsFormNavigationContext.Provider value={registerNavigationGuard}>
         <section className="relative min-h-[calc(100vh-4.5rem)] px-4 pb-28 pt-7 sm:-mx-6 sm:px-6 sm:pt-8 lg:-mx-10 lg:px-10">
           <div className="mx-auto grid w-full grid-cols-1 gap-7 lg:grid-cols-[15rem_minmax(0,1fr)] xl:gap-10">
-            <aside className="lg:sticky lg:top-24 lg:self-start rounded-sm bg-white p-4">
+            <aside className="lg:sticky lg:top-24 lg:self-start rounded-sm border border-line-subtle bg-panel p-4 text-ink">
               <div className="mt-5 lg:hidden">
                 <label className="sr-only" htmlFor="pds-mobile-step">
                   Choose a PDS section
@@ -190,6 +190,7 @@ export function PdsWizardShell({
                         !completedSteps.includes(step),
                     };
                   })}
+                  size="medium"
                   value={currentStep}
                 />
               </div>
@@ -232,7 +233,7 @@ export function PdsWizardShell({
                           variant="unstyled"
                         >
                           <span
-                            className={`relative z-10 grid size-[1.4rem] shrink-0 place-items-center rounded-full border bg-[#eaf1f1] text-[10px] ${
+                            className={`relative z-10 grid size-[1.4rem] shrink-0 place-items-center rounded-full border bg-panel-muted text-[10px] ${
                               completed
                                 ? `border-primary bg-primary text-on-primary ${active ? "ring-2 ring-primary-light" : ""}`
                                 : active

@@ -397,6 +397,7 @@ export function PostingApplicants({
             className="w-full rounded-sm!"
             onChange={(event) => updateFilter(setSearch, event.target.value)}
             placeholder="Search by applicant number, e.g. 0053"
+            size="medium"
             type="search"
             value={search}
           />
@@ -414,6 +415,7 @@ export function PostingApplicants({
                 value: position,
               })),
             ]}
+            size="medium"
             value={positionFilter}
           />
         </label>
@@ -430,6 +432,7 @@ export function PostingApplicants({
                 value: level,
               })),
             ]}
+            size="medium"
             value={educationFilter}
           />
         </label>

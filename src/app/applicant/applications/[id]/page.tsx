@@ -526,14 +526,14 @@ export default async function ApplicantApplicationDetailPage({
       )}
 
       <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(16rem,0.8fr)] lg:gap-10">
-        <div className="bg-white shadow rounded-md p-6">
+        <div className="rounded-md border border-line bg-panel p-6 shadow-card">
           <ApplicationCriteriaPoints
             rows={criteriaRows}
             unavailable={criteriaUnavailable}
             unavailableMessage={criteriaUnavailableMessage}
           />
         </div>
-        <aside className="grid gap-6 bg-white rounded-md shadow">
+        <aside className="grid gap-6 rounded-md border border-line bg-panel shadow-card">
           <ApplicationProvisionalTotal
             rows={criteriaRows}
             unavailable={criteriaUnavailable}

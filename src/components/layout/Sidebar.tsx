@@ -97,7 +97,35 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-
+      {user && (
+        <div className="pt-2 pb-4">
+          <Button
+            block
+            className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
+            disabled={loading}
+            icon={<LockClosedIcon className="size-5" />}
+            onClick={handleChangePassword}
+            variant="unstyled"
+          >
+            Change password
+          </Button>
+          {signOutError && (
+            <p className="mb-2 px-3 text-xs text-danger" role="alert">
+              Sign out failed. Please try again.
+            </p>
+          )}
+          <Button
+            block
+            className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-danger transition-colors hover:bg-danger/10"
+            disabled={loading}
+            icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
+            onClick={handleSignOut}
+            variant="unstyled"
+          >
+            Sign out
+          </Button>
+        </div>
+      )}
       <div className="border-t border-line-subtle pt-4">
         <div className="flex min-w-0 items-center gap-3 rounded-sm bg-panel-muted p-3">
           <span
@@ -120,36 +148,6 @@ export function Sidebar() {
             </p>
           </div>
         </div>
-
-        {user && (
-          <div className="pt-2">
-            <Button
-              block
-              className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
-              disabled={loading}
-              icon={<LockClosedIcon className="size-5" />}
-              onClick={handleChangePassword}
-              variant="unstyled"
-            >
-              Change password
-            </Button>
-            {signOutError && (
-              <p className="mb-2 px-3 text-xs text-danger" role="alert">
-                Sign out failed. Please try again.
-              </p>
-            )}
-            <Button
-              block
-              className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-semibold text-red-500/80 transition-colors hover:text-red-500/95 hover:bg-red-50"
-              disabled={loading}
-              icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
-              onClick={handleSignOut}
-              variant="unstyled"
-            >
-              Sign out
-            </Button>
-          </div>
-        )}
       </div>
     </aside>
   );

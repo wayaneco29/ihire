@@ -192,9 +192,9 @@ export default async function ApplicantDashboardPage() {
 
       <section
         aria-label="Application result"
-        className="rounded-sm bg-[#10432f] px-5 py-6 mt-7 text-white shadow-sm sm:px-7 sm:py-8"
+        className="hero-surface mt-7 rounded-sm px-5 py-6 shadow-sm sm:px-7 sm:py-8"
       >
-        <p className="text-xs font-medium text-emerald-100">
+        <p className="text-xs font-medium text-hero-text/80">
           {applicationResult ? "Application result" : "Your applications"}
         </p>
         <div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -202,12 +202,12 @@ export default async function ApplicantDashboardPage() {
             <h2 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
               {applicationHeadline}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-emerald-50/90">
+            <p className="mt-2 text-sm leading-6 text-hero-text/90">
               {applicationSummary}
             </p>
           </div>
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-[#10432f] transition hover:bg-emerald-50"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-panel px-4 text-sm font-semibold text-primary transition hover:bg-panel-muted"
             href={
               latestApplication ? "/applicant/applications" : "/applicant/jobs"
             }

@@ -49,6 +49,7 @@ export function FormTextArea<T extends FieldValues>(
             name={field.name}
             onBlur={field.onBlur}
             onChange={field.onChange}
+            size="medium"
             ref={field.ref}
             value={(field.value ?? "") as string}
           />

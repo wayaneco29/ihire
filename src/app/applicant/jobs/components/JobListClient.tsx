@@ -86,6 +86,7 @@ export function JobListClient({
             className="rounded-sm!"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by title or description"
+            size="medium"
             type="search"
             value={search}
           />
@@ -111,6 +112,7 @@ export function JobListClient({
                 setDeadlineFilter(value);
               }
             }}
+            size="medium"
             value={deadlineFilter}
           />
         </label>

@@ -77,7 +77,7 @@ function RepeatedRows({ rows }: { rows: number }) {
 
 function AuthSkeleton({ fields }: { fields: number }) {
   return (
-    <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/80 bg-panel shadow-card md:min-h-[600px] md:grid-cols-2">
+    <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-line bg-panel shadow-card md:min-h-[600px] md:grid-cols-2">
       <div className="flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-10 lg:px-14">
         <div className="mb-8 flex items-center gap-3">
           <Pulse className="size-11 shrink-0 rounded-full" />
@@ -512,7 +512,7 @@ export function SkeletonLoader({
       <div
         aria-busy="true"
         aria-label={label}
-        className="grid min-h-screen place-items-center bg-[#eaf8f1] px-4 py-6 sm:px-6 sm:py-10"
+        className="grid min-h-screen place-items-center bg-canvas px-4 py-6 sm:px-6 sm:py-10"
         role="status"
       >
         <span className="sr-only">{label}</span>

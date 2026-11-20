@@ -4,8 +4,8 @@ import { BrandMark } from "@/components/layout/BrandMark";
 
 export function AuthPageFrame({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <main className="grid min-h-screen place-items-center bg-[#eaf8f1] px-4 py-6 sm:px-6 sm:py-10">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/80 bg-panel shadow-[0_24px_70px_rgba(27,74,54,0.14)] md:min-h-[600px] md:grid-cols-2">
+    <main className="grid min-h-screen place-items-center bg-canvas px-4 py-6 sm:px-6 sm:py-10">
+      <section className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-line bg-panel shadow-card md:min-h-[600px] md:grid-cols-2">
         <div className="flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-10 lg:px-14">
           <div className="mb-8 flex items-center gap-3">
             <BrandMark compact />

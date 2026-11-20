@@ -216,13 +216,14 @@ export function DocumentTypeCard({
             Search {recordLabel.toLowerCase()}s
           </label>
           <Input
-            className="min-h-10 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
+            className="min-h-11 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
             id={`${id}-search`}
             onChange={(event) => {
               setSearch(event.target.value);
               setShowAll(false);
             }}
             placeholder={`Search ${recordLabel.toLowerCase()}s`}
+            size="medium"
             type="search"
             value={search}
           />
