@@ -323,7 +323,7 @@ export function DocumentUploadForm({
 
   return (
     <form
-      className="border-t border-line-subtle bg-panel-muted/60 px-4 py-4 sm:px-5"
+      className="rounded-sm bg-panel-muted/60 px-4 py-4 sm:px-5"
       aria-busy={busy}
       onSubmit={(event) => void form.handleSubmit(submit)(event)}
     >
@@ -372,7 +372,7 @@ export function DocumentUploadForm({
         </div>
       )}
       {isTrainingCertificate && (
-        <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <FormInput
             control={form.control}
             disabled={busy}
@@ -473,13 +473,23 @@ export function DocumentUploadForm({
           the transcript without linking it.
         </p>
       )}
-      <div className="mt-1 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 mt-4">
+        <Button
+          disabled={busy}
+          onClick={onCancel}
+          type="button"
+          variant="ghost"
+          className="text-sm! h-10!"
+        >
+          Cancel
+        </Button>
         <Button
           disabled={
             busy || (isTrainingCertificate && trainingEntriesUnavailable)
           }
           type="submit"
           variant="filled"
+          className="text-sm! h-10!"
         >
           {pending
             ? "Uploading…"
@@ -488,14 +498,6 @@ export function DocumentUploadForm({
                 ? "Update certificate file"
                 : "Upload certificate"
               : "Upload document"}
-        </Button>
-        <Button
-          disabled={busy}
-          onClick={onCancel}
-          type="button"
-          variant="ghost"
-        >
-          Cancel
         </Button>
       </div>
     </form>

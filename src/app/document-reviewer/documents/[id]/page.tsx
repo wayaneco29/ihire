@@ -87,7 +87,7 @@ export default async function DocumentReviewerDetailPage({
         />
       </div>
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+        className="mt-5 inline-flex min-h-10 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
         href="/document-reviewer/documents"
       >
         Back to review queue

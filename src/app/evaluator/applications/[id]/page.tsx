@@ -12,7 +12,11 @@ import { formatPositionLabel } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
 import { ApplicationAssessmentScheduleForm } from "../components/ApplicationAssessmentScheduleForm";
-import { REVIEW_QUEUE_PAGE_SIZE, reviewQueueHref, reviewQueueStatus } from "../../reviews/queue";
+import {
+  REVIEW_QUEUE_PAGE_SIZE,
+  reviewQueueHref,
+  reviewQueueStatus,
+} from "../../reviews/queue";
 import { AnonymizedApplicantReview } from "./components/AnonymizedApplicantReview";
 
 export default async function EvaluatorApplicationReviewPage({
@@ -20,12 +24,16 @@ export default async function EvaluatorApplicationReviewPage({
   searchParams,
 }: Readonly<{
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ jobId?: string | string[]; page?: string | string[]; status?: string | string[] }>;
+  searchParams: Promise<{
+    jobId?: string | string[];
+    page?: string | string[];
+    status?: string | string[];
+  }>;
 }>) {
-  const [{ id }, { jobId: requestedJobId, page: requestedPage, status: requestedStatus }] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const [
+    { id },
+    { jobId: requestedJobId, page: requestedPage, status: requestedStatus },
+  ] = await Promise.all([params, searchParams]);
   const jobId =
     typeof requestedJobId === "string" &&
     /^[0-9a-f-]{36}$/i.test(requestedJobId)
@@ -35,7 +43,9 @@ export default async function EvaluatorApplicationReviewPage({
     typeof requestedPage === "string" ? Number(requestedPage) : 1;
   const queuePage =
     Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-  const selectedStatus = reviewQueueStatus(typeof requestedStatus === "string" ? requestedStatus : undefined);
+  const selectedStatus = reviewQueueStatus(
+    typeof requestedStatus === "string" ? requestedStatus : undefined,
+  );
   const evaluator = await getEvaluatorContext();
   if (!evaluator) redirect("/");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -211,8 +221,8 @@ export default async function EvaluatorApplicationReviewPage({
       : { data: null, error: null };
   const experiencePointsUnavailable = Boolean(
     experienceResult.error ||
-      experienceStandardsResult.error ||
-      experiencePointsResult.error,
+    experienceStandardsResult.error ||
+    experiencePointsResult.error,
   );
   const experiencePoints = {
     applicant_experience_increment_level:
@@ -231,10 +241,9 @@ export default async function EvaluatorApplicationReviewPage({
         (item) => !selectedStatus || item.application_status === selectedStatus,
       );
   const applicantPositions = new Map(
-    (allAssignedApplicationsResult.data ?? []).map((item, index) => [
-      item.id,
-      index,
-    ] as const),
+    (allAssignedApplicationsResult.data ?? []).map(
+      (item, index) => [item.id, index] as const,
+    ),
   );
   const queueItemPositions = new Map(
     queueItems.map((item, index) => [item.application_id, index] as const),
@@ -301,7 +310,7 @@ export default async function EvaluatorApplicationReviewPage({
           className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-panel p-4"
         >
           <Link
-          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+            className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
             href={reviewQueueHref(jobId, queuePage, selectedStatus)}
           >
             Back to applicants
@@ -321,7 +330,7 @@ export default async function EvaluatorApplicationReviewPage({
               <div className="flex items-center gap-2">
                 {previousApplicant ? (
                   <Link
-                    className="inline-flex min-h-11 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                    className="inline-flex min-h-10 items-center rounded-sm border border-line-strong px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                     href={`/evaluator/applications/${previousApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(previousApplicant.application_id)}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Previous
@@ -329,7 +338,7 @@ export default async function EvaluatorApplicationReviewPage({
                 ) : null}
                 {nextApplicant ? (
                   <Link
-                    className="inline-flex min-h-11 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                    className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                     href={`/evaluator/applications/${nextApplicant.application_id}?jobId=${jobId}&page=${reviewPageFor(nextApplicant.application_id)}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                   >
                     Next applicant
@@ -375,15 +384,23 @@ export default async function EvaluatorApplicationReviewPage({
           application.application_status,
         ) && (
           <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
-            <h2 className="font-semibold text-ink">Submitted assessment points</h2>
+            <h2 className="font-semibold text-ink">
+              Submitted assessment points
+            </h2>
             {submittedAssessment.error ? (
-              <p className="mt-3 text-sm text-danger">Scores could not be loaded. Refresh before making a decision.</p>
+              <p className="mt-3 text-sm text-danger">
+                Scores could not be loaded. Refresh before making a decision.
+              </p>
             ) : (
               <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                 {submittedAssessmentScores.map((score) => (
                   <div key={score.criterion!.criterion_key}>
-                    <dt className="text-sm text-muted">{score.criterion!.title}</dt>
-                    <dd className="mt-1 text-lg font-semibold text-ink">{score.points} points</dd>
+                    <dt className="text-sm text-muted">
+                      {score.criterion!.title}
+                    </dt>
+                    <dd className="mt-1 text-lg font-semibold text-ink">
+                      {score.points} points
+                    </dd>
                   </div>
                 ))}
               </dl>
@@ -407,7 +424,7 @@ export default async function EvaluatorApplicationReviewPage({
         </p>
       )}
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+        className="mt-5 inline-flex min-h-10 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
         href={
           jobId === application.job_id
             ? `/evaluator/reviews?jobId=${jobId}`

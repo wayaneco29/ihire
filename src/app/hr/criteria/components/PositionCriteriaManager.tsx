@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Alert,
-  Modal,
-  Popconfirm,
-  Table,
-  type TableColumnsType,
-} from "antd";
+import { Alert, Modal, Table, type TableColumnsType } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
@@ -20,9 +14,7 @@ import {
 } from "@/utils/format-position-standards";
 import {
   positionSchema,
-  positionTitleFormSchema,
   positionScoringStandardsSchema,
-  type PositionTitleFormValues,
   positionWeightFormSchema,
   type PositionScoringStandardsValues,
   type PositionValues,
@@ -32,8 +24,6 @@ import {
   createPosition,
   savePositionScoringStandards,
   savePositionWeights,
-  setPositionActive,
-  updatePositionTitle,
 } from "../actions";
 
 type Criterion = {
@@ -343,144 +333,6 @@ function CreatePositionForm({
   );
 }
 
-function PositionTitleEditor({ position }: { position: Position }) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState<{
-    text: string;
-    isError: boolean;
-  } | null>(null);
-  const form = useForm<PositionTitleFormValues>({
-    resolver: yupResolver(
-      positionTitleFormSchema,
-    ) as Resolver<PositionTitleFormValues>,
-    defaultValues: { title: position.title },
-  });
-
-  async function submit(values: PositionTitleFormValues) {
-    setMessage(null);
-    const result = await updatePositionTitle(position.id, values);
-    setMessage({ text: result.message, isError: !result.success });
-    if (result.success) {
-      setOpen(false);
-      router.refresh();
-    }
-  }
-
-  return (
-    <>
-      <Button
-        onClick={() => {
-          form.reset({ title: position.title });
-          setMessage(null);
-          setOpen(true);
-        }}
-        variant="bordered"
-      >
-        Edit title
-      </Button>
-      <Modal
-        centered
-        destroyOnHidden
-        footer={null}
-        onCancel={() => {
-          if (!form.formState.isSubmitting) setOpen(false);
-        }}
-        open={open}
-        title={`Edit ${position.title}`}
-      >
-        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-          <FormInput
-            autoComplete="off"
-            control={form.control}
-            label="Position title"
-            maxLength={160}
-            name="title"
-            required
-          />
-          <p className="text-xs leading-5 text-muted">
-            Positions already used by a posting keep their saved title. Archive
-            one and add a new position if its title must change.
-          </p>
-          {message && (
-            <Alert
-              message={message.text}
-              showIcon
-              type={message.isError ? "error" : "success"}
-            />
-          )}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              disabled={form.formState.isSubmitting}
-              onClick={() => setOpen(false)}
-              variant="bordered"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={form.formState.isSubmitting}
-              variant="filled"
-            >
-              Save title
-            </Button>
-          </div>
-        </form>
-      </Modal>
-    </>
-  );
-}
-
-function PositionActiveToggle({ position }: { position: Position }) {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function toggleStatus() {
-    setIsSubmitting(true);
-    setError(null);
-    const result = await setPositionActive(position.id, {
-      isActive: !position.is_active,
-    });
-    setIsSubmitting(false);
-
-    if (result.success) {
-      router.refresh();
-    } else {
-      setError(result.message);
-    }
-  }
-
-  return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      {error && (
-        <span className="basis-full text-right text-xs text-danger" role="alert">
-          {error}
-        </span>
-      )}
-      <Popconfirm
-        cancelText="Cancel"
-        description={
-          position.is_active
-            ? "Existing postings keep this position. It will no longer be selectable for new postings."
-            : "This position will be available for new postings again."
-        }
-        okText={position.is_active ? "Archive" : "Restore"}
-        onConfirm={toggleStatus}
-        title={position.is_active ? "Archive this position?" : "Restore this position?"}
-      >
-        <Button
-          disabled={isSubmitting}
-          loading={isSubmitting}
-          variant={position.is_active ? "bordered" : "filled"}
-        >
-          {position.is_active ? "Archive" : "Restore"}
-        </Button>
-      </Popconfirm>
-    </div>
-  );
-}
-
 function PositionWeightEditor({
   position,
   criteria,
@@ -695,15 +547,13 @@ export function PositionCriteriaManager({
   const visibleGroups = groups
     .map((group) => ({
       ...group,
-      positions: group.positions.filter(
-        (position) => {
-          if (filter === "needs-setup") {
-            return position.is_active && !profileByPosition[position.id];
-          }
-          if (filter === "archived") return !position.is_active;
-          return filter === "all" || group.applicationType === filter;
-        },
-      ),
+      positions: group.positions.filter((position) => {
+        if (filter === "needs-setup") {
+          return position.is_active && !profileByPosition[position.id];
+        }
+        if (filter === "archived") return !position.is_active;
+        return filter === "all" || group.applicationType === filter;
+      }),
     }))
     .filter((group) => group.positions.length > 0);
   const rows: CriteriaTableRow[] = visibleGroups.flatMap((group) => [
@@ -826,7 +676,7 @@ export function PositionCriteriaManager({
     {
       title: "",
       key: "actions",
-      width: 390,
+      width: 280,
       align: "right",
       fixed: "right",
       className: "pr-6!",
@@ -834,8 +684,6 @@ export function PositionCriteriaManager({
       render: (_, row) =>
         row.position ? (
           <div className="flex flex-wrap justify-end gap-2">
-            <PositionTitleEditor position={row.position} />
-            <PositionActiveToggle position={row.position} />
             <PositionScoringStandardsEditor
               educationLevels={educationLevels}
               position={row.position}
@@ -881,7 +729,9 @@ export function PositionCriteriaManager({
           <strong className="text-xl text-ink">
             {configuredCount} of {activePositions.length}
           </strong>
-          <span className="text-sm text-muted">active positions fully set up</span>
+          <span className="text-sm text-muted">
+            active positions fully set up
+          </span>
         </div>
         <div
           className="h-2 min-w-32 flex-1 overflow-hidden rounded-full bg-panel-muted"
@@ -912,13 +762,13 @@ export function PositionCriteriaManager({
           {filterOptions.map((option) => (
             <button
               aria-pressed={filter === option.key}
-              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-10 items-center justify-center rounded-full border px-6 text-sm font-semibold cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
               key={option.key}
               onClick={() => setFilter(option.key)}
               type="button"
             >
-              {option.label}{" "}
-              <span className="font-semibold">{option.count}</span>
+              <span className="text-sm!">{option.label} </span>
+              <span className="ml-2 font-semibold">{option.count}</span>
             </button>
           ))}
         </nav>

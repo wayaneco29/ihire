@@ -239,11 +239,7 @@ export function InvitationManager({
         {inviteUrl && (
           <div className="mt-4 rounded-sm border border-primary/15 bg-primary-light/50 p-3">
             <p className="break-all text-xs leading-5 text-ink">{inviteUrl}</p>
-            <Button
-              className="mt-3"
-              onClick={copyInvite}
-              variant="bordered"
-            >
+            <Button className="mt-3" onClick={copyInvite} variant="bordered">
               Copy link
             </Button>
           </div>
@@ -268,7 +264,7 @@ export function InvitationManager({
             {historyFilters.map((filter) => (
               <button
                 aria-pressed={historyFilter === filter.key}
-                className={`inline-flex min-h-11 items-center justify-center rounded-sm px-4 text-sm font-semibold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${historyFilter === filter.key ? "bg-panel text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                className={`inline-flex min-h-10 items-center justify-center rounded-sm px-4 text-sm font-semibold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${historyFilter === filter.key ? "bg-panel text-ink shadow-sm" : "text-muted hover:text-ink"}`}
                 key={filter.key}
                 onClick={() => setHistoryFilter(filter.key)}
                 type="button"

@@ -110,7 +110,7 @@ export function LoginForm() {
         <p className="mt-5 text-center text-sm text-muted">
           New applicant?{" "}
           <Link
-            className="inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:underline hover:text-primary-dark"
+            className="inline-flex min-h-10 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:underline hover:text-primary-dark"
             href="/register"
           >
             Create an account

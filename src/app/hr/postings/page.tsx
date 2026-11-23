@@ -51,7 +51,10 @@ export default async function HrPostingsPage() {
     );
 
   const ids = (postings ?? []).map((posting) => posting.id);
-  const applicationsResult = await getPostingApplicantStatuses(hr.supabase, ids);
+  const applicationsResult = await getPostingApplicantStatuses(
+    hr.supabase,
+    ids,
+  );
   if (applicationsResult.error) {
     return (
       <>
@@ -128,7 +131,7 @@ export default async function HrPostingsPage() {
         description="Create positions and track evaluator outcomes for each posting."
         actions={
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href="/hr/postings/new"
           >
             Create posting

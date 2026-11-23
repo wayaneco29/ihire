@@ -63,9 +63,12 @@ export default async function ApplicantApplicationsPage() {
       : "Position not recorded",
   }));
   const inReviewCount = list.filter((application) =>
-    ["SUBMITTED", "UNDER_EVALUATION", "ASSESSMENT_SCHEDULED", "ASSESSMENT_SCORED"].includes(
-      application.status,
-    ),
+    [
+      "SUBMITTED",
+      "UNDER_EVALUATION",
+      "ASSESSMENT_SCHEDULED",
+      "ASSESSMENT_SCORED",
+    ].includes(application.status),
   ).length;
   const hiredCount = list.filter(
     (application) => application.status === "HIRED",
@@ -82,7 +85,7 @@ export default async function ApplicantApplicationsPage() {
       <PageHeader
         actions={
           <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+            className="inline-flex min-h-10 items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
             href="/applicant/jobs"
           >
             Browse jobs

@@ -59,7 +59,7 @@ export function Sidebar() {
             <ul className="mt-2 space-y-1">
               {section.items.map(({ label, href, icon: Icon, available }) => {
                 const itemClasses =
-                  "flex min-h-11 w-full items-center font-[Bricolage_Grotesque] gap-3 rounded-xs border-l-2 px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+                  "flex min-h-10 w-full items-center font-[Bricolage_Grotesque] gap-3 rounded-xs border-l-2 px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
                 const isApplicantOverview = href === "/applicant";
                 const isActive = isApplicantOverview
                   ? pathname === href || pathname === "/applicant/dashboard"
@@ -101,7 +101,7 @@ export function Sidebar() {
         <div className="pt-2 pb-4">
           <Button
             block
-            className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
+            className="flex min-h-10 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
             disabled={loading}
             icon={<LockClosedIcon className="size-5" />}
             onClick={handleChangePassword}
@@ -116,7 +116,7 @@ export function Sidebar() {
           )}
           <Button
             block
-            className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-danger transition-colors hover:bg-danger/10"
+            className="flex min-h-10 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-danger transition-colors hover:bg-danger/10"
             disabled={loading}
             icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
             onClick={handleSignOut}

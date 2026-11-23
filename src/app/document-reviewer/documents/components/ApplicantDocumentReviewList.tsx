@@ -160,8 +160,7 @@ export function ApplicantDocumentReviewList({
   const [previewMessage, setPreviewMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const trainingDocuments = documents.filter(
-    (document) =>
-      document.documentType === TRAINING_CERTIFICATE_DOCUMENT_TYPE,
+    (document) => document.documentType === TRAINING_CERTIFICATE_DOCUMENT_TYPE,
   );
   const requiredDocuments = documents.filter(
     (document) =>
@@ -328,7 +327,7 @@ export function ApplicantDocumentReviewList({
             )}
             {previewUrl && (
               <a
-            className="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                 download
                 href={previewUrl}
               >

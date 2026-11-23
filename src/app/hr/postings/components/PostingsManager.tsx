@@ -119,25 +119,43 @@ export function PostingsManager({
 
       {filtered.length ? (
         <div className="mt-3 overflow-x-auto rounded-sm shadow bg-panel">
-          <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+          <table className="w-full min-w-245 border-collapse text-left text-sm">
             <thead className="bg-panel-muted/60 text-xs text-muted">
               <tr>
-                <th className="px-4 py-3 font-medium" scope="col">
+                <th
+                  className="px-4 py-3 font-medium bg-primary-light"
+                  scope="col"
+                >
                   Posting
                 </th>
-                <th className="px-3 py-3 font-medium" scope="col">
+                <th
+                  className="px-3 py-3 font-medium bg-primary-light"
+                  scope="col"
+                >
                   Applicants
                 </th>
-                <th className="px-3 py-3 font-medium" scope="col">
+                <th
+                  className="px-3 py-3 font-medium bg-primary-light"
+                  scope="col"
+                >
                   Qualified
                 </th>
-                <th className="px-3 py-3 font-medium" scope="col">
+                <th
+                  className="px-3 py-3 font-medium bg-primary-light"
+                  scope="col"
+                >
                   Hired
                 </th>
-                <th className="px-3 py-3 font-medium" scope="col">
+                <th
+                  className="px-3 py-3 font-medium bg-primary-light"
+                  scope="col"
+                >
                   Deadline
                 </th>
-                <th className="px-4 py-3 font-medium" scope="col">
+                <th
+                  className="px-4 py-3 font-medium bg-primary-light"
+                  scope="col"
+                >
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -231,13 +249,13 @@ export function PostingsManager({
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-4 whitespace-nowrap">
                         <Link
-                          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                           href={`/hr/postings/${posting.id}/edit`}
                         >
                           Edit posting
                         </Link>
                         <Link
-                          className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          className="inline-flex min-h-10 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                           href={`/hr/postings/${posting.id}`}
                         >
                           View applicants
@@ -258,4 +276,3 @@ export function PostingsManager({
     </section>
   );
 }
-

@@ -13,25 +13,24 @@ export default async function HrPositionCriteriaPage() {
     criteriaResult,
     applicationTypesResult,
     educationLevelsResult,
-  ] =
-    await Promise.all([
-      hr.supabase
-        .from("positions")
-        .select(
-          "id, title, application_type_id, is_active, base_qualification_level, base_training_increment_level, base_experience_increment_level",
-        )
-        .order("title"),
-      hr.supabase
-        .from("position_criteria")
-        .select("id, position_id, criterion_key, title, display_order")
-        .order("position_id")
-        .order("display_order"),
-      hr.supabase.from("application_type").select("id, name"),
-      hr.supabase
-        .from("education_levels")
-        .select("qualification_level, description")
-        .order("qualification_level"),
-    ]);
+  ] = await Promise.all([
+    hr.supabase
+      .from("positions")
+      .select(
+        "id, title, application_type_id, is_active, base_qualification_level, base_training_increment_level, base_experience_increment_level",
+      )
+      .order("title"),
+    hr.supabase
+      .from("position_criteria")
+      .select("id, position_id, criterion_key, title, display_order")
+      .order("position_id")
+      .order("display_order"),
+    hr.supabase.from("application_type").select("id, name"),
+    hr.supabase
+      .from("education_levels")
+      .select("qualification_level, description")
+      .order("qualification_level"),
+  ]);
 
   if (
     positionsResult.error ||
@@ -76,28 +75,31 @@ export default async function HrPositionCriteriaPage() {
     "master teacher iv",
     "master teacher v",
   ];
-  const positions = (positionsResult.data ?? []).map((position) => ({
-    ...position,
-    applicationType: applicationTypeNames.get(position.application_type_id) ?? "",
-  })).sort((first, second) => {
-    const firstIsTeaching = first.applicationType === "teaching";
-    const secondIsTeaching = second.applicationType === "teaching";
-    if (firstIsTeaching !== secondIsTeaching) return firstIsTeaching ? -1 : 1;
-    if (!firstIsTeaching) return first.title.localeCompare(second.title);
+  const positions = (positionsResult.data ?? [])
+    .map((position) => ({
+      ...position,
+      applicationType:
+        applicationTypeNames.get(position.application_type_id) ?? "",
+    }))
+    .sort((first, second) => {
+      const firstIsTeaching = first.applicationType === "teaching";
+      const secondIsTeaching = second.applicationType === "teaching";
+      if (firstIsTeaching !== secondIsTeaching) return firstIsTeaching ? -1 : 1;
+      if (!firstIsTeaching) return first.title.localeCompare(second.title);
 
-    const firstTitle = first.title.trim().toLocaleLowerCase();
-    const secondTitle = second.title.trim().toLocaleLowerCase();
-    const firstRank = teachingOrder.indexOf(firstTitle);
-    const secondRank = teachingOrder.indexOf(secondTitle);
+      const firstTitle = first.title.trim().toLocaleLowerCase();
+      const secondTitle = second.title.trim().toLocaleLowerCase();
+      const firstRank = teachingOrder.indexOf(firstTitle);
+      const secondRank = teachingOrder.indexOf(secondTitle);
 
-    if (firstRank >= 0 || secondRank >= 0) {
-      if (firstRank < 0) return 1;
-      if (secondRank < 0) return -1;
-      return firstRank - secondRank;
-    }
+      if (firstRank >= 0 || secondRank >= 0) {
+        if (firstRank < 0) return 1;
+        if (secondRank < 0) return -1;
+        return firstRank - secondRank;
+      }
 
-    return first.title.localeCompare(second.title);
-  });
+      return first.title.localeCompare(second.title);
+    });
   const { data: currentProfiles, error: profilesError } = positions.length
     ? await hr.supabase
         .from("position_weight_profiles")

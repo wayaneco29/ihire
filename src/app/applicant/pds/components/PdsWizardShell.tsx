@@ -220,7 +220,7 @@ export function PdsWizardShell({
                       >
                         <Button
                           aria-label={`${label}${active ? ", current section" : completed ? ", completed" : isUpdate ? ", available" : step === nextAvailableStep ? ", ready to continue" : ", not yet available"}`}
-                          className={`relative flex min-h-11 w-full items-center gap-2.5 rounded-md px-2 text-left text-sm font-semibold leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                          className={`relative flex min-h-10 w-full items-center gap-2.5 rounded-md px-2 text-left text-sm font-semibold leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                             active
                               ? "text-primary-dark"
                               : completed || canOpen

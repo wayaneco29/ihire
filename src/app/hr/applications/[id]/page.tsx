@@ -6,11 +6,7 @@ import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { getHrApplicationStatusDescription } from "@/utils/hr-application-status";
 
-const POSTING_REVIEW_STATUSES = new Set([
-  "QUALIFIED",
-  "HIRED",
-  "NOT_SELECTED",
-]);
+const POSTING_REVIEW_STATUSES = new Set(["QUALIFIED", "HIRED", "NOT_SELECTED"]);
 
 export default async function HrApplicationPage({
   params,
@@ -103,14 +99,14 @@ export default async function HrApplicationPage({
 
         <div className="mt-6 flex flex-wrap gap-3 border-t border-line-subtle pt-5">
           <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href={reviewHref}
           >
             {canOpenReview ? "Open posting review" : "View posting"}
           </Link>
           {application.application_status === "HIRED" && (
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-10 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href={`/hr/applications/${application.application_id}/pds`}
             >
               Open printable PDS

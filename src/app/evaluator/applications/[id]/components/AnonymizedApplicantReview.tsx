@@ -3,9 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
-import {
-  groupSupportingDocuments,
-} from "@/constants/documents";
+import { groupSupportingDocuments } from "@/constants/documents";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
@@ -284,10 +282,10 @@ export function AnonymizedApplicantReview({
                     )}
                     {item.level !== "GRADUATE_STUDIES" &&
                       item.highest_level_units_earned && (
-                      <DetailValue
-                        label="Units earned"
-                        value={item.highest_level_units_earned}
-                      />
+                        <DetailValue
+                          label="Units earned"
+                          value={item.highest_level_units_earned}
+                        />
                       )}
                     {item.honors_received && (
                       <DetailValue
@@ -533,8 +531,8 @@ export function AnonymizedApplicantReview({
                         Preview not available for this file type
                       </p>
                       <p className="mt-2 text-sm text-muted">
-                        Download the file to review it. Document verification
-                        is handled by the Document Reviewer.
+                        Download the file to review it. Document verification is
+                        handled by the Document Reviewer.
                       </p>
                     </div>
                   )}
@@ -556,7 +554,7 @@ export function AnonymizedApplicantReview({
               )}
               {previewUrl && (
                 <a
-                  className="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                  className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                   download
                   href={previewUrl}
                 >
@@ -579,7 +577,7 @@ export function AnonymizedApplicantReview({
                   </p>
                 )}
               </div>
-              <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">
+              <span className="inline-flex min-h-10 items-center gap-2 text-sm text-muted">
                 Document status{" "}
                 <WorkflowStatusTag status={selectedDocument.document_status} />
               </span>

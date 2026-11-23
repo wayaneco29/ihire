@@ -110,13 +110,10 @@ export function ApplicationProgress({
       className="mt-4"
       role="group"
     >
-      <ol
-        aria-label="Application stages"
-        className="relative grid grid-cols-5"
-      >
+      <ol aria-label="Application stages" className="relative grid grid-cols-5">
         <li
           aria-hidden="true"
-          className="absolute left-[10%] right-[10%] top-[5px] h-px bg-line"
+          className="absolute left-[10%] right-[10%] top-1.25 h-px bg-line"
         >
           <span
             className={`block h-full ${isUnsuccessful ? "bg-danger" : "bg-primary"}`}
@@ -147,7 +144,7 @@ export function ApplicationProgress({
             >
               <span
                 aria-hidden="true"
-                className={`relative z-10 size-[11px] rounded-full border-2 ${markerClass}`}
+                className={`relative z-10 size-2.75 rounded-full border-2 ${markerClass}`}
               />
               <span
                 className={`mt-2 text-[10px] leading-4 ${

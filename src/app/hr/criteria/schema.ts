@@ -17,10 +17,6 @@ export const positionSchema = yup.object({
   title: positionTitleSchema,
 });
 
-export const positionTitleFormSchema = yup.object({
-  title: positionTitleSchema,
-});
-
 export const positionActiveSchema = yup.object({
   isActive: yup.boolean().required(),
 });
@@ -30,9 +26,7 @@ export const positionWeightsSchema = yup
   .of(
     yup
       .number()
-      .transform((value, original) =>
-        original === "" ? Number.NaN : value,
-      )
+      .transform((value, original) => (original === "" ? Number.NaN : value))
       .min(0, "Weights cannot be negative.")
       .max(100, "A criterion cannot exceed 100 points.")
       .test(
@@ -70,9 +64,7 @@ export const positionScoringStandardsSchema = yup.object({
       "Choose a valid education standard.",
       (value) =>
         value === "" ||
-        (/^\d+$/.test(value) &&
-          Number(value) >= 1 &&
-          Number(value) <= 31),
+        (/^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= 31),
     ),
   baseTrainingIncrementLevel: yup
     .string()
@@ -82,9 +74,7 @@ export const positionScoringStandardsSchema = yup.object({
       "Choose a valid minimum training increment level.",
       (value) =>
         value === "" ||
-        (/^\d+$/.test(value) &&
-          Number(value) >= 1 &&
-          Number(value) <= 31),
+        (/^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= 31),
     ),
   baseExperienceIncrementLevel: yup
     .string()
@@ -94,16 +84,11 @@ export const positionScoringStandardsSchema = yup.object({
       "Choose a valid minimum Experience increment level.",
       (value) =>
         value === "" ||
-        (/^\d+$/.test(value) &&
-          Number(value) >= 1 &&
-          Number(value) <= 31),
+        (/^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= 31),
     ),
 });
 
 export type PositionValues = yup.InferType<typeof positionSchema>;
-export type PositionTitleFormValues = yup.InferType<
-  typeof positionTitleFormSchema
->;
 export type PositionActiveValues = yup.InferType<typeof positionActiveSchema>;
 export type PositionWeightValues = yup.InferType<
   typeof positionWeightFormSchema

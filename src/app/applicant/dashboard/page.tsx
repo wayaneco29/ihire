@@ -153,13 +153,13 @@ export default async function ApplicantDashboardPage() {
           ? `Your application for ${latestApplication.jobTitle} was not qualified.`
           : latestApplication.status === "NOT_SELECTED"
             ? `You were not selected for ${latestApplication.jobTitle} because all hiring slots were filled.`
-          : latestApplication.status === "REJECTED"
-            ? `Your application for ${latestApplication.jobTitle} was not selected.`
-            : latestApplication.status === "ASSESSMENT_SCHEDULED"
-              ? `Your assessment for ${latestApplication.jobTitle} is scheduled.`
-              : latestApplication.status === "ASSESSMENT_SCORED"
-                ? `Your assessment for ${latestApplication.jobTitle} has been scored. The evaluator's decision is pending.`
-              : `Your application for ${latestApplication.jobTitle} is in progress.`;
+            : latestApplication.status === "REJECTED"
+              ? `Your application for ${latestApplication.jobTitle} was not selected.`
+              : latestApplication.status === "ASSESSMENT_SCHEDULED"
+                ? `Your assessment for ${latestApplication.jobTitle} is scheduled.`
+                : latestApplication.status === "ASSESSMENT_SCORED"
+                  ? `Your assessment for ${latestApplication.jobTitle} has been scored. The evaluator's decision is pending.`
+                  : `Your application for ${latestApplication.jobTitle} is in progress.`;
   const secondaryApplication = secondaryApplications[0];
   const secondaryStatusLabel = secondaryApplication
     ? ({
@@ -207,7 +207,7 @@ export default async function ApplicantDashboardPage() {
             </p>
           </div>
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-panel px-4 text-sm font-semibold text-primary transition hover:bg-panel-muted"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-panel px-4 text-sm font-semibold text-primary transition hover:bg-panel-muted"
             href={
               latestApplication ? "/applicant/applications" : "/applicant/jobs"
             }
@@ -235,7 +235,7 @@ export default async function ApplicantDashboardPage() {
           </p>
         </div>
         <Link
-          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+          className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
           href={pdsResult.error ? "/applicant/dashboard" : "/applicant/pds"}
         >
           {pdsResult.error

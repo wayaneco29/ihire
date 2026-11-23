@@ -14,7 +14,7 @@ export default function NotFound() {
           The link may be outdated or the page may have moved.
         </p>
         <Link
-          className="mt-5 inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+          className="mt-5 inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
           href="/"
         >
           Return to portal home

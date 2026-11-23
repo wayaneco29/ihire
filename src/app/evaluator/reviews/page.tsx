@@ -7,7 +7,11 @@ import {
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEvaluatorContext } from "@/lib/auth/server";
-import { REVIEW_QUEUE_PAGE_SIZE, reviewQueueHref, reviewQueueStatus } from "./queue";
+import {
+  REVIEW_QUEUE_PAGE_SIZE,
+  reviewQueueHref,
+  reviewQueueStatus,
+} from "./queue";
 import { ApplicantNumberLookup } from "./components/ApplicantNumberLookup";
 import { ReviewQueueList } from "./components/ReviewQueueList";
 
@@ -71,9 +75,11 @@ export default async function EvaluatorReviewsPage({
         .eq("job_id", selectedJobId)
     : null;
   const queuePageResult = queueQuery
-    ? await (selectedStatus
-        ? queueQuery.eq("application_status", selectedStatus)
-        : queueQuery)
+    ? await (
+        selectedStatus
+          ? queueQuery.eq("application_status", selectedStatus)
+          : queueQuery
+      )
         .order("applied_at", { ascending: false })
         .range(
           (page - 1) * REVIEW_QUEUE_PAGE_SIZE,
@@ -140,7 +146,7 @@ export default async function EvaluatorReviewsPage({
         actions={
           selectedJob ? (
             <Link
-              className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink transition hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-10 items-center gap-2 rounded-sm border border-line-strong px-4 text-sm font-semibold text-ink transition hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href="/evaluator/reviews"
             >
               <ArrowLeftIcon aria-hidden="true" className="size-4" /> All
@@ -233,7 +239,7 @@ export default async function EvaluatorReviewsPage({
                       </p>
                     </div>
                     <Link
-                      className="inline-flex min-h-11 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                      className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                       href={`/evaluator/applications/${application.application_id}?jobId=${application.job_id}`}
                     >
                       Enter points

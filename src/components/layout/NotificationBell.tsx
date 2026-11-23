@@ -105,7 +105,7 @@ export function NotificationBell() {
             {notifications.map((notification) => (
               <li key={notification.id}>
                 <Button
-                  className={`min-h-11 w-full px-4 py-3 text-left transition hover:bg-panel-muted ${notification.is_read ? "" : "bg-primary-light/40"}`}
+                  className={`min-h-10 w-full px-4 py-3 text-left transition hover:bg-panel-muted ${notification.is_read ? "" : "bg-primary-light/40"}`}
                   onClick={() =>
                     void openNotification(notification.id, notification.link)
                   }

@@ -45,7 +45,7 @@ export function InviteAccountReady({
       </div>
 
       <Link
-        className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="mt-6 inline-flex min-h-10 w-full items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         href="/"
         replace
       >

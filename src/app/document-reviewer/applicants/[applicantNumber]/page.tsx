@@ -51,7 +51,7 @@ export default async function ApplicantDocumentReviewPage({
           />
         </div>
         <Link
-          className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+          className="mt-5 inline-flex min-h-10 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
           href="/document-reviewer/documents"
         >
           Back to review queue
@@ -99,7 +99,10 @@ export default async function ApplicantDocumentReviewPage({
     (detailsResult.data ?? []).map((details) => [details.id, details]),
   );
   const requiredByDocumentType = new Map(
-    (documentTypesResult.data ?? []).map((type) => [type.name, type.is_required]),
+    (documentTypesResult.data ?? []).map((type) => [
+      type.name,
+      type.is_required,
+    ]),
   );
   const latestReviewByDocument = new Map<
     string,
@@ -132,8 +135,7 @@ export default async function ApplicantDocumentReviewPage({
         certificateDate: details.certificate_date,
         trainingHours: metrics.training_hours,
         totalUnits: metrics.total_units,
-        currentHighestEducationLevel:
-          metrics.current_highest_education_level,
+        currentHighestEducationLevel: metrics.current_highest_education_level,
         ocrTrainingHours: metrics.ocr_training_hours,
         ocrTotalUnits: metrics.ocr_total_units,
         ocrConfidence: metrics.ocr_confidence,
@@ -169,7 +171,7 @@ export default async function ApplicantDocumentReviewPage({
         documents={reviewDocuments}
       />
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+        className="mt-5 inline-flex min-h-10 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
         href="/document-reviewer/documents"
       >
         Back to review queue

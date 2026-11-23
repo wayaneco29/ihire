@@ -1,7 +1,12 @@
 import type { ComponentPropsWithRef, ReactNode } from "react";
 import { cn } from "@/utils/cn";
 
-export type ButtonVariant = "filled" | "bordered" | "ghost" | "danger" | "unstyled";
+export type ButtonVariant =
+  | "filled"
+  | "bordered"
+  | "ghost"
+  | "danger"
+  | "unstyled";
 
 export type ButtonProps = ComponentPropsWithRef<"button"> & {
   block?: boolean;
@@ -17,8 +22,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     "border-primary bg-transparent text-primary enabled:hover:bg-primary-light",
   ghost:
     "border-transparent bg-transparent text-primary enabled:hover:bg-primary-light",
-  danger:
-    "border-danger bg-transparent text-danger enabled:hover:bg-danger/10",
+  danger: "border-danger bg-transparent text-danger enabled:hover:bg-danger/10",
   unstyled: "",
 };
 
@@ -42,7 +46,7 @@ export function Button({
         isUnstyled
           ? "cursor-pointer disabled:cursor-not-allowed"
           : "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[8px] border-[1.5px] font-semibold leading-none transition-[background-color,border-color,color] duration-150 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#1766c9] disabled:cursor-not-allowed disabled:opacity-[.45]",
-        !isUnstyled && "h-11 px-4 text-sm",
+        !isUnstyled && "h-10 px-4 text-sm",
         VARIANT_CLASSES[variant],
         block && "w-full",
         className,

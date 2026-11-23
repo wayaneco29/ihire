@@ -35,6 +35,7 @@ export function StartPdsUpdateButton({
         loading={isPending}
         onClick={startUpdate}
         variant="filled"
+        className="text-sm! px-6! min-h-10"
       >
         Update PDS
       </Button>

@@ -117,9 +117,10 @@ async function HrDashboardContent() {
           deadlineTimestamp !== null &&
           Number.isFinite(deadlineTimestamp) &&
           deadlineTimestamp <= now,
-        daysRemaining: posting.deadline !== null && hasValidDeadline
-          ? daysUntilDeadline(posting.deadline, now)
-          : null,
+        daysRemaining:
+          posting.deadline !== null && hasValidDeadline
+            ? daysUntilDeadline(posting.deadline, now)
+            : null,
         applicants: stats.applicants,
       };
     });
@@ -149,7 +150,7 @@ export default function HrDashboardPage() {
         description="See applicant progress and manage your job postings."
         actions={
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href="/hr/postings/new"
           >
             Create posting

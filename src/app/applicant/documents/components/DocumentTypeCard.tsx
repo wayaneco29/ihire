@@ -159,7 +159,9 @@ export function DocumentTypeCard({
       (document) => document.supersededByVersion === null,
     );
     const forReviewCount = currentDocuments.filter((document) =>
-      ["PENDING", "FOR_REVIEW", "REJECTED", "FOR_RESUBMISSION"].includes(document.status),
+      ["PENDING", "FOR_REVIEW", "REJECTED", "FOR_RESUBMISSION"].includes(
+        document.status,
+      ),
     ).length;
     const metricTotal = currentDocuments.reduce(
       (total, document) => total + (document.training_hours ?? 0),
@@ -176,7 +178,7 @@ export function DocumentTypeCard({
       <section aria-label={name} id={id}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle pb-3">
           <div>
-            <h2 className="text-lg font-semibold text-ink">{name}</h2>
+            <h2 className="text-lg font-semibold text-primary">{name}</h2>
             <p className="mt-1 text-sm text-muted">
               Optional. Hours count toward your Training score.
             </p>
@@ -185,8 +187,9 @@ export function DocumentTypeCard({
             onClick={() => setUploadOpen(!uploadOpen)}
             type="button"
             variant="filled"
+            className="text-sm! px-6 h-10!"
           >
-            Add certificate
+            Add Certificate
           </Button>
         </div>
 
@@ -216,7 +219,7 @@ export function DocumentTypeCard({
             Search {recordLabel.toLowerCase()}s
           </label>
           <Input
-            className="min-h-11 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
+            className="min-h-10 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
             id={`${id}-search`}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -234,17 +237,20 @@ export function DocumentTypeCard({
             {[
               {
                 key: "ALL",
-                label: <span>All</span>,
+                label: <span className="text-sm! px-2">All</span>,
               },
               {
                 key: "FOR_REVIEW",
-                label: <span>For review</span>,
+                label: <span className="text-sm! px-2">For review</span>,
               },
-              { key: "VERIFIED", label: <span>Verified</span> },
+              {
+                key: "VERIFIED",
+                label: <span className="text-sm! px-2">Verified</span>,
+              },
             ].map((filter) => (
               <Button
                 aria-pressed={statusFilter === filter.key}
-                className={`inline-flex min-h-11 items-center justify-center px-4 rounded-full cursor-pointer border text-sm font-semibold transition ${
+                className={`inline-flex min-h-9! items-center justify-center px-4 rounded-full cursor-pointer border text-xs! font-semibold transition ${
                   statusFilter === filter.key
                     ? "border-primary bg-primary text-on-primary"
                     : "border-line text-muted hover:border-primary/40 hover:text-primary"
@@ -266,7 +272,7 @@ export function DocumentTypeCard({
         <ul className="divide-y divide-line-subtle">
           {visibleDocuments.map((document) => (
             <li className="py-3" key={document.id}>
-              <div className="grid grid-cols-[minmax(0,1fr)_4.25rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_auto]">
+              <div className="grid grid-cols-[minmax(0,1fr)_4.25rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_4.5rem__auto]">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">
                     {document.certificate_title ||
@@ -302,25 +308,23 @@ export function DocumentTypeCard({
                   hrs
                 </span>
                 <div className="col-span-2 col-start-2 flex items-center justify-end gap-2 sm:contents">
-                  <WorkflowStatusTag status={document.status} />
                   <div className="flex items-center gap-2">
+                    <WorkflowStatusTag status={document.status} />
                     <Button
                       disabled={pending}
                       onClick={() => openDocument(document)}
                       type="button"
-                      variant="ghost"
+                      variant="unstyled"
+                      className="text-sm! text-primary px-4 hover:underline"
                     >
                       {pendingId === document.id ? "Preparing…" : "View"}
                     </Button>
-                    {document.status === "VERIFIED" ? (
-                      <span className="px-2 text-xs font-medium text-muted">
-                        Locked
-                      </span>
-                    ) : (
+                    {document?.status !== "VERIFIED" && (
                       <Button
                         onClick={() => setReplacementTarget(document)}
                         type="button"
                         variant="filled"
+                        className="text-sm! h-9!"
                       >
                         Replace
                       </Button>
@@ -359,7 +363,7 @@ export function DocumentTypeCard({
         )}
         {signedUrl && (
           <a
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
+            className="inline-flex min-h-10 items-center text-sm font-semibold text-primary hover:underline"
             href={signedUrl}
             rel="noreferrer"
             target="_blank"
@@ -425,7 +429,7 @@ export function DocumentTypeCard({
         )}
         {signedUrl && (
           <a
-            className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
+            className="mt-1 inline-flex min-h-10 items-center text-sm font-semibold text-primary hover:underline"
             href={signedUrl}
             rel="noreferrer"
             target="_blank"
@@ -445,20 +449,18 @@ export function DocumentTypeCard({
             disabled={pending}
             onClick={() => openDocument(latest)}
             type="button"
-            variant="ghost"
+            variant="unstyled"
+            className="text-sm! text-primary px-4 hover:underline"
           >
             {pendingId === latest.id ? "Preparing…" : "View"}
           </Button>
         )}
-        {latest?.status === "VERIFIED" ? (
-          <span className="px-2 text-xs font-medium text-muted">
-            Verified · locked
-          </span>
-        ) : (
+        {latest?.status !== "VERIFIED" && (
           <Button
             onClick={() => setUploadOpen(!uploadOpen)}
             type="button"
             variant="filled"
+            className="text-sm! h-9!"
           >
             {!latest ? "Upload" : "Replace"}
           </Button>

@@ -20,8 +20,7 @@ import {
 } from "../schema";
 
 type Assignment = PublicViews["v_admin_application_assignments"]["Row"];
-type EvaluatorCount =
-  PublicViews["v_admin_evaluator_assignment_counts"]["Row"];
+type EvaluatorCount = PublicViews["v_admin_evaluator_assignment_counts"]["Row"];
 type AssignmentHistory =
   PublicViews["v_admin_application_assignment_history"]["Row"];
 type EvaluatorOption = { id: string; email: string };
@@ -45,16 +44,13 @@ function AssignmentEditor({
     resolver: yupResolver(assignmentSchema),
     defaultValues: {
       applicationId: application.application_id,
-      evaluatorId:
-        application.assigned_evaluator_id ?? UNASSIGNED_EVALUATOR,
+      evaluatorId: application.assigned_evaluator_id ?? UNASSIGNED_EVALUATOR,
     },
   });
   const currentEvaluatorId = application.assigned_evaluator_id;
   const currentEvaluatorUnavailable =
     currentEvaluatorId !== null &&
-    !evaluators.some(
-      (evaluator) => evaluator.id === currentEvaluatorId,
-    );
+    !evaluators.some((evaluator) => evaluator.id === currentEvaluatorId);
 
   const onSubmit = handleSubmit(async (values) => {
     setMessage(null);
@@ -185,14 +181,14 @@ export function AssignmentManager({
           <div className="flex flex-wrap gap-2">
             <Link
               aria-current={filter === "all" ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "all" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
+              className={`inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "all" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
               href={filterHref("all")}
             >
               All open
             </Link>
             <Link
               aria-current={filter === "unassigned" ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "unassigned" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
+              className={`inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "unassigned" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
               href={filterHref("unassigned")}
             >
               Unassigned
@@ -225,8 +221,8 @@ export function AssignmentManager({
                 : "Open applications"}
             </h2>
             <p className="mt-1 text-sm text-muted">
-              {assignments.length} shown · {filter === "unassigned" ? unassignedCount : openCount}{" "}
-              total
+              {assignments.length} shown ·{" "}
+              {filter === "unassigned" ? unassignedCount : openCount} total
             </p>
           </div>
           <p className="text-sm text-muted">
@@ -256,7 +252,9 @@ export function AssignmentManager({
                     <p className="font-semibold text-ink">
                       {application.applicant_number}
                     </p>
-                    <WorkflowStatusTag status={application.application_status} />
+                    <WorkflowStatusTag
+                      status={application.application_status}
+                    />
                     {application.assigned_evaluator_id ? (
                       <Tag color="green">Assigned</Tag>
                     ) : (

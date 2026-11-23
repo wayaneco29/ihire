@@ -108,7 +108,9 @@ export function PostingApplicants({
     !slotsFull &&
     !assessmentScoresUnavailable;
   const selectedApplicant =
-    applicants.find((applicant) => applicant.application_id === selectedApplicantId) ?? null;
+    applicants.find(
+      (applicant) => applicant.application_id === selectedApplicantId,
+    ) ?? null;
   const positions = useMemo(
     () =>
       [...new Set(applicants.map(positionLabel).filter(Boolean))].sort((a, b) =>
@@ -149,8 +151,10 @@ export function PostingApplicants({
             applicant.education_levels?.includes(educationFilter)),
       )
       .sort((a, b) => {
-        if (a.assessment_points === null && b.assessment_points !== null) return 1;
-        if (b.assessment_points === null && a.assessment_points !== null) return -1;
+        if (a.assessment_points === null && b.assessment_points !== null)
+          return 1;
+        if (b.assessment_points === null && a.assessment_points !== null)
+          return -1;
         if (
           a.assessment_points !== null &&
           b.assessment_points !== null &&
@@ -200,7 +204,9 @@ export function PostingApplicants({
       fixed: "left",
       className: "pl-6!",
       render: (_, applicant) =>
-        applicant.assessment_rank === null ? "—" : `#${applicant.assessment_rank}`,
+        applicant.assessment_rank === null
+          ? "—"
+          : `#${applicant.assessment_rank}`,
     },
     {
       title: "Applicant ID",
@@ -374,7 +380,7 @@ export function PostingApplicants({
           {FILTERS.map((option) => (
             <Button
               aria-pressed={filter === option.id}
-              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-10 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
               key={option.id}
               onClick={() => updateFilter(setFilter, option.id)}
               type="button"
@@ -489,7 +495,11 @@ export function PostingApplicants({
         footer={null}
         onCancel={() => setSelectedApplicantId(null)}
         open={Boolean(selectedApplicant)}
-        title={selectedApplicant ? `Review applicant ${selectedApplicant.applicant_number}` : "Review applicant"}
+        title={
+          selectedApplicant
+            ? `Review applicant ${selectedApplicant.applicant_number}`
+            : "Review applicant"
+        }
         width={860}
       >
         {selectedApplicant && (
@@ -497,9 +507,13 @@ export function PostingApplicants({
             applicant={selectedApplicant}
             evaluated={selectedApplicant.application_status === "QUALIFIED"}
             onDecide={decide}
-            pending={isWorking && workingId === selectedApplicant.application_id}
+            pending={
+              isWorking && workingId === selectedApplicant.application_id
+            }
             canHire={canHire}
-            terminal={["HIRED", "NOT_SELECTED"].includes(selectedApplicant.application_status)}
+            terminal={["HIRED", "NOT_SELECTED"].includes(
+              selectedApplicant.application_status,
+            )}
           />
         )}
       </Modal>
@@ -526,13 +540,26 @@ function ApplicantDetails({
     <div className="max-h-[70dvh] space-y-6 overflow-y-auto pr-1">
       <dl className="grid gap-x-5 gap-y-4 rounded-sm bg-panel-muted/50 p-4 sm:grid-cols-2">
         <Detail label="Applicant ID" value={applicant.applicant_number} />
-        <Detail label="Rank" value={applicant.assessment_rank ? `#${applicant.assessment_rank}` : "Not ranked"} />
+        <Detail
+          label="Rank"
+          value={
+            applicant.assessment_rank
+              ? `#${applicant.assessment_rank}`
+              : "Not ranked"
+          }
+        />
         <Detail label="Position" value={positionLabel(applicant)} />
-        <Detail label="Application status" value={formatCodeLabel(applicant.application_status)} />
+        <Detail
+          label="Application status"
+          value={formatCodeLabel(applicant.application_status)}
+        />
         <Detail label="Applied" value={formatDate(applicant.applied_at)} />
         <Detail
           label="Education"
-          value={applicant.education_levels?.map(educationLevelLabel).join(", ") || "Not provided"}
+          value={
+            applicant.education_levels?.map(educationLevelLabel).join(", ") ||
+            "Not provided"
+          }
         />
         <Detail
           label="Experience"
@@ -542,16 +569,29 @@ function ApplicantDetails({
           label="Training"
           value={`${trainingLabel(applicant.training_hours).replace(" hrs", " hours")}`}
         />
-        <Detail label="Skills" value={applicant.skills?.join(", ") || "Not provided"} />
+        <Detail
+          label="Skills"
+          value={applicant.skills?.join(", ") || "Not provided"}
+        />
       </dl>
       <section aria-labelledby="criterion-scores-heading">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-ink" id="criterion-scores-heading">Criterion scores</h3>
-            <p className="mt-1 text-sm text-muted">Points awarded in each configured category.</p>
+            <h3
+              className="font-semibold text-ink"
+              id="criterion-scores-heading"
+            >
+              Criterion scores
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              Points awarded in each configured category.
+            </p>
           </div>
           <p className="text-sm font-semibold text-ink">
-            Total: {applicant.assessment_points?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? "Unavailable"}
+            Total:{" "}
+            {applicant.assessment_points?.toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            }) ?? "Unavailable"}
           </p>
         </div>
         {applicant.criterion_scores.length ? (
@@ -559,21 +599,37 @@ function ApplicantDetails({
             <table className="w-full text-left text-sm">
               <thead className="bg-panel-muted text-xs uppercase tracking-wide text-muted">
                 <tr>
-                  <th className="px-4 py-3 font-semibold" scope="col">Category</th>
-                  <th className="px-4 py-3 font-semibold" scope="col">Source</th>
-                  <th className="px-4 py-3 text-right font-semibold" scope="col">Points</th>
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Category
+                  </th>
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Source
+                  </th>
+                  <th
+                    className="px-4 py-3 text-right font-semibold"
+                    scope="col"
+                  >
+                    Points
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line-subtle">
                 {applicant.criterion_scores.map((score) => (
                   <tr key={score.key}>
-                    <td className="px-4 py-3 font-medium text-ink">{score.title}</td>
-                    <td className="px-4 py-3 text-muted">{criterionSource(score.key)}</td>
+                    <td className="px-4 py-3 font-medium text-ink">
+                      {score.title}
+                    </td>
+                    <td className="px-4 py-3 text-muted">
+                      {criterionSource(score.key)}
+                    </td>
                     <td className="px-4 py-3 text-right font-semibold tabular-nums text-ink">
                       {score.points === null
                         ? "Not scored"
-                        : score.points.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                      {score.maximumPoints !== null && ` / ${score.maximumPoints.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                        : score.points.toLocaleString(undefined, {
+                            maximumFractionDigits: 2,
+                          })}
+                      {score.maximumPoints !== null &&
+                        ` / ${score.maximumPoints.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
                     </td>
                   </tr>
                 ))}
@@ -589,7 +645,7 @@ function ApplicantDetails({
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line-subtle pt-4">
         {applicant.application_status === "HIRED" && (
           <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-10 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href={`/hr/applications/${applicant.application_id}/pds`}
           >
             Printable PDS
@@ -615,7 +671,10 @@ function ApplicantDetails({
   );
 }
 
-function ReadinessCount({ label, value }: Readonly<{ label: string; value: number }>) {
+function ReadinessCount({
+  label,
+  value,
+}: Readonly<{ label: string; value: number }>) {
   return (
     <div className="rounded-sm bg-panel-muted/60 px-3 py-2">
       <dt className="text-xs text-muted">{label}</dt>

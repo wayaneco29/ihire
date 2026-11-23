@@ -34,10 +34,7 @@ export function ApplicationList({
       ...application,
       scheduledTime: Date.parse(application.scheduled_assessment_at),
     }))
-    .filter(
-      (application) =>
-        Number.isFinite(application.scheduledTime),
-    )
+    .filter((application) => Number.isFinite(application.scheduledTime))
     .sort((left, right) => left.scheduledTime - right.scheduledTime)[0];
 
   if (!applications.length) {
@@ -46,7 +43,7 @@ export function ApplicationList({
         <EmptyState
           action={
             <Link
-              className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+              className="inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
               href="/applicant/jobs"
             >
               Browse open jobs
@@ -69,40 +66,40 @@ export function ApplicationList({
           <div className="min-w-0">
             <h2 className="font-semibold text-warning">Assessment scheduled</h2>
             <p className="mt-1 text-sm text-ink">
-              {scheduledAssessment.jobTitle} · {scheduledAssessment.positionLabel}
+              {scheduledAssessment.jobTitle} ·{" "}
+              {scheduledAssessment.positionLabel}
             </p>
             <time
               className="mt-1 block text-sm text-ink"
               dateTime={scheduledAssessment.scheduled_assessment_at}
             >
-              {formatPhilippineDateTime(scheduledAssessment.scheduled_assessment_at)}
+              {formatPhilippineDateTime(
+                scheduledAssessment.scheduled_assessment_at,
+              )}
             </time>
           </div>
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center rounded-sm text-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
+            className="inline-flex min-h-10 shrink-0 items-center rounded-sm text-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
             href={`/applicant/applications/${scheduledAssessment.id}`}
           >
             View assessment details
           </Link>
         </section>
       )}
-      <section
-        aria-label="All applications"
-        className="mt-6"
-      >
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-subtle pb-3">
+      <section aria-label="All applications" className="mt-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 pb-3">
           <h2 className="font-semibold text-ink">All applications</h2>
           <p className="text-xs text-muted">Newest first</p>
         </div>
-        <ul className="mt-3 grid gap-3">
+        <ul className="mt-3 grid gap-4">
           {applications.map((application) => (
             <li
-              className="rounded-sm border border-line-subtle bg-panel p-4 sm:p-5"
+              className="rounded-sm bg-panel shadow border-l-2 border-primary"
               key={application.id}
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 p-4 sm:p-5">
                 <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-ink">
+                  <h3 className="truncate text-sm font-semibold text-primary">
                     {application.jobTitle}
                   </h3>
                   <p className="mt-1 text-xs text-muted">
@@ -112,40 +109,42 @@ export function ApplicationList({
                     </time>
                   </p>
                 </div>
-                <Link
-                  className="inline-flex min-h-11 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  href={`/applicant/applications/${application.id}`}
-                >
-                  View details
-                </Link>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {application.status === "ASSESSMENT_SCHEDULED" &&
+                    (application.scheduled_assessment_at ? (
+                      <StatusTag className="border-warning/30 bg-warning/10 text-warning">
+                        Assessment{" "}
+                        {formatPhilippineDateTime(
+                          application.scheduled_assessment_at,
+                        )}
+                      </StatusTag>
+                    ) : (
+                      <p className="text-xs text-warning">
+                        Assessment date to be confirmed
+                      </p>
+                    ))}
+                  {[
+                    "QUALIFIED",
+                    "HIRED",
+                    "NOT_QUALIFIED",
+                    "NOT_SELECTED",
+                    "REJECTED",
+                  ].includes(application.status) && (
+                    <WorkflowStatusTag status={application.status} />
+                  )}
+                </div>
               </div>
               <ApplicationProgress
                 status={application.status}
                 variant="milestones"
               />
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {application.status === "ASSESSMENT_SCHEDULED" &&
-                  (application.scheduled_assessment_at ? (
-                    <StatusTag className="border-warning/30 bg-warning/10 text-warning">
-                      Assessment{" "}
-                      {formatPhilippineDateTime(
-                        application.scheduled_assessment_at,
-                      )}
-                    </StatusTag>
-                  ) : (
-                    <p className="text-xs text-warning">
-                      Assessment date to be confirmed
-                    </p>
-                  ))}
-                {[
-                  "QUALIFIED",
-                  "HIRED",
-                  "NOT_QUALIFIED",
-                  "NOT_SELECTED",
-                  "REJECTED",
-                ].includes(application.status) && (
-                  <WorkflowStatusTag status={application.status} />
-                )}
+              <div className="text-right p-4 pb-5 sm:p-5 sm:pb-6">
+                <Link
+                  className="inline-flex min-h-10 shrink-0 items-center bg-primary text-white rounded-sm px-6 ml-auto text-sm font-semibold hover:bg-primary/80 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href={`/applicant/applications/${application.id}`}
+                >
+                  View details
+                </Link>
               </div>
             </li>
           ))}

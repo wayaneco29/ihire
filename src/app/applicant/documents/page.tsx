@@ -182,23 +182,21 @@ export default async function ApplicantDocumentsPage() {
       request,
     ]),
   );
-  const resubmissionTypes = prioritizedDocumentTypes.filter(
-    (type) => {
-      if (!type.is_required) return false;
+  const resubmissionTypes = prioritizedDocumentTypes.filter((type) => {
+    if (!type.is_required) return false;
 
-      const latestDocument = documentsByType.get(type.id)?.[0];
-      if (latestDocument?.status === "VERIFIED") return false;
+    const latestDocument = documentsByType.get(type.id)?.[0];
+    if (latestDocument?.status === "VERIFIED") return false;
 
-      return (
-        latestResubmissionByType.has(type.id) ||
-        (documentsByType.get(type.id) ?? []).some(
-          (document) =>
-            document.supersededByVersion === null &&
-            ["REJECTED", "FOR_RESUBMISSION"].includes(document.status),
-        )
-      );
-    },
-  );
+    return (
+      latestResubmissionByType.has(type.id) ||
+      (documentsByType.get(type.id) ?? []).some(
+        (document) =>
+          document.supersededByVersion === null &&
+          ["REJECTED", "FOR_RESUBMISSION"].includes(document.status),
+      )
+    );
+  });
   const requiredCount = requiredTypes.filter(
     (type) => documentsByType.get(type.id)?.[0],
   ).length;
@@ -259,8 +257,8 @@ export default async function ApplicantDocumentsPage() {
               <p className="mt-1 text-sm text-muted">
                 {documentStatusResult.data.verified_required_count} of{" "}
                 {documentStatusResult.data.required_document_count} required
-                documents verified. Required documents submitted for review
-                also meet the application requirement.
+                documents verified. Required documents submitted for review also
+                meet the application requirement.
               </p>
             </div>
             <WorkflowStatusTag status={documentStatusResult.data.status} />
@@ -300,7 +298,7 @@ export default async function ApplicantDocumentsPage() {
                 </ul>
               </div>
               <a
-                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href={`#${resubmissionTypes[0].id}`}
               >
                 Upload new version
@@ -315,7 +313,7 @@ export default async function ApplicantDocumentsPage() {
             >
               <div className="border-b border-line-subtle pb-3">
                 <h2
-                  className="text-base font-semibold text-ink"
+                  className="text-base font-semibold text-primary"
                   id="required-documents-heading"
                 >
                   Required
@@ -339,7 +337,7 @@ export default async function ApplicantDocumentsPage() {
             >
               <div className="border-b border-line-subtle pb-3">
                 <h2
-                  className="text-base font-semibold text-ink"
+                  className="text-base font-semibold text-primary"
                   id="optional-documents-heading"
                 >
                   Optional

@@ -45,10 +45,11 @@ export default async function ApplicantJobDetailPage({
   if (!job || (job.deadline && Date.parse(job.deadline) <= CURRENT_TIME_MS))
     notFound();
 
-  const { data: jobPositions, error: jobPositionsError } = await applicant.supabase
-    .from("job_posting_positions")
-    .select("position_id, weight_profile_id")
-    .eq("job_id", job.id);
+  const { data: jobPositions, error: jobPositionsError } =
+    await applicant.supabase
+      .from("job_posting_positions")
+      .select("position_id, weight_profile_id")
+      .eq("job_id", job.id);
   if (jobPositionsError) {
     return (
       <EmptyState
@@ -122,10 +123,7 @@ export default async function ApplicantJobDetailPage({
   }
 
   const criteriaById = new Map(
-    (criteriaResult.data ?? []).map((criterion) => [
-      criterion.id,
-      criterion,
-    ]),
+    (criteriaResult.data ?? []).map((criterion) => [criterion.id, criterion]),
   );
   const weightsByProfile = new Map<
     string,
@@ -151,10 +149,7 @@ export default async function ApplicantJobDetailPage({
     weightsByProfile.set(weight.profile_id, profileWeights);
   }
   const linkByPosition = new Map(
-    availableLinks.map((jobPosition) => [
-      jobPosition.position_id,
-      jobPosition,
-    ]),
+    availableLinks.map((jobPosition) => [jobPosition.position_id, jobPosition]),
   );
   const positions = availablePositions.map((position) => {
     const link = linkByPosition.get(position.id);
@@ -220,36 +215,35 @@ export default async function ApplicantJobDetailPage({
     certificatesResult,
     educationResult,
     workExperienceResult,
-  ] =
-    await Promise.all([
-      submittedPds
-        ? applicant.supabase
-            .from("pds_learning_development")
-            .select("id, hours")
-            .eq("pds_version_id", submittedPds.id)
-        : Promise.resolve({ data: [], error: null }),
-      applicant.supabase
-        .from("documents")
-        .select(
-          "id, training_hours, ocr_training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
-        )
-        .eq("applicant_id", applicant.applicant.id)
-        .eq("document_type_id", certificateType.id)
-        .order("uploaded_at", { ascending: false })
-        .order("version", { ascending: false }),
-      submittedPds
-        ? applicant.supabase
-            .from("pds_education")
-            .select("qualification_level")
-            .eq("pds_version_id", submittedPds.id)
-        : Promise.resolve({ data: [], error: null }),
-      submittedPds
-        ? applicant.supabase
-            .from("pds_work_experience")
-            .select("date_from, date_to, is_gov_service, position_title")
-            .eq("pds_version_id", submittedPds.id)
-        : Promise.resolve({ data: [], error: null }),
-    ]);
+  ] = await Promise.all([
+    submittedPds
+      ? applicant.supabase
+          .from("pds_learning_development")
+          .select("id, hours")
+          .eq("pds_version_id", submittedPds.id)
+      : Promise.resolve({ data: [], error: null }),
+    applicant.supabase
+      .from("documents")
+      .select(
+        "id, training_hours, ocr_training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
+      )
+      .eq("applicant_id", applicant.applicant.id)
+      .eq("document_type_id", certificateType.id)
+      .order("uploaded_at", { ascending: false })
+      .order("version", { ascending: false }),
+    submittedPds
+      ? applicant.supabase
+          .from("pds_education")
+          .select("qualification_level")
+          .eq("pds_version_id", submittedPds.id)
+      : Promise.resolve({ data: [], error: null }),
+    submittedPds
+      ? applicant.supabase
+          .from("pds_work_experience")
+          .select("date_from, date_to, is_gov_service, position_title")
+          .eq("pds_version_id", submittedPds.id)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
   if (
     learningResult.error ||
     certificatesResult.error ||
@@ -270,7 +264,9 @@ export default async function ApplicantJobDetailPage({
   const trainingReviewsResult = certificateIds.length
     ? await applicant.supabase
         .from("document_reviews")
-        .select("id, document_id, status, confirmed_training_hours, reviewed_at")
+        .select(
+          "id, document_id, status, confirmed_training_hours, reviewed_at",
+        )
         .in("document_id", certificateIds)
         .order("reviewed_at", { ascending: false })
         .order("id", { ascending: false })
@@ -322,8 +318,7 @@ export default async function ApplicantJobDetailPage({
             })
           : { data: null, error: null };
       const experiencePointsResult =
-        experienceCriterion &&
-        position.base_experience_increment_level !== null
+        experienceCriterion && position.base_experience_increment_level !== null
           ? await applicant.supabase.rpc("experience_equivalent_points", {
               p_position_id: position.id,
               p_applicant_level: publicTeachingExperience.incrementLevel,
@@ -343,8 +338,7 @@ export default async function ApplicantJobDetailPage({
           trainingPointsError: Boolean(trainingPointsResult.error),
           experiencePoints: experiencePointsResult.data,
           experiencePointsError: Boolean(experiencePointsResult.error),
-          qualifyingExperienceMonths:
-            publicTeachingExperience.qualifyingMonths,
+          qualifyingExperienceMonths: publicTeachingExperience.qualifyingMonths,
           experienceIncrementLevel: publicTeachingExperience.incrementLevel,
         };
       }
@@ -393,7 +387,7 @@ export default async function ApplicantJobDetailPage({
   return (
     <>
       <Link
-        className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="mb-5 inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         href="/applicant/jobs"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
@@ -459,9 +453,7 @@ export default async function ApplicantJobDetailPage({
 
           {job.requirements && (
             <section className="border-t border-line-subtle py-6">
-              <h2 className="text-base font-semibold text-ink">
-                Requirements
-              </h2>
+              <h2 className="text-base font-semibold text-ink">Requirements</h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">
                 {job.requirements}
               </p>
@@ -486,49 +478,49 @@ export default async function ApplicantJobDetailPage({
                 </p>
                 <WorkflowStatusTag status={application.status} />
                 <Link
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/applications/${application.id}`}
                 >
                   View your application
                 </Link>
               </div>
             ) : applicant.profile.has_submitted_pds ? (
-                ["APPROVED", "FOR_REVIEW"].includes(documentStatus.status) ? (
-                  positions.length ? (
-                    <ApplyButton
-                      jobId={job.id}
-                      positions={positionsWithScoringPoints}
-                    />
-                  ) : (
-                    <p className="max-w-sm text-sm text-muted">
-                      No positions are available for this posting. Contact HR
-                      for assistance.
-                    </p>
-                  )
+              ["APPROVED", "FOR_REVIEW"].includes(documentStatus.status) ? (
+                positions.length ? (
+                  <ApplyButton
+                    jobId={job.id}
+                    positions={positionsWithScoringPoints}
+                  />
                 ) : (
-                  <div className="max-w-md rounded-xl border border-warning/30 bg-warning/10 p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-ink">
-                        Required documents
-                      </p>
-                      <WorkflowStatusTag status={documentStatus.status} />
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-muted">
-                      Upload every required document and submit it for review
-                      before applying. The Document Reviewer can finish
-                      verification after your application is filed.
-                    </p>
-                    <Link
-                      className="mt-3 inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
-                      href="/applicant/documents"
-                    >
-                      Go to documents
-                    </Link>
-                  </div>
+                  <p className="max-w-sm text-sm text-muted">
+                    No positions are available for this posting. Contact HR for
+                    assistance.
+                  </p>
                 )
+              ) : (
+                <div className="max-w-md rounded-xl border border-warning/30 bg-warning/10 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-ink">
+                      Required documents
+                    </p>
+                    <WorkflowStatusTag status={documentStatus.status} />
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Upload every required document and submit it for review
+                    before applying. The Document Reviewer can finish
+                    verification after your application is filed.
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                    href="/applicant/documents"
+                  >
+                    Go to documents
+                  </Link>
+                </div>
+              )
             ) : (
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href="/applicant/pds"
               >
                 Complete your PDS first

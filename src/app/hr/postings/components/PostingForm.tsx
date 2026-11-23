@@ -129,14 +129,16 @@ export function PostingForm({
               Start with a clear title and a concise description of the work.
             </p>
           </div>
-          <FormInput
-            autoComplete="off"
-            control={control}
-            label="Job title"
-            maxLength={160}
-            name="title"
-            required
-          />
+          <div className="mb-4">
+            <FormInput
+              autoComplete="off"
+              control={control}
+              label="Job title"
+              maxLength={160}
+              name="title"
+              required
+            />
+          </div>
           <FormTextArea
             control={control}
             label="Description"
@@ -173,65 +175,74 @@ export function PostingForm({
               type="warning"
             />
           )}
-          <FormSelect
-            control={control}
-            hint="A posting can include multiple positions, but they must share one hiring type."
-            label="Hiring type"
-            name="hiringTrack"
-            onValueChange={(track) => {
-              const matchingPositionIds = new Set(
-                positions
-                  .filter((position) => position.track === track)
-                  .map((position) => position.id),
-              );
-              setValue(
-                "positionIds",
-                getValues("positionIds").filter((id) =>
-                  matchingPositionIds.has(id),
-                ),
-                { shouldDirty: true, shouldValidate: true },
-              );
-            }}
-            options={[
-              { label: "Teaching", value: HIRING_TRACKS[0] },
-              { label: "Non-teaching", value: HIRING_TRACKS[1] },
-            ]}
-            placeholder="Choose a hiring type"
-            required
-          />
-          <FormCheckboxGroup
-            className={positionOptionClasses}
-            control={control}
-            hint="Applicants can apply separately to each selected position. Archived positions are available only when already linked to this posting."
-            label="Applicable positions"
-            name="positionIds"
-            options={positions
-              .filter((position) => position.track === hiringTrack)
-              .map((position) => ({
-                label: (
-                  <span className="font-medium text-ink">
-                    {position.title}
-                    {!position.is_active && (
-                      <span className="ml-2 text-xs font-normal text-muted">
-                        Archived · existing posting
-                      </span>
-                    )}
-                  </span>
-                ),
-                value: position.id,
-                disabled:
-                  !position.is_active &&
-                  !posting?.positionIds.includes(position.id),
-              }))}
-            required
-          />
-          {hiringTrack &&
-            positions.length > 0 &&
-            positions.every((position) => position.track !== hiringTrack) && (
-              <p className="mt-2 text-sm text-muted">
-                No configured positions are available for this hiring type.
-              </p>
+          <div className="space-y-4">
+            <FormSelect
+              control={control}
+              hint="A posting can include multiple positions, but they must share one hiring type."
+              label="Hiring type"
+              name="hiringTrack"
+              onValueChange={(track) => {
+                const matchingPositionIds = new Set(
+                  positions
+                    .filter((position) => position.track === track)
+                    .map((position) => position.id),
+                );
+                setValue(
+                  "positionIds",
+                  getValues("positionIds").filter((id) =>
+                    matchingPositionIds.has(id),
+                  ),
+                  { shouldDirty: true, shouldValidate: true },
+                );
+              }}
+              options={[
+                { label: "Teaching", value: HIRING_TRACKS[0] },
+                { label: "Non-teaching", value: HIRING_TRACKS[1] },
+              ]}
+              placeholder="Choose a hiring type"
+              required
+            />
+            {hiringTrack && (
+              <>
+                <FormCheckboxGroup
+                  className={positionOptionClasses}
+                  control={control}
+                  hint="Applicants can apply separately to each selected position. Archived positions are available only when already linked to this posting."
+                  label="Applicable positions"
+                  name="positionIds"
+                  options={positions
+                    .filter((position) => position.track === hiringTrack)
+                    .map((position) => ({
+                      label: (
+                        <span className="font-medium text-ink">
+                          {position.title}
+                          {!position.is_active && (
+                            <span className="ml-2 text-xs font-normal text-muted">
+                              Archived · existing posting
+                            </span>
+                          )}
+                        </span>
+                      ),
+                      value: position.id,
+                      disabled:
+                        !position.is_active &&
+                        !posting?.positionIds.includes(position.id),
+                    }))}
+                  required
+                />
+                {hiringTrack &&
+                  positions.length > 0 &&
+                  positions.every(
+                    (position) => position.track !== hiringTrack,
+                  ) && (
+                    <p className="mt-2 text-sm text-muted">
+                      No configured positions are available for this hiring
+                      type.
+                    </p>
+                  )}
+              </>
             )}
+          </div>
         </section>
 
         <section
@@ -245,9 +256,6 @@ export function PostingForm({
             >
               Application settings
             </h3>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              Add any qualifications and define the application window.
-            </p>
           </div>
           <FormTextArea
             control={control}
@@ -258,7 +266,7 @@ export function PostingForm({
             rows={4}
             showCount
           />
-          <div className="grid gap-x-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid mt-4 gap-x-5 sm:grid-cols-2 lg:grid-cols-3">
             <FormInput
               control={control}
               label="Available slots"
@@ -271,7 +279,6 @@ export function PostingForm({
             />
             <FormDatePicker
               control={control}
-              hint="Leave blank for no deadline."
               label="Application deadline"
               name="deadline"
               format="MMMM DD, YYYY"
