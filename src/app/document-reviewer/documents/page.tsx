@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getDocumentReviewerContext } from "@/lib/auth/server";
@@ -6,7 +5,9 @@ import { DocumentReviewQueueTable } from "./components/DocumentReviewQueueTable"
 
 export default async function DocumentReviewQueuePage() {
   const reviewer = await getDocumentReviewerContext();
-  if (!reviewer) redirect("/");
+  if (!reviewer) {
+    return <EmptyState title="Reviewer access unavailable" description="Your session could not be verified. Refresh the page or sign out and sign in again." />;
+  }
 
   const { data: documents, error } = await reviewer.supabase
     .from("v_document_review_queue")

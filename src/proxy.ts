@@ -1,15 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { USER_ROLES, type UserRole } from "@/constants/roles";
+import type { UserRole } from "@/constants/roles";
+import { isUserRole, ROLE_HOME } from "@/lib/auth/role-routing";
 import type { Database } from "@/types/database";
-
-const ROLE_HOME: Record<UserRole, string> = {
-  APPLICANT: "/applicant",
-  EVALUATOR: "/evaluator/reviews",
-  DOCUMENT_REVIEWER: "/document-reviewer/documents",
-  HR: "/hr/dashboard",
-  ADMIN: "/admin/invitations",
-};
 
 const PROTECTED_AREAS: { prefix: string; role: UserRole }[] = [
   { prefix: "/applicant", role: "APPLICANT" },
@@ -18,10 +11,6 @@ const PROTECTED_AREAS: { prefix: string; role: UserRole }[] = [
   { prefix: "/hr", role: "HR" },
   { prefix: "/admin", role: "ADMIN" },
 ];
-
-function isUserRole(value: unknown): value is UserRole {
-  return typeof value === "string" && USER_ROLES.includes(value as UserRole);
-}
 
 function copyCookies(source: NextResponse, destination: NextResponse) {
   source.cookies.getAll().forEach((cookie) => {
@@ -57,17 +46,18 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const claims = claimsData?.claims;
-  const isSignedIn = Boolean(claims?.sub);
-  const roleClaim = claims?.app_metadata?.role;
-  const role = isUserRole(roleClaim) ? roleClaim : "APPLICANT";
+  // Use the same current user metadata as the server page/action guards.
+  // Cached JWT roles can otherwise bounce a reviewer between home and sign-in.
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const isSignedIn = !authError && Boolean(user);
+  const roleClaim = user?.app_metadata?.role;
+  const role = isSignedIn && isUserRole(roleClaim) ? roleClaim : null;
   const pathname = request.nextUrl.pathname;
   const protectedArea = PROTECTED_AREAS.find(
     ({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 
-  if (protectedArea && !isSignedIn) {
+  if (protectedArea && (!isSignedIn || !role)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/";
     loginUrl.search = "";
@@ -78,18 +68,18 @@ export async function proxy(request: NextRequest) {
     return copyCookies(response, NextResponse.redirect(loginUrl));
   }
 
-  if (protectedArea && role !== protectedArea.role) {
+  if (protectedArea && role && role !== protectedArea.role) {
     const destination = new URL(ROLE_HOME[role], request.url);
     return copyCookies(response, NextResponse.redirect(destination));
   }
 
   const isPdsRoute =
     pathname === "/applicant/pds" || pathname.startsWith("/applicant/pds/");
-  if (protectedArea?.role === "APPLICANT" && !isPdsRoute && claims?.sub) {
+  if (protectedArea?.role === "APPLICANT" && !isPdsRoute && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("has_submitted_pds")
-      .eq("id", claims.sub)
+      .eq("id", user.id)
       .maybeSingle();
     if (!profile?.has_submitted_pds) {
       const destination = new URL("/applicant/pds", request.url);
@@ -97,7 +87,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (isSignedIn && (pathname === "/" || pathname === "/register")) {
+  if (role && (pathname === "/" || pathname === "/register")) {
     const destination = new URL(ROLE_HOME[role], request.url);
     return copyCookies(response, NextResponse.redirect(destination));
   }

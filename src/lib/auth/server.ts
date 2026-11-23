@@ -65,7 +65,6 @@ export async function getDocumentReviewerContext() {
   if (authError || !user) return null;
   if (user.app_metadata.role !== "DOCUMENT_REVIEWER") return null;
 
-  console.log(user);
   return { supabase, user };
 }
 

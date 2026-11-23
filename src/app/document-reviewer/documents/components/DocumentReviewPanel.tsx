@@ -14,8 +14,8 @@ import { FormSelect } from "@/components/form/FormSelect";
 import { FormTextArea } from "@/components/form/FormTextArea";
 import { Button } from "@/components/ui/Button";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
-import { createClient } from "@/lib/supabase/client";
-import { submitDocumentReview } from "../../actions";
+import { DocumentPreviewModal } from "@/components/ui/DocumentPreviewModal";
+import { createDocumentReviewerPreviewUrl, submitDocumentReview } from "../../actions";
 import {
   createDocumentReviewSchema,
   type DocumentReviewValues,
@@ -29,7 +29,6 @@ const reviewOptions = [
 
 export function DocumentReviewPanel({
   documentId,
-  storageKey,
   documentStatus,
   documentType,
   trainingHours,
@@ -39,12 +38,10 @@ export function DocumentReviewPanel({
   ocrTotalUnits,
   ocrConfidence,
   previousReview,
-  stayOnPageOnSuccess = false,
   hideFileButton = false,
   onReviewSuccess,
 }: {
   documentId: string;
-  storageKey: string;
   documentStatus: string;
   documentType: string;
   trainingHours: number | null;
@@ -60,14 +57,12 @@ export function DocumentReviewPanel({
     confirmed_training_hours: number | null;
     confirmed_total_units: number | null;
   } | null;
-  stayOnPageOnSuccess?: boolean;
   hideFileButton?: boolean;
   onReviewSuccess?: () => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [viewing, setViewing] = useState(false);
-  const [fileError, setFileError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [reviewSucceeded, setReviewSucceeded] = useState(false);
   const includesTrainingHours =
@@ -89,30 +84,6 @@ export function DocumentReviewPanel({
     },
   });
 
-  function viewFile() {
-    setFileError(null);
-    setViewing(true);
-    const preview = window.open("about:blank", "_blank");
-    if (preview) preview.opener = null;
-    startTransition(async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase.storage
-        .from("applicant-documents")
-        .createSignedUrl(storageKey, 60);
-      setViewing(false);
-      if (error || !data?.signedUrl) {
-        preview?.close();
-        setFileError("A secure link could not be created. Please try again.");
-        return;
-      }
-      if (preview) preview.location.replace(data.signedUrl);
-      else
-        setFileError(
-          "Your browser blocked the file window. Allow pop-ups and try again.",
-        );
-    });
-  }
-
   function submitReview(values: DocumentReviewValues) {
     setMessage(null);
     setReviewSucceeded(false);
@@ -128,8 +99,7 @@ export function DocumentReviewPanel({
       setReviewSucceeded(result.success);
       if (result.success) {
         onReviewSuccess?.();
-        if (stayOnPageOnSuccess) router.refresh();
-        else router.push("/document-reviewer/documents");
+        router.refresh();
       }
     });
   }
@@ -140,27 +110,19 @@ export function DocumentReviewPanel({
         <h2 className="font-semibold text-ink">Document review</h2>
         <WorkflowStatusTag status={documentStatus} />
       </div>
-      <p className="mt-2 text-sm leading-6 text-muted">
-        The stored object uses an opaque key. The applicant’s original filename
-        is not shown here.
-      </p>
       {!hideFileButton && (
-        <>
-          <Button
-            className="mt-4"
-            disabled={viewing || pending}
-            onClick={viewFile}
-            type="button"
-            variant="bordered"
-          >
-            {viewing ? "Creating secure link…" : "Open document"}
-          </Button>
-          {fileError && (
-            <p className="mt-2 text-sm text-danger" role="alert">
-              {fileError}
-            </p>
-          )}
-        </>
+        <Button className="mt-4" onClick={() => setViewing(true)} variant="bordered">
+          View document
+        </Button>
+      )}
+      {viewing && (
+        <DocumentPreviewModal
+          key={documentId}
+          documentId={documentId}
+          loadPreview={createDocumentReviewerPreviewUrl}
+          onClose={() => setViewing(false)}
+          title={documentType}
+        />
       )}
 
       {previousReview && (

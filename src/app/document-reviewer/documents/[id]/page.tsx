@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getDocumentReviewerContext } from "@/lib/auth/server";
@@ -11,7 +11,9 @@ export default async function DocumentReviewerDetailPage({
 }: Readonly<{ params: Promise<{ id: string }> }>) {
   const { id } = await params;
   const reviewer = await getDocumentReviewerContext();
-  if (!reviewer) redirect("/");
+  if (!reviewer) {
+    return <EmptyState title="Reviewer access unavailable" description="Your session could not be verified. Refresh the page or sign out and sign in again." />;
+  }
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: documents, error } = await reviewer.supabase
@@ -83,7 +85,6 @@ export default async function DocumentReviewerDetailPage({
           ocrTotalUnits={metricsResult.data.ocr_total_units}
           ocrConfidence={metricsResult.data.ocr_confidence}
           previousReview={reviewResult.data ?? null}
-          storageKey={document.storage_key}
         />
       </div>
       <Link

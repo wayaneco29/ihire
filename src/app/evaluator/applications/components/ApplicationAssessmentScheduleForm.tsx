@@ -16,6 +16,7 @@ import {
   applicationAssessmentScheduleSchema,
   type ApplicationAssessmentScheduleValues,
 } from "../schema";
+import dayjs from "dayjs";
 
 export function ApplicationAssessmentScheduleForm({
   applicationId,
@@ -38,7 +39,12 @@ export function ApplicationAssessmentScheduleForm({
     },
   });
   const isFinal = [
-    "ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED", "HIRED", "NOT_SELECTED", "REJECTED",
+    "ASSESSMENT_SCORED",
+    "QUALIFIED",
+    "NOT_QUALIFIED",
+    "HIRED",
+    "NOT_SELECTED",
+    "REJECTED",
   ].includes(applicationStatus);
 
   function submit(values: ApplicationAssessmentScheduleValues) {
@@ -90,12 +96,9 @@ export function ApplicationAssessmentScheduleForm({
             required
             showTime={{ format: "h:mm A", use12Hours: true }}
             valueFormat="YYYY-MM-DDTHH:mm"
+            disabledDate={(newDate) => dayjs().isAfter(newDate)}
           />
-          <Button
-            disabled={pending}
-            type="submit"
-            variant="filled"
-          >
+          <Button disabled={pending} type="submit" variant="filled">
             {pending
               ? "Saving schedule…"
               : scheduledAt

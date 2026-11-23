@@ -6,7 +6,15 @@ import {
   TRANSCRIPT_DOCUMENT_TYPE,
 } from "@/constants/documents";
 import { getDocumentReviewerContext } from "@/lib/auth/server";
+import { getApplicantReviewDocuments } from "@/lib/document-reviewer/documents";
 import { DOCUMENT_REVIEW_STATUSES } from "./documents/schema";
+
+export async function loadApplicantReviewDocuments(applicantNumber: string) {
+  if (typeof applicantNumber !== "string" || !applicantNumber.trim() || applicantNumber.length > 100) {
+    return { success: false as const, message: "Enter a valid applicant number." };
+  }
+  return getApplicantReviewDocuments(applicantNumber);
+}
 
 export async function createDocumentReviewerPreviewUrl(input: {
   documentId: string;
