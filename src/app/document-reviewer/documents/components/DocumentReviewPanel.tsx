@@ -88,18 +88,22 @@ export function DocumentReviewPanel({
     setMessage(null);
     setReviewSucceeded(false);
     startTransition(async () => {
-      const result = await submitDocumentReview({
-        documentId,
-        status: values.status,
-        remarks: values.remarks,
-        confirmedTrainingHours: values.confirmedTrainingHours ?? null,
-        confirmedTotalUnits: values.confirmedTotalUnits ?? null,
-      });
-      setMessage(result.message);
-      setReviewSucceeded(result.success);
-      if (result.success) {
-        onReviewSuccess?.();
-        router.refresh();
+      try {
+        const result = await submitDocumentReview({
+          documentId,
+          status: values.status,
+          remarks: values.remarks,
+          confirmedTrainingHours: values.confirmedTrainingHours ?? null,
+          confirmedTotalUnits: values.confirmedTotalUnits ?? null,
+        });
+        setMessage(result.message);
+        setReviewSucceeded(result.success);
+        if (result.success) {
+          onReviewSuccess?.();
+          router.refresh();
+        }
+      } catch {
+        setMessage("The review could not be saved. Please try again.");
       }
     });
   }
@@ -138,13 +142,13 @@ export function DocumentReviewPanel({
           )}
           {(previousReview.confirmed_training_hours != null ||
             previousReview.confirmed_total_units != null) && (
-            <p className="mt-2 text-sm text-muted">
-              Confirmed value:{" "}
-              {previousReview.confirmed_training_hours != null
-                ? `${previousReview.confirmed_training_hours} hours`
-                : `${previousReview.confirmed_total_units} units`}
-            </p>
-          )}
+              <p className="mt-2 text-sm text-muted">
+                Confirmed value:{" "}
+                {previousReview.confirmed_training_hours != null
+                  ? `${previousReview.confirmed_training_hours} hours`
+                  : `${previousReview.confirmed_total_units} units`}
+              </p>
+            )}
         </div>
       )}
 

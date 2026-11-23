@@ -33,7 +33,15 @@ export default async function DocumentReviewerDetailPage({
     );
   }
   const document = documents?.[0];
-  if (!document) notFound();
+  if (!document) {
+    return (
+      <EmptyState
+        title="This document is no longer awaiting review"
+        description="It may already have been reviewed. Choose another document from the queue."
+        action={<Link href="/document-reviewer/documents">Back to review queue</Link>}
+      />
+    );
+  }
 
   const [metricsResult, reviewResult] = await Promise.all([
     reviewer.supabase
