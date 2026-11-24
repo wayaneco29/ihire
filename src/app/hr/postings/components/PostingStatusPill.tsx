@@ -25,13 +25,20 @@ const STATUS_PRESENTATION: Record<
 
 export function PostingStatusPill({
   status,
-}: Readonly<{ status: PostingDisplayStatus }>) {
+  compact = false,
+}: Readonly<{ status: PostingDisplayStatus; compact?: boolean }>) {
   const presentation = STATUS_PRESENTATION[status];
 
   return (
     <StatusTag
-      className={presentation.className}
+      className={`${presentation.className} ${compact ? "min-h-4! shrink-0 gap-1.5 rounded-full! border-transparent! px-2! py-0! text-[10px]!" : ""}`}
     >
+      {compact && (
+        <span
+          aria-hidden="true"
+          className="size-1.5 rounded-full bg-current opacity-70"
+        />
+      )}
       {presentation.label}
     </StatusTag>
   );

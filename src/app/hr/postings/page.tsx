@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -38,7 +39,8 @@ export default async function HrPostingsPage() {
     return (
       <>
         <PageHeader
-          description="Create positions and track evaluator outcomes for each posting."
+          description="Track applicants, qualified candidates and open slots for each posting."
+          divider={false}
           title="Job postings"
         />
         <div className="mt-7">
@@ -59,8 +61,9 @@ export default async function HrPostingsPage() {
     return (
       <>
         <PageHeader
+          divider={false}
           title="Job postings"
-          description="Create positions and track evaluator outcomes for each posting."
+          description="Track applicants, qualified candidates and open slots for each posting."
         />
         <div className="mt-7">
           <EmptyState
@@ -116,7 +119,9 @@ export default async function HrPostingsPage() {
       ...posting,
       ...postingStats,
       status: displayStatus,
-      deadlineLabel: posting.deadline ? formatDate(posting.deadline) : null,
+      deadlineLabel: posting.deadline
+        ? formatDate(posting.deadline, "MMMM DD, YYYY")
+        : null,
       daysRemaining:
         posting.deadline !== null && hasValidDeadline
           ? daysUntilDeadline(posting.deadline, now)
@@ -127,14 +132,16 @@ export default async function HrPostingsPage() {
   return (
     <div className="mx-auto">
       <PageHeader
+        divider={false}
         title="Job postings"
-        description="Create positions and track evaluator outcomes for each posting."
+        description="Track applicants, qualified candidates and open slots for each posting."
         actions={
           <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[8px] bg-primary px-5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href="/hr/postings/new"
           >
-            Create posting
+            <PlusIcon aria-hidden="true" className="size-4" />
+            New posting
           </Link>
         }
       />

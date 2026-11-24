@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -148,14 +149,6 @@ export default function HrDashboardPage() {
       <PageHeader
         title="Hiring dashboard"
         description="See applicant progress and manage your job postings."
-        actions={
-          <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            href="/hr/postings/new"
-          >
-            Create posting
-          </Link>
-        }
       />
       <Suspense
         fallback={

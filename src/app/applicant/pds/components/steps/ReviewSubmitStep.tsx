@@ -410,7 +410,7 @@ export function ReviewSubmitStep({
                   variant="unstyled"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-semibold sm:text-lg text-primary! font-[Bricolage_Grotesque]">
+                    <span className="block text-base font-semibold sm:text-lg text-primary! font-bricolage!">
                       {title}
                     </span>
                     <span className="mt-0.5 block truncate text-sm text-muted">

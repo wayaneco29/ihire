@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Public_Sans } from "next/font/google";
+import { Bricolage_Grotesque, Public_Sans } from "next/font/google";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { AppProviders } from "./providers";
 import "./globals.css";
@@ -8,6 +8,12 @@ import "./globals.css";
 const publicSans = Public_Sans({
   subsets: ["latin"],
   variable: "--font-public-sans",
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage-grotesque",
+  display: "swap",
 });
 
 export const dynamic = "force-dynamic";
@@ -25,7 +31,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className={publicSans.variable}>
+    <html lang="en" className={`${publicSans.variable} ${bricolageGrotesque.variable}`}>
       <body className="text-base leading-relaxed">
         <AntdRegistry>
           <AppProviders>{children}</AppProviders>

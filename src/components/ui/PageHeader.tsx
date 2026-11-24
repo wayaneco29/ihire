@@ -5,11 +5,12 @@ type PageHeaderProps = {
   description?: string;
   eyebrow?: string;
   actions?: ReactNode;
+  divider?: boolean;
 };
 
-export function PageHeader({ title, description, eyebrow, actions }: PageHeaderProps) {
+export function PageHeader({ title, description, eyebrow, actions, divider = true }: PageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 border-b border-line pb-5 print:hidden sm:flex-row sm:items-start sm:justify-between">
+    <div className={`mb-6 flex flex-col gap-4 print:hidden sm:flex-row sm:items-start sm:justify-between ${divider ? "border-b border-line pb-5" : ""}`}>
       <div className="min-w-0 max-w-3xl">
         {eyebrow && <p className="mb-1 text-xs font-medium text-muted">{eyebrow}</p>}
         <h1 className="text-2xl font-semibold leading-snug text-ink sm:text-3xl">{title}</h1>
