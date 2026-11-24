@@ -1,4 +1,9 @@
-export type PostingDisplayStatus = "DRAFT" | "OPEN" | "CLOSED" | "FILLED";
+export type PostingDisplayStatus =
+  | "DRAFT"
+  | "OPEN"
+  | "CLOSED"
+  | "EXPIRED"
+  | "FILLED";
 
 type PostingStatusInput = {
   status: string;
@@ -17,7 +22,6 @@ export function getPostingDisplayStatus(
   if (!posting.deadline) return "OPEN";
 
   const deadlineTimestamp = Date.parse(posting.deadline);
-  return Number.isFinite(deadlineTimestamp) && deadlineTimestamp > now
-    ? "OPEN"
-    : "CLOSED";
+  if (!Number.isFinite(deadlineTimestamp)) return "CLOSED";
+  return deadlineTimestamp > now ? "OPEN" : "EXPIRED";
 }

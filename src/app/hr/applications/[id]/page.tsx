@@ -50,6 +50,8 @@ export default async function HrApplicationPage({
         description={posting.title}
         eyebrow="HR workspace · Application"
         title={`Applicant ${application.applicant_number}`}
+        backHref={reviewHref}
+        backLabel={canOpenReview ? "Back to applicants" : "Job posting"}
       />
 
       <section

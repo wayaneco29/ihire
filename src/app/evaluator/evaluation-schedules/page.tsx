@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  ArrowLeftIcon,
   CalendarDaysIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
@@ -229,6 +228,8 @@ export async function TeachingAssessmentPage({
         description="Review scheduled teaching assessments and record points for each activity."
         eyebrow="Evaluator workspace"
         title="Evaluation Schedules"
+        backHref={showSchedule ? undefined : `/evaluator/evaluation-schedules?date=${date}`}
+        backLabel="Back to schedule"
       />
       {showSchedule && (
         <Link
@@ -238,15 +239,6 @@ export async function TeachingAssessmentPage({
           Review scored applicants
         </Link>
       )}
-      {!showSchedule ? (
-        <Link
-          className="inline-flex min-h-11 items-center gap-2 rounded-sm px-4 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light"
-          href={`/evaluator/evaluation-schedules?date=${date}`}
-        >
-          <ArrowLeftIcon aria-hidden="true" className="size-4" /> Back to
-          schedule
-        </Link>
-      ) : undefined}
       {showSchedule && (
         <section
           aria-labelledby="schedule-heading"

@@ -11,7 +11,13 @@ import { Button } from "@/components/ui/Button";
 import type { PostingDisplayStatus } from "@/utils/job-posting-status";
 import { PostingStatusPill } from "../../postings/components/PostingStatusPill";
 
-type PostingFilter = "all" | "open" | "filled" | "closed" | "draft";
+type PostingFilter =
+  | "all"
+  | "open"
+  | "filled"
+  | "closed"
+  | "expired"
+  | "draft";
 
 type PostingProgress = {
   id: string;
@@ -46,6 +52,9 @@ export function HrDashboardView({
   const closedCount = postings.filter(
     (posting) => posting.status === "CLOSED",
   ).length;
+  const expiredCount = postings.filter(
+    (posting) => posting.status === "EXPIRED",
+  ).length;
   const draftCount = postings.filter(
     (posting) => posting.status === "DRAFT",
   ).length;
@@ -57,6 +66,7 @@ export function HrDashboardView({
         if (filter === "closed") {
           return posting.status === "CLOSED";
         }
+        if (filter === "expired") return posting.status === "EXPIRED";
         if (filter === "draft") return posting.status === "DRAFT";
         return true;
       }),
@@ -73,6 +83,7 @@ export function HrDashboardView({
     { id: "open", label: "Open", count: openCount },
     { id: "filled", label: "Filled", count: filledCount },
     { id: "closed", label: "Closed", count: closedCount },
+    { id: "expired", label: "Expired", count: expiredCount },
     { id: "draft", label: "Drafts", count: draftCount },
   ];
 
@@ -148,6 +159,8 @@ export function HrDashboardView({
                     ? "Draft"
                     : posting.status === "CLOSED"
                       ? "Closed"
+                      : posting.status === "EXPIRED"
+                        ? "Expired"
                       : !posting.deadlineDate || posting.daysRemaining === null
                         ? "No deadline"
                         : posting.daysRemaining === 0

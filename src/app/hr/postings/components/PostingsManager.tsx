@@ -60,7 +60,7 @@ const POSTING_COLUMNS: TableColumnsType<PostingItem> = [
   {
     title: "Applicants",
     key: "applicants",
-    width: 100,
+    width: 110,
     render: (_, posting) => (
       <span
         className={`text-xl font-semibold tabular-nums ${posting.total ? "text-ink" : "text-muted"}`}
@@ -72,7 +72,7 @@ const POSTING_COLUMNS: TableColumnsType<PostingItem> = [
   {
     title: "Qualified",
     key: "qualified",
-    width: 100,
+    width: 110,
     render: (_, posting) => (
       <span className="text-xl font-semibold text-muted tabular-nums">
         {posting.qualified}
@@ -82,7 +82,7 @@ const POSTING_COLUMNS: TableColumnsType<PostingItem> = [
   {
     title: "Hired",
     key: "hired",
-    width: 135,
+    width: 150,
     render: (_, posting) => (
       <div className="whitespace-nowrap">
         <span className="text-xl font-semibold text-muted tabular-nums">
@@ -95,7 +95,7 @@ const POSTING_COLUMNS: TableColumnsType<PostingItem> = [
   {
     title: "Deadline",
     key: "deadline",
-    width: 135,
+    width: 170,
     render: (_, posting) => (
       <span className="whitespace-nowrap text-xs font-semibold text-ink">
         {posting.deadlineLabel ?? "No deadline"}
@@ -108,6 +108,7 @@ const POSTING_COLUMNS: TableColumnsType<PostingItem> = [
     width: 170,
     fixed: "right",
     align: "right",
+    className: "pr-4!",
     render: (_, posting) => (
       <div className="flex items-center justify-end gap-2">
         <Link
@@ -147,7 +148,7 @@ export function PostingsManager({
     "ALL",
     "OPEN",
     "CLOSED",
-    ...(["FILLED", "DRAFT"] as const).filter((value) =>
+    ...(["EXPIRED", "FILLED", "DRAFT"] as const).filter((value) =>
       postings.some((posting) => posting.status === value),
     ),
   ];

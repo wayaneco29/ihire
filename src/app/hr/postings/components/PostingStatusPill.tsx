@@ -17,6 +17,10 @@ const STATUS_PRESENTATION: Record<
     label: "Closed",
     className: "border-line bg-panel-muted text-muted-strong",
   },
+  EXPIRED: {
+    label: "Expired",
+    className: "border-warning/20 bg-warning/10 text-warning",
+  },
   FILLED: {
     label: "Filled",
     className: "border-primary/20 bg-primary-light text-primary-dark",

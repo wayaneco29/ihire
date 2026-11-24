@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getApplicantReviewDocuments } from "@/lib/document-reviewer/documents";
@@ -20,15 +19,11 @@ export default async function ApplicantDocumentReviewPage({
         description={`${result.documents.length} documents waiting for review.`}
         eyebrow={`Applicant ${applicantNumber}`}
         title="Review documents"
+        backHref="/document-reviewer/documents"
+        backLabel="Review queue"
       />
       {result.warning && <p className="mt-4 text-sm text-muted" role="status">{result.warning}</p>}
       <ApplicantDocumentReviewList applicantNumber={applicantNumber} documents={result.documents} />
-      <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
-        href="/document-reviewer/documents"
-      >
-        Back to review queue
-      </Link>
     </>
   );
 }

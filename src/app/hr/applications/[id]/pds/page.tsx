@@ -53,7 +53,12 @@ export default async function HrPrintablePdsPage({ params }: { params: Promise<{
   if (!pdsData) {
     return (
       <>
-        <PageHeader eyebrow="HR workspace" title="Printable PDS" />
+        <PageHeader
+          eyebrow="HR workspace"
+          title="Printable PDS"
+          backHref={`/hr/applications/${application.application_id}`}
+          backLabel="Applicant details"
+        />
         <div className="mt-7">
           <EmptyState description={emptyStateDescription} title="PDS unavailable" />
         </div>
@@ -63,7 +68,14 @@ export default async function HrPrintablePdsPage({ params }: { params: Promise<{
 
   return <>
     <div className="no-print mb-6">
-      <PageHeader actions={<PdsPrintButton />} description="This identity-bearing sheet is available only after the applicant is hired." eyebrow="HR workspace · Hired applicant" title={`Printable PDS · ${application.applicant_number}`} />
+      <PageHeader
+        actions={<PdsPrintButton />}
+        backHref={`/hr/applications/${application.application_id}`}
+        backLabel="Applicant details"
+        description="This identity-bearing sheet is available only after the applicant is hired."
+        eyebrow="HR workspace · Hired applicant"
+        title={`Printable PDS · ${application.applicant_number}`}
+      />
       <p className="mt-3 text-sm text-muted">Version {versionNumber}. Print and have the applicant sign the required sections in person.</p>
     </div>
     <PrintablePdsDocument applicantNumber={application.applicant_number} draftData={pdsData} versionNumber={versionNumber} />

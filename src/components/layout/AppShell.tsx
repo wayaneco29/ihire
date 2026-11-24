@@ -14,7 +14,11 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
         <div className="min-w-0 flex-1 lg:pl-sidebar">
           <Header />
           <MobileDrawer />
-          <main className="mx-auto w-full min-w-0 max-w-workspace px-4 py-6 sm:px-6 sm:py-8 lg:px-10" id="main-content" tabIndex={-1}>
+          <main
+            className="mx-auto w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-10"
+            id="main-content"
+            tabIndex={-1}
+          >
             {children}
           </main>
         </div>

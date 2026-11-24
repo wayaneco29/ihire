@@ -78,6 +78,8 @@ export default async function DocumentReviewerDetailPage({
         description={`Uploaded ${formatDate(document.uploaded_at, "MMM D, YYYY · h:mm A")}`}
         eyebrow={`Anonymous applicant · ${document.applicant_number}`}
         title={document.document_type}
+        backHref="/document-reviewer/documents"
+        backLabel="Review queue"
       />
       <div className="mt-6">
         <DocumentReviewPanel
@@ -95,12 +97,6 @@ export default async function DocumentReviewerDetailPage({
           previousReview={reviewResult.data ?? null}
         />
       </div>
-      <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
-        href="/document-reviewer/documents"
-      >
-        Back to review queue
-      </Link>
     </>
   );
 }

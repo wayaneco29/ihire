@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
-  ArrowLeftIcon,
   CalendarDaysIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
@@ -401,14 +400,9 @@ export default async function ApplicantJobDetailPage({
 
   return (
     <>
-      <Link
-        className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        href="/applicant/jobs"
-      >
-        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        Back to jobs
-      </Link>
       <PageHeader
+        backHref="/applicant/jobs"
+        backLabel="Back to jobs"
         description={
           canResubmit
             ? "Submit the requested document corrections, then resubmit for this open posting."

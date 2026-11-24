@@ -25,6 +25,8 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
         <PageHeader
           description="Update position details and applicable roles."
           eyebrow="HR workspace"
+          backHref={"/hr/postings/" + id}
+          backLabel="Job posting"
           title="Edit job posting"
         />
         <div className="mt-7">
@@ -46,6 +48,8 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
         <PageHeader
           description="Update position details and applicable roles."
           eyebrow="HR workspace"
+          backHref={"/hr/postings/" + id}
+          backLabel="Job posting"
           title="Edit job posting"
         />
         <div className="mt-7">
@@ -69,6 +73,8 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
         <PageHeader
           description="Update position details and applicable roles."
           eyebrow="HR workspace"
+          backHref={"/hr/postings/" + id}
+          backLabel="Job posting"
           title="Edit job posting"
         />
         <div className="mt-7">
@@ -94,6 +100,8 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
         <PageHeader
           description="Update position details and applicable roles."
           eyebrow="HR workspace"
+          backHref={"/hr/postings/" + id}
+          backLabel="Job posting"
           title="Edit job posting"
         />
         <div className="mt-7">
@@ -110,18 +118,26 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
       ? "NON_TEACHING"
       : "TEACHING";
 
-  return <>
-    <PageHeader description="Update the position details and manage its open, draft, or closed status." eyebrow="HR workspace" title="Edit job posting" />
-    <PostingForm
-      positions={positionsResult.data}
-      posting={{
-        ...posting,
-        requirements: posting.requirements ?? "",
-        deadline: posting.deadline ?? "",
-        hiringTrack:
-          hiringTrack === "NON_TEACHING" ? "NON_TEACHING" : "TEACHING",
-        positionIds,
-      }}
-    />
-  </>;
+  return (
+    <>
+      <PageHeader
+        description="Update the position details and manage its open, draft, or closed status."
+        eyebrow="HR workspace"
+        backHref={`/hr/postings/${id}`}
+        backLabel="Job posting"
+        title="Edit job posting"
+      />
+      <PostingForm
+        positions={positionsResult.data}
+        posting={{
+          ...posting,
+          requirements: posting.requirements ?? "",
+          deadline: posting.deadline ?? "",
+          hiringTrack:
+            hiringTrack === "NON_TEACHING" ? "NON_TEACHING" : "TEACHING",
+          positionIds,
+        }}
+      />
+    </>
+  );
 }

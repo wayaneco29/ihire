@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { Alert, Input, Modal, Popconfirm, Select, Table } from "antd";
+import { CheckIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import type { ColumnsType } from "antd/es/table";
 import { Button } from "@/components/ui/Button";
-import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
@@ -43,7 +44,7 @@ type HiringReadiness = {
   can_hire: boolean;
 };
 const FILTERS: { id: ApplicantFilter; label: string }[] = [
-  { id: "QUALIFIED", label: "Qualified for hire" },
+  { id: "QUALIFIED", label: "Qualified" },
   { id: "HIRED", label: "Hired" },
   { id: "NOT_SELECTED", label: "Not selected" },
 ];
@@ -199,8 +200,8 @@ export function PostingApplicants({
     {
       title: "Rank",
       key: "assessment_rank",
-      width: 80,
-      align: "center",
+      width: 68,
+      align: "left",
       fixed: "left",
       className: "pl-6!",
       render: (_, applicant) =>
@@ -213,7 +214,7 @@ export function PostingApplicants({
       dataIndex: "applicant_number",
       key: "applicant_number",
       fixed: "left",
-      width: 150,
+      width: 125,
       render: (applicantNumber: string) => (
         <span className="font-semibold text-ink">{applicantNumber}</span>
       ),
@@ -221,7 +222,7 @@ export function PostingApplicants({
     {
       title: "Position",
       key: "position",
-      width: 190,
+      width: 155,
       ellipsis: true,
       render: (_, applicant) => positionLabel(applicant),
     },
@@ -229,8 +230,7 @@ export function PostingApplicants({
       title: "Total points",
       dataIndex: "assessment_points",
       key: "assessment_points",
-      width: 180,
-      align: "right",
+      width: 115,
       render: (points: number | null) =>
         points === null
           ? "Awaiting scores"
@@ -239,7 +239,7 @@ export function PostingApplicants({
     {
       title: "Education",
       key: "education",
-      width: 190,
+      width: 150,
       ellipsis: true,
       render: (_, applicant) =>
         applicant.education_levels?.map(educationLevelLabel).join(", ") ||
@@ -249,37 +249,28 @@ export function PostingApplicants({
       title: "Experience",
       dataIndex: "experience_years",
       key: "experience",
-      width: 120,
+      width: 105,
       render: (years: number | null) => experienceLabel(years),
     },
     {
       title: "Training",
       dataIndex: "training_hours",
       key: "training",
-      width: 120,
+      width: 105,
       render: (hours: number | null) => trainingLabel(hours),
     },
     {
       title: "Skills",
       key: "skills",
-      width: 220,
+      width: 150,
       ellipsis: true,
       render: (_, applicant) => applicant.skills?.join(", ") || "Not provided",
-    },
-    {
-      title: "Status",
-      dataIndex: "application_status",
-      key: "status",
-      width: 160,
-      render: (applicationStatus: string) => (
-        <WorkflowStatusTag status={applicationStatus} />
-      ),
     },
     {
       title: "Actions",
       key: "review",
       fixed: "right",
-      width: 150,
+      width: 130,
       align: "right",
       className: "pr-6!",
       render: (_, applicant) => {
@@ -297,7 +288,7 @@ export function PostingApplicants({
   ];
 
   return (
-    <section className="mt-6">
+    <section className="mt-4">
       {feedback && (
         <Alert
           className="mb-4"
@@ -324,9 +315,9 @@ export function PostingApplicants({
       ) : (
         <section
           aria-labelledby="hiring-readiness-heading"
-          className="mb-4 rounded-sm border border-line bg-panel px-4 py-4"
+          className="mb-4 overflow-hidden rounded-xl border border-line bg-panel"
         >
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6">
             <div>
               <h2
                 className="text-sm font-semibold text-ink"
@@ -334,7 +325,7 @@ export function PostingApplicants({
               >
                 Hiring readiness
               </h2>
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 max-w-2xl text-xs leading-6 text-muted">
                 {assessmentScoresUnavailable
                   ? "Applicant score data is unavailable; refresh before making a hiring decision."
                   : `Intake is ${hiringReadiness.intake_closed ? "closed" : "open"}.`}
@@ -346,62 +337,66 @@ export function PostingApplicants({
               </p>
             </div>
             <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${canHire ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
+              className={`inline-flex min-h-7 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${canHire ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
             >
+              {canHire && <CheckIcon aria-hidden="true" className="size-4" />}
               {canHire ? "Ready to hire" : "Hiring on hold"}
             </span>
           </div>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+          <dl className="grid border-t border-line-subtle text-sm sm:grid-cols-3">
             <ReadinessCount
+              divided={false}
               label="Applications awaiting evaluation"
               value={hiringReadiness.pending_applications}
             />
             <ReadinessCount
+              divided
               label="Required documents awaiting verification"
               value={hiringReadiness.pending_required_documents}
             />
             <ReadinessCount
+              divided
               label="Open correction windows"
               value={hiringReadiness.pending_document_corrections}
             />
           </dl>
         </section>
       )}
-      <p className="mb-3 text-sm text-muted">
-        Applicants are ranked by total criterion points, including education,
-        training certificates, experience, and evaluator scores. Equal totals
-        are ordered by applicant number.
-      </p>
-      <div className="px-5 py-4 shadow rounded-sm bg-panel">
+      <div className="mt-4 grid gap-3 xl:grid-cols-[auto_minmax(220px,1fr)_170px_190px] xl:items-center">
         <nav
           aria-label="Filter applicants by status"
-          className="flex flex-wrap gap-1.5"
+          className="inline-flex w-fit max-w-full flex-wrap gap-1 rounded-lg bg-panel-muted p-1"
         >
           {FILTERS.map((option) => (
             <Button
               aria-pressed={filter === option.id}
-              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${filter === option.id ? "bg-panel text-ink" : "text-muted hover:text-ink"}`}
               key={option.id}
               onClick={() => updateFilter(setFilter, option.id)}
               type="button"
               variant="unstyled"
             >
               {option.label}{" "}
-              <span className="tabular-nums">
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-xs tabular-nums ${filter === option.id ? "bg-success/15 text-success" : "text-muted"}`}
+              >
                 {counts[option.id].toLocaleString()}
               </span>
             </Button>
           ))}
         </nav>
-      </div>
-
-      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px_190px]">
         <label>
           <span className="sr-only">Search by applicant number</span>
           <Input
             aria-label="Search by applicant number"
-            className="w-full rounded-sm!"
+            className="w-full rounded-md!"
             onChange={(event) => updateFilter(setSearch, event.target.value)}
+            prefix={
+              <MagnifyingGlassIcon
+                aria-hidden="true"
+                className="size-4 text-muted"
+              />
+            }
             placeholder="Search by applicant number, e.g. 0053"
             size="medium"
             type="search"
@@ -412,7 +407,7 @@ export function PostingApplicants({
           <span className="sr-only">Filter by position</span>
           <Select
             aria-label="Filter by position"
-            className="w-full rounded-sm!"
+            className="w-full rounded-md!"
             onChange={(value) => updateFilter(setPositionFilter, value)}
             options={[
               { label: "All positions", value: "ALL" },
@@ -429,7 +424,7 @@ export function PostingApplicants({
           <span className="sr-only">Filter by education level</span>
           <Select
             aria-label="Filter by education level"
-            className="w-full rounded-sm!"
+            className="w-full rounded-md!"
             onChange={(value) => updateFilter(setEducationFilter, value)}
             options={[
               { label: "All education levels", value: "ALL" },
@@ -456,14 +451,27 @@ export function PostingApplicants({
         match the current filters.
       </p>
 
-      <div className="mt-3 overflow-hidden rounded-sm border border-line bg-panel">
+      <div className="mt-3 overflow-hidden rounded-xl border border-line bg-panel">
         <Table<ApplicantItem>
+          className="[&_.ant-table-thead>tr>th]:!bg-panel-muted [&_.ant-table-thead>tr>th]:!px-3 [&_.ant-table-thead>tr>th]:!py-3 [&_.ant-table-thead>tr>th]:!text-muted [&_.ant-table-thead>tr>th]:!text-xs [&_.ant-table-thead>tr>th]:!font-medium [&_.ant-table-thead>tr>th]:!border-line [&_.ant-table-thead>tr>th::before]:!hidden [&_.ant-table-tbody>tr.ant-table-row>td]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>th]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>td]:!px-3 [&_.ant-table-tbody>tr.ant-table-row>th]:!px-3 [&_.ant-table-tbody>tr.ant-table-row>td]:!py-4 [&_.ant-table-tbody>tr.ant-table-row>th]:!py-4 [&_.ant-table-tbody>tr.ant-table-row>td]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row>th]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row:hover>td]:!bg-panel-muted [&_.ant-table-tbody>tr.ant-table-row:hover>th]:!bg-panel-muted [&_.ant-table-placeholder>td]:!bg-panel [&_.ant-table-placeholder>td]:!border-line-subtle"
+          // className="[&_.ant-table-thead>tr>th]:!bg-panel-muted [&_.ant-table-thead>tr>th]:!text-muted [&_.ant-table-thead>tr>th]:!text-xs [&_.ant-table-thead>tr>th]:!font-medium [&_.ant-table-thead>tr>th]:!border-line [&_.ant-table-thead>tr>th::before]:!hidden [&_.ant-table-tbody>tr.ant-table-row>td]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>th]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>td]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row>th]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row:hover>td]:!bg-panel-muted [&_.ant-table-tbody>tr.ant-table-row:hover>th]:!bg-panel-muted [&_.ant-table-placeholder>td]:!bg-panel [&_.ant-table-placeholder>td]:!border-line-subtle"
           columns={columns}
           dataSource={filtered}
           locale={{
             emptyText: (
-              <div className="py-5 text-sm text-muted">
-                No applicants match these filters.
+              <div className="py-12 text-center">
+                <p className="text-sm font-semibold text-ink">
+                  No{" "}
+                  {filter === "QUALIFIED"
+                    ? "qualified"
+                    : filter === "HIRED"
+                      ? "hired"
+                      : "not selected"}{" "}
+                  applicants
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  No applicants match these filters.
+                </p>
               </div>
             ),
           }}
@@ -485,7 +493,7 @@ export function PostingApplicants({
               : false
           }
           rowKey="application_id"
-          scroll={{ x: 1500 }}
+          scroll={{ x: 1100 }}
           size="middle"
         />
       </div>
@@ -674,11 +682,16 @@ function ApplicantDetails({
 function ReadinessCount({
   label,
   value,
-}: Readonly<{ label: string; value: number }>) {
+  divided,
+}: Readonly<{ label: string; value: number; divided: boolean }>) {
   return (
-    <div className="rounded-sm bg-panel-muted/60 px-3 py-2">
+    <div
+      className={`border-t border-line-subtle px-5 py-4 first:border-t-0 sm:border-t-0 ${divided ? "sm:border-l" : "sm:border-l-0"}`}
+    >
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-1 font-semibold tabular-nums text-ink">{value}</dd>
+      <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">
+        {value}
+      </dd>
     </div>
   );
 }

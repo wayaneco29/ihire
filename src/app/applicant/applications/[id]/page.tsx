@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { CalendarDaysIcon } from "@heroicons/react/24/outline";
@@ -466,23 +467,13 @@ export default async function ApplicantApplicationDetailPage({
 
   return (
     <div className="mx-auto">
-      <Link
-        className="inline-flex min-h-11 items-center rounded-sm text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        href="/applicant/applications"
-      >
-        Back to your applications
-      </Link>
-      <header className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            {job?.title ?? "Application details"}
-          </h1>
-          <p className="mt-1 text-sm leading-6 text-muted">
-            Review history and score for this application.
-          </p>
-        </div>
-        <WorkflowStatusTag status={application.status} />
-      </header>
+      <PageHeader
+        title={job?.title ?? "Application details"}
+        description="Review history and score for this application."
+        backHref="/applicant/applications"
+        backLabel="Your applications"
+        actions={<WorkflowStatusTag status={application.status} />}
+      />
 
       {application.status === "ASSESSMENT_SCHEDULED" && (
         <section

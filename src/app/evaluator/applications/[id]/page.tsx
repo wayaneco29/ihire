@@ -336,6 +336,14 @@ export default async function EvaluatorApplicationReviewPage({
         }`}
         eyebrow="Anonymized applicant review"
         title={application.applicant_number}
+        backHref={
+          jobId === application.job_id
+            ? reviewQueueHref(jobId, queuePage, selectedStatus)
+            : "/evaluator/reviews"
+        }
+        backLabel={
+          jobId === application.job_id ? "Back to applicants" : "Review queue"
+        }
       />
       <section
         aria-label="Application status"
@@ -353,12 +361,6 @@ export default async function EvaluatorApplicationReviewPage({
           aria-label="Applicant review sequence"
           className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-panel p-4"
         >
-          <Link
-            className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
-            href={reviewQueueHref(jobId, queuePage, selectedStatus)}
-          >
-            Back to applicants
-          </Link>
           {queueApplicantsResult.error ||
           allAssignedApplicationsResult.error ? (
             <p className="text-sm text-warning">
@@ -450,14 +452,6 @@ export default async function EvaluatorApplicationReviewPage({
             ? "The evaluator decision will appear after both assessment scores are submitted."
             : "The evaluation panel will appear after all required documents are verified and an assessment has been scheduled."}
         </p>
-      )}
-      {jobId !== application.job_id && (
-        <Link
-          className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
-          href="/evaluator/reviews"
-        >
-          Back to review queue
-        </Link>
       )}
     </>
   );

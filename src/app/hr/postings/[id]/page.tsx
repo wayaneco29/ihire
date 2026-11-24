@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -433,64 +434,40 @@ export default async function HrPostingDetailPage({
     ? daysUntilDeadline(posting.deadline!, now)
     : null;
   const deadlineLabel = hasValidDeadline
-    ? formatDate(posting.deadline, "MMM D, YYYY · h:mm A")
+    ? formatDate(posting.deadline, "MMMM DD, YYYY · hh:mm A")
     : null;
-  const hiredPercent =
-    posting.slots > 0
-      ? Math.min(100, Math.round((hiredCount / posting.slots) * 100))
-      : 0;
-
   return (
     <div className="mx-auto">
       <PageHeader
         title={posting.title}
         description={posting.description ?? undefined}
+        backHref="/hr/postings"
+        backLabel="Job postings"
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {displayStatus === "OPEN" && !posting.deadline && (
-              <CloseIntakeButton jobId={posting.id} />
-            )}
+          displayStatus === "OPEN" ? (
             <Link
-              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-primary! bg-panel px-4 text-sm! font-semibold text-primary! transition-colors hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href={`/hr/postings/${posting.id}/edit`}
             >
+              <PencilSquareIcon aria-hidden="true" className="size-4" />
               Edit posting
             </Link>
-          </div>
+          ) : null
         }
       />
-      <Link
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        href="/hr/postings"
-      >
-        <span aria-hidden="true">←</span> Job postings
-      </Link>
 
       <section
         aria-label="Posting status and hiring progress"
-        className="mt-5 flex flex-col gap-3 rounded-sm border border-line bg-panel px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:px-5"
+        className="mt-6 flex flex-col gap-4 rounded-xl border border-line bg-panel px-5 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:py-5"
       >
-        <PostingStatusPill status={displayStatus} />
+        <PostingStatusPill compact status={displayStatus} />
         <div className="flex items-center gap-2 text-sm">
           <span className="font-semibold text-ink">
             {hiredCount} of {posting.slots}
           </span>
           <span className="text-muted">slots filled</span>
-          <div
-            aria-label={`${hiredCount} of ${posting.slots} slots filled`}
-            aria-valuemax={Math.max(posting.slots, 1)}
-            aria-valuemin={0}
-            aria-valuenow={Math.min(hiredCount, Math.max(posting.slots, 1))}
-            className="ml-1 h-1.5 w-24 overflow-hidden rounded-full bg-line sm:w-28"
-            role="progressbar"
-          >
-            <span
-              className="block h-full rounded-full bg-success"
-              style={{ width: `${hiredPercent}%` }}
-            />
-          </div>
         </div>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted ml-auto">
           Deadline{" "}
           <span className="font-semibold text-ink">
             {deadlineLabel ?? "No deadline"}
@@ -511,17 +488,6 @@ export default async function HrPostingDetailPage({
         </p>
       </section>
 
-      {posting.requirements && (
-        <details className="mt-3 rounded-lg border border-line bg-panel px-4 py-3 text-sm">
-          <summary className="cursor-pointer font-semibold text-ink">
-            View posting requirements
-          </summary>
-          <p className="mt-3 whitespace-pre-wrap leading-6 text-muted">
-            {posting.requirements}
-          </p>
-        </details>
-      )}
-
       {applicantsError ? (
         <div className="mt-7">
           <EmptyState
@@ -537,6 +503,16 @@ export default async function HrPostingDetailPage({
           initialApplicationId={initialApplicationId}
           slots={posting.slots}
         />
+      )}
+      {posting.requirements && (
+        <details className="mt-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm">
+          <summary className="cursor-pointer font-semibold text-ink">
+            View posting requirements
+          </summary>
+          <p className="mt-3 whitespace-pre-wrap leading-6 text-muted">
+            {posting.requirements}
+          </p>
+        </details>
       )}
     </div>
   );
