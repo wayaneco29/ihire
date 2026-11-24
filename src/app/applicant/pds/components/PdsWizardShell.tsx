@@ -201,7 +201,7 @@ export function PdsWizardShell({
               >
                 <span
                   aria-hidden="true"
-                  className="absolute bottom-4 left-[0.8rem] top-4 w-px bg-line-strong"
+                  className="absolute bottom-4 left-6 top-4 w-px bg-line-strong"
                 />
                 <ol className="space-y-1">
                   {STEPS.map((label, index) => {
@@ -220,7 +220,7 @@ export function PdsWizardShell({
                       >
                         <Button
                           aria-label={`${label}${active ? ", current section" : completed ? ", completed" : isUpdate ? ", available" : step === nextAvailableStep ? ", ready to continue" : ", not yet available"}`}
-                          className={`relative flex min-h-10 w-full items-center gap-2.5 rounded-md px-2 text-left text-sm font-semibold leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                          className={`relative flex min-h-11 w-full items-center gap-2.5 rounded-md px-2 text-left text-sm font-semibold leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                             active
                               ? "text-primary-dark"
                               : completed || canOpen
@@ -233,7 +233,7 @@ export function PdsWizardShell({
                           variant="unstyled"
                         >
                           <span
-                            className={`relative z-10 grid size-[1.4rem] shrink-0 place-items-center rounded-full border bg-panel-muted text-[10px] ${
+                            className={`relative z-10 grid size-8 shrink-0 place-items-center rounded-full border bg-panel-muted text-xs ${
                               completed
                                 ? `border-primary bg-primary text-on-primary ${active ? "ring-2 ring-primary-light" : ""}`
                                 : active

@@ -264,7 +264,7 @@ export function InvitationManager({
             {historyFilters.map((filter) => (
               <button
                 aria-pressed={historyFilter === filter.key}
-                className={`inline-flex min-h-10 items-center justify-center rounded-sm px-4 text-sm font-semibold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${historyFilter === filter.key ? "bg-panel text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                className={`inline-flex min-h-11 items-center justify-center rounded-sm px-4 text-sm font-semibold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${historyFilter === filter.key ? "bg-panel text-ink shadow-sm" : "text-muted hover:text-ink"}`}
                 key={filter.key}
                 onClick={() => setHistoryFilter(filter.key)}
                 type="button"

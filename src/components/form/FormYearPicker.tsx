@@ -58,6 +58,7 @@ export function FormYearPicker<T extends FieldValues>(
                   : undefined
             }
             aria-invalid={fieldState.invalid}
+            status={fieldState.invalid ? "error" : undefined}
             aria-labelledby={`${pickerId}-label`}
             aria-required={required}
             className="w-full"

@@ -380,7 +380,7 @@ export function PostingApplicants({
           {FILTERS.map((option) => (
             <Button
               aria-pressed={filter === option.id}
-              className={`inline-flex min-h-10 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-semibold cursor-pointer transition-colors ${filter === option.id ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
               key={option.id}
               onClick={() => updateFilter(setFilter, option.id)}
               type="button"
@@ -597,7 +597,7 @@ function ApplicantDetails({
         {applicant.criterion_scores.length ? (
           <div className="overflow-hidden rounded-sm border border-line">
             <table className="w-full text-left text-sm">
-              <thead className="bg-panel-muted text-xs uppercase tracking-wide text-muted">
+              <thead className="bg-panel-muted text-sm font-semibold text-ink">
                 <tr>
                   <th className="px-4 py-3 font-semibold" scope="col">
                     Category
@@ -645,7 +645,7 @@ function ApplicantDetails({
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line-subtle pt-4">
         {applicant.application_status === "HIRED" && (
           <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             href={`/hr/applications/${applicant.application_id}/pds`}
           >
             Printable PDS

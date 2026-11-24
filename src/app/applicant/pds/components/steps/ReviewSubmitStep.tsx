@@ -338,7 +338,7 @@ export function ReviewSubmitStep({
                 >
                   <span>{notice.text}</span>
                   <Button
-                    className="inline-flex min-h-10 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="inline-flex min-h-11 shrink-0 items-center rounded-sm px-3 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     onClick={() => reviewSection(notice.step)}
                     type="button"
                     variant="unstyled"
@@ -367,7 +367,7 @@ export function ReviewSubmitStep({
             Show fields I left blank
           </Checkbox>
           <Button
-            className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={toggleAllSections}
             type="button"
             variant="unstyled"
@@ -418,7 +418,7 @@ export function ReviewSubmitStep({
                     </span>
                   </span>
                   <span
-                    className={`hidden shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold sm:inline-flex ${stateClass}`}
+                    className={`hidden shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold sm:inline-flex ${stateClass}`}
                   >
                     {stateLabel}
                   </span>
@@ -458,7 +458,7 @@ export function ReviewSubmitStep({
                           : ""}
                       </p>
                       <Button
-                        className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         onClick={() => onEditSection(step)}
                         type="button"
                         variant="unstyled"

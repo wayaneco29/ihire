@@ -136,7 +136,7 @@ export function NotificationList({
             </p>
           </div>
           <Link
-            className="inline-flex min-h-10 shrink-0 items-center text-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
+            className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-warning underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning"
             href="/applicant/documents"
           >
             Go to documents

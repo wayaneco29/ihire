@@ -52,6 +52,7 @@ export function FormSelect<T extends FieldValues>(props: FormSelectProps<T>) {
                   : undefined
             }
             aria-invalid={fieldState.invalid}
+            status={fieldState.invalid ? "error" : undefined}
             aria-labelledby={`${selectId}-label`}
             aria-required={required}
             className="w-full"

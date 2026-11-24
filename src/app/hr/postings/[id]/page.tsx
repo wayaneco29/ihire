@@ -451,7 +451,7 @@ export default async function HrPostingDetailPage({
               <CloseIntakeButton jobId={posting.id} />
             )}
             <Link
-              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href={`/hr/postings/${posting.id}/edit`}
             >
               Edit posting
@@ -460,7 +460,7 @@ export default async function HrPostingDetailPage({
         }
       />
       <Link
-        className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         href="/hr/postings"
       >
         <span aria-hidden="true">←</span> Job postings

@@ -85,7 +85,7 @@ export function ReviewQueueList({
                       <span className="block text-xl font-bold leading-none">
                         {job.waiting_count}
                       </span>
-                      <span className="mt-1 block text-[11px] font-semibold">
+                      <span className="mt-1 block text-xs font-semibold">
                         waiting
                       </span>
                     </span>
@@ -102,7 +102,7 @@ export function ReviewQueueList({
                       </span>
                     )}
                   </div>
-                  <span className="mt-5 inline-flex min-h-10 items-center font-semibold text-primary">
+                  <span className="mt-5 inline-flex min-h-11 items-center font-semibold text-primary">
                     View applicants
                     <ArrowRightIcon
                       aria-hidden="true"
@@ -128,7 +128,7 @@ export function ReviewQueueList({
         ].map((option) => (
           <Link
             aria-current={selectedStatus === option.value ? "page" : undefined}
-            className={`inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
+            className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
             href={reviewQueueHref(selectedJobId, 1, option.value)}
             key={option.value ?? "ALL"}
           >
@@ -215,7 +215,7 @@ export function ReviewQueueList({
                 <WorkflowStatusTag status={item.application_status} />
               </div>
               <Link
-                className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
               >
                 Review applicant{" "}
@@ -226,7 +226,7 @@ export function ReviewQueueList({
         </div>
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[680px] text-left text-sm">
-            <thead className="bg-panel-muted text-xs uppercase tracking-wide text-muted">
+            <thead className="bg-panel-muted text-sm font-semibold text-ink">
               <tr>
                 <th className="px-5 py-3 font-semibold" scope="col">
                   Applicant
@@ -284,7 +284,7 @@ export function ReviewQueueList({
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link
-                      className="inline-flex min-h-10 items-center justify-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+                      className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
                       href={`/evaluator/applications/${item.application_id}?jobId=${selectedJobId}&page=${page}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
                     >
                       Review applicant

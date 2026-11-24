@@ -232,7 +232,7 @@ export async function TeachingAssessmentPage({
       />
       {showSchedule && (
         <Link
-          className="mb-4 inline-flex min-h-10 items-center text-sm font-semibold text-primary hover:text-primary-dark"
+          className="mb-4 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:text-primary-dark"
           href="/evaluator/reviews"
         >
           Review scored applicants
@@ -240,7 +240,7 @@ export async function TeachingAssessmentPage({
       )}
       {!showSchedule ? (
         <Link
-          className="inline-flex min-h-10 items-center gap-2 rounded-sm px-4 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light"
+          className="inline-flex min-h-11 items-center gap-2 rounded-sm px-4 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light"
           href={`/evaluator/evaluation-schedules?date=${date}`}
         >
           <ArrowLeftIcon aria-hidden="true" className="size-4" /> Back to
@@ -267,21 +267,21 @@ export async function TeachingAssessmentPage({
               className="flex flex-wrap items-center gap-2"
             >
               <Link
-                className="inline-flex min-h-10 items-center rounded-sm border border-line px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                className="inline-flex min-h-11 items-center rounded-sm border border-line px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                 href={`/evaluator/evaluation-schedules?date=${shiftIsoDate(date, -1)}`}
               >
                 Previous day
               </Link>
               {date !== today && (
                 <Link
-                  className="inline-flex min-h-10 items-center rounded-sm border border-line px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                  className="inline-flex min-h-11 items-center rounded-sm border border-line px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                   href="/evaluator/evaluation-schedules"
                 >
                   Today
                 </Link>
               )}
               <Link
-                className="inline-flex min-h-10 items-center rounded-sm border border-line px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
+                className="inline-flex min-h-11 items-center rounded-sm border border-line px-3 text-sm font-semibold text-ink hover:bg-panel-muted"
                 href={`/evaluator/evaluation-schedules?date=${nextDate}`}
               >
                 Next day
@@ -303,7 +303,7 @@ export async function TeachingAssessmentPage({
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[700px] text-left text-sm">
-                <thead className="bg-panel-muted text-xs font-semibold uppercase tracking-wide text-muted">
+                <thead className="bg-panel-muted text-sm font-semibold text-ink">
                   <tr>
                     <th className="px-5 py-3" scope="col">
                       Time
@@ -357,7 +357,7 @@ export async function TeachingAssessmentPage({
                       </td>
                       <td className="px-5 py-4 text-right">
                         <Link
-                          className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                          className="inline-flex min-h-11 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                           href={`/evaluator/evaluation-schedules/${row.id}?date=${date}&applicantNumber=${encodeURIComponent(row.applicant.applicant_number)}`}
                         >
                           Enter points
@@ -421,7 +421,7 @@ export async function TeachingAssessmentPage({
                     </p>
                   </div>
                   <Link
-                    className="inline-flex min-h-10 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                    className="inline-flex min-h-11 items-center rounded-sm bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                     href={`/evaluator/evaluation-schedules?date=${date}&applicantNumber=${encodeURIComponent(applicantNumber)}&applicationId=${application.application_id}`}
                   >
                     View this job

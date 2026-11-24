@@ -43,6 +43,7 @@ export function FormTextArea<T extends FieldValues>(
                   : undefined
             }
             aria-invalid={fieldState.invalid}
+            status={fieldState.invalid ? "error" : undefined}
             aria-labelledby={`${textAreaId}-label`}
             aria-required={required}
             id={textAreaId}

@@ -27,6 +27,10 @@
   --color-profile-line: var(--app-profile-line);
   --color-profile-muted: var(--app-profile-muted);
   --font-sans: var(--app-font-sans);
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5;
   --radius-sm: var(--app-radius-sm);
   --radius-md: var(--app-radius-md);
   --radius-lg: var(--app-radius-lg);
@@ -80,7 +84,7 @@
   --app-header-height: 4.5rem;
   --app-workspace-max: 90rem;
   --app-font-sans: var(--font-public-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --app-font-display: var(--font-bricolage-grotesque), ui-sans-serif, system-ui, sans-serif;
+  --app-font-display: var(--app-font-sans);
   --app-shadow-card: 0 1px 3px rgb(15 23 42 / 7%), 0 1px 2px rgb(15 23 42 / 4%);
   --app-shadow-dropdown: 0 12px 28px rgb(15 23 42 / 12%);
   --app-shadow-modal: 0 24px 60px rgb(15 23 42 / 20%);
@@ -223,11 +227,6 @@ button:not(:disabled) {
   transition-property: background-color, border-color, box-shadow, color, transform;
   transition-duration: var(--app-motion-fast);
   transition-timing-function: var(--app-ease-out);
-}
-
-button:not(:disabled):active,
-.ant-btn:not(:disabled):active {
-  transform: scale(0.98);
 }
 
 ::selection {

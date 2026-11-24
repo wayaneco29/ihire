@@ -269,7 +269,7 @@ export function EducationStep({
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
                     <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
                         graduationPeriodMismatch
                           ? "border-warning/20 bg-warning/10 text-warning"
                           : "border-line bg-panel-muted text-muted"

@@ -21,18 +21,18 @@ export function FieldFrame({
     <div className="min-w-0">
       {label && (
         <label
-          className="mb-1.5 block text-xs font-medium text-ink"
+          className="mb-2 block text-base font-medium text-ink"
           htmlFor={id}
           id={`${id}-label`}
         >
           {label}
-          {required && <span className="ml-1 text-danger">*</span>}
+          {required && <span className="ml-2 text-xs font-normal text-muted">(required)</span>}
         </label>
       )}
       {children}
       {(error || hint) && (
         <p
-          className={`mt-1.5 text-[10px] leading-2.5 ${error ? "text-danger" : "text-muted"}`}
+          className={`mt-2 text-xs leading-6 ${error ? "text-danger" : "text-muted"}`}
           id={error ? `${id}-error` : `${id}-hint`}
           role={error ? "alert" : undefined}
         >

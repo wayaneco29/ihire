@@ -60,7 +60,7 @@ export function EmptyState({
         <div className={cn(compact && "min-w-0")}>
           <h2
             className={cn(
-              "text-base font-normal text-muted",
+              "text-lg font-semibold text-ink",
               compact && "text-sm font-normal",
               headingClassName,
             )}

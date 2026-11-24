@@ -762,7 +762,7 @@ export function PositionCriteriaManager({
           {filterOptions.map((option) => (
             <button
               aria-pressed={filter === option.key}
-              className={`inline-flex min-h-10 items-center justify-center rounded-full border px-6 text-sm font-semibold cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border px-6 text-sm font-semibold cursor-pointer transition-colors ${filter === option.key ? "border-primary/50 bg-primary-light text-ink" : "border-line bg-transparent text-muted hover:bg-panel"}`}
               key={option.key}
               onClick={() => setFilter(option.key)}
               type="button"
@@ -776,7 +776,7 @@ export function PositionCriteriaManager({
 
       <div className="overflow-hidden rounded-sm border border-line bg-panel shadow">
         <Table<CriteriaTableRow>
-          className="criteria-table [&_.ant-table-thead>tr>th]:bg-panel [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-muted [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink [&_.ant-table-tbody>tr.criteria-group-row>td]:bg-panel-muted"
+          className="criteria-table [&_.ant-table-thead>tr>th]:bg-panel-muted [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-ink [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink [&_.ant-table-tbody>tr.criteria-group-row>td]:bg-panel-muted"
           columns={columns}
           dataSource={rows}
           locale={{ emptyText: "No positions match this filter." }}

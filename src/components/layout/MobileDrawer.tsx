@@ -1,6 +1,6 @@
 "use client";
 
-import { CloseOutlined } from "@ant-design/icons";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { useAppShell } from "@/context/AppShellContext";
@@ -81,24 +81,26 @@ export function MobileDrawer() {
       <section
         aria-labelledby="mobile-navigation-title"
         aria-modal="true"
-        className="mobile-drawer-panel absolute inset-y-0 left-0 flex flex-col border-r border-line bg-panel shadow-modal"
+        className="mobile-drawer-panel absolute inset-y-0 left-0 flex flex-col overflow-y-auto border-r border-line bg-panel shadow-modal"
+        id="mobile-navigation"
         role="dialog"
         ref={drawerRef}
         tabIndex={-1}
       >
-        <div className="flex h-14 items-center justify-end px-3">
+        <div className="flex min-h-16 shrink-0 items-center justify-end px-3">
           <h2 className="sr-only" id="mobile-navigation-title">
             Navigation
           </h2>
           <Button
             aria-label="Close navigation menu"
-            className="grid size-11 place-items-center rounded-sm text-muted hover:bg-panel-muted"
+            className="flex min-h-11 items-center gap-2 rounded-sm px-3 text-muted hover:bg-panel-muted"
             onClick={() => setMobileNavOpen(false)}
             ref={closeButtonRef}
             type="button"
             variant="unstyled"
           >
-            <CloseOutlined />
+            <XMarkIcon className="size-5" />
+            Close menu
           </Button>
         </div>
         <Sidebar />

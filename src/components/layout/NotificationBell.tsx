@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BellOutlined } from "@ant-design/icons";
+import { BellIcon } from "@heroicons/react/24/outline";
 import { Badge, Empty, Popover } from "antd";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -57,9 +57,9 @@ export function NotificationBell() {
 
   const content = (
     <div className="notification-popover-content">
-      <div className="flex items-center justify-between border-b border-line-subtle px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-subtle px-4 py-3">
         <p className="text-sm font-semibold text-ink">Notifications</p>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs text-muted">{unreadCount} unread</span>
           {unreadCount > 0 && (
             <Button
@@ -105,7 +105,7 @@ export function NotificationBell() {
             {notifications.map((notification) => (
               <li key={notification.id}>
                 <Button
-                  className={`min-h-10 w-full px-4 py-3 text-left transition hover:bg-panel-muted ${notification.is_read ? "" : "bg-primary-light/40"}`}
+                  className={`min-h-11 w-full px-4 py-3 text-left transition hover:bg-panel-muted ${notification.is_read ? "" : "bg-primary-light/40"}`}
                   onClick={() =>
                     void openNotification(notification.id, notification.link)
                   }
@@ -157,9 +157,9 @@ export function NotificationBell() {
       <Button
         aria-expanded={open}
         aria-label={`Notifications, ${unreadCount} unread`}
-        className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-primary-light"
+        className="text-muted"
         type="button"
-        variant="unstyled"
+        variant="ghost"
       >
         <Badge
           count={unreadCount}
@@ -167,8 +167,9 @@ export function NotificationBell() {
           size="small"
           overflowCount={99}
         >
-          <BellOutlined className="text-md" />
+          <BellIcon className="size-5 text-muted" />
         </Badge>
+        Notifications
       </Button>
     </Popover>
   );

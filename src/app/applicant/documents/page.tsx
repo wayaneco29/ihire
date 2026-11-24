@@ -298,7 +298,7 @@ export default async function ApplicantDocumentsPage() {
                 </ul>
               </div>
               <a
-                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href={`#${resubmissionTypes[0].id}`}
               >
                 Upload new version

@@ -86,10 +86,11 @@ export function ApplicationProgress({
             );
           })}
         </div>
-        <div className="mt-1.5 grid grid-cols-5 gap-1">
+        <p className="mt-2 text-xs font-medium text-ink sm:hidden">Current stage: {stages[activeStage]}</p>
+        <div className="mt-2 hidden grid-cols-5 gap-2 sm:grid">
           {stages.map((stage, index) => (
             <span
-              className={`text-[10px] leading-4 ${
+              className={`break-words text-xs leading-5 ${
                 index === activeStage ? "font-medium text-ink" : "text-muted"
               }`}
               key={stage}
@@ -110,10 +111,10 @@ export function ApplicationProgress({
       className="mt-4"
       role="group"
     >
-      <ol aria-label="Application stages" className="relative grid grid-cols-5">
+      <ol aria-label="Application stages" className="relative grid gap-3 sm:grid-cols-5 sm:gap-2">
         <li
           aria-hidden="true"
-          className="absolute left-[10%] right-[10%] top-1.25 h-px bg-line"
+          className="absolute left-[10%] right-[10%] top-1.25 hidden h-px bg-line sm:block"
         >
           <span
             className={`block h-full ${isUnsuccessful ? "bg-danger" : "bg-primary"}`}
@@ -139,15 +140,15 @@ export function ApplicationProgress({
           return (
             <li
               aria-current={isCurrent ? "step" : undefined}
-              className="flex min-w-0 flex-col items-center text-center"
+              className="flex min-w-0 items-center gap-3 sm:flex-col sm:gap-0 sm:text-center"
               key={stage}
             >
               <span
                 aria-hidden="true"
-                className={`relative z-10 size-2.75 rounded-full border-2 ${markerClass}`}
+                className={`relative z-10 size-3 shrink-0 rounded-full border-2 ${markerClass}`}
               />
               <span
-                className={`mt-2 text-[10px] leading-4 ${
+                className={`text-xs leading-5 sm:mt-2 ${
                   isCurrent ? "font-semibold text-ink" : "text-muted"
                 }`}
               >

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Modal, Table } from "antd";
+import { Modal, Pagination, Table } from "antd";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { loadApplicantReviewDocuments } from "../../actions";
@@ -52,7 +52,7 @@ function getColumns(onReview: (applicantNumber: string) => void): ColumnsType<Re
       title: "Action",
       key: "action",
       fixed: "right",
-      width: 180,
+      width: 220,
       align: "right",
       className: "pr-6!",
       render: (_, applicant) => (
@@ -70,14 +70,44 @@ export function DocumentReviewQueueTable({
   applicants: ReviewerApplicant[];
 }) {
   const [selectedApplicant, setSelectedApplicant] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(applicants.length / pageSize)));
+
+  function changePage(nextPage: number, nextPageSize: number) {
+    setPage(nextPage);
+    setPageSize(nextPageSize);
+  }
+
   return (
     <>
+      <div className="md:hidden">
+        <ul className="divide-y divide-line">
+          {applicants.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((applicant) => (
+            <li className="space-y-3 p-4" key={applicant.applicantNumber}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-base font-semibold text-ink">Applicant {applicant.applicantNumber}</h2>
+                <WorkflowStatusTag status="FOR_REVIEW" />
+              </div>
+              <p className="text-sm text-muted">{applicant.documentCount} document{applicant.documentCount === 1 ? "" : "s"} awaiting review</p>
+              <p className="text-xs text-muted">{applicant.documentTypes.join(", ")}</p>
+              <Button block onClick={() => setSelectedApplicant(applicant.applicantNumber)} variant="bordered">Review documents</Button>
+            </li>
+          ))}
+        </ul>
+        {applicants.length > pageSize && (
+          <Pagination className="p-4" current={currentPage} pageSize={pageSize} total={applicants.length} onChange={changePage} simple />
+        )}
+      </div>
+      <div className="hidden md:block">
       <Table<ReviewerApplicant>
-        className="[&_.ant-table-thead>tr>th]:bg-panel [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-muted [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink"
+        className="[&_.ant-table-thead>tr>th]:bg-panel-muted [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-ink [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink"
         columns={getColumns(setSelectedApplicant)}
         dataSource={applicants}
         pagination={{
-          pageSize: 25,
+          current: currentPage,
+          pageSize,
+          onChange: changePage,
           pageSizeOptions: [25, 50, 100],
           showSizeChanger: true,
           showTotal: (total) => `${total} applicants awaiting review`,
@@ -86,9 +116,10 @@ export function DocumentReviewQueueTable({
         scroll={{ x: 760 }}
         size="middle"
       />
+      </div>
       {selectedApplicant && (
         <Modal
-          centered destroyOnHidden footer={null} open width={960}
+          centered destroyOnHidden footer={<Button onClick={() => setSelectedApplicant(null)} variant="bordered">Close review</Button>} open width={960}
           title={`Review documents - Applicant ${selectedApplicant}`}
           onCancel={() => setSelectedApplicant(null)}
         >

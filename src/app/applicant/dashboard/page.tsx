@@ -192,22 +192,22 @@ export default async function ApplicantDashboardPage() {
 
       <section
         aria-label="Application result"
-        className="hero-surface mt-7 rounded-sm px-5 py-6 shadow-sm sm:px-7 sm:py-8"
+        className="mt-6 rounded-sm border border-line bg-panel p-5 sm:p-6"
       >
-        <p className="text-xs font-medium text-hero-text/80">
+        <p className="text-xs font-medium text-muted">
           {applicationResult ? "Application result" : "Your applications"}
         </p>
         <div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+            <h2 className="text-xl font-semibold leading-snug text-ink sm:text-2xl">
               {applicationHeadline}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-hero-text/90">
+            <p className="mt-2 text-sm leading-6 text-muted">
               {applicationSummary}
             </p>
           </div>
           <Link
-            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-panel px-4 text-sm font-semibold text-primary transition hover:bg-panel-muted"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-sm bg-primary px-4 py-2 text-base font-semibold text-on-primary hover:bg-primary-dark"
             href={
               latestApplication ? "/applicant/applications" : "/applicant/jobs"
             }
@@ -235,16 +235,16 @@ export default async function ApplicantDashboardPage() {
           </p>
         </div>
         <Link
-          className="inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+          className="inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
           href={pdsResult.error ? "/applicant/dashboard" : "/applicant/pds"}
         >
           {pdsResult.error
             ? "Refresh"
             : draft
-              ? "Continue PDS"
+              ? "Continue personal data sheet"
               : submitted
-                ? "View PDS"
-                : "Start PDS"}
+                ? "View personal data sheet"
+                : "Start personal data sheet"}
         </Link>
       </section>
 

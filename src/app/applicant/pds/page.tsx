@@ -83,7 +83,7 @@ export default async function ApplicantPdsPage() {
         actions={
           submitted ? (
             <Link
-              className="inline-flex min-h-10 items-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-11 items-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               href={`/applicant/pds/${submitted.id}/download`}
             >
               <ArrowDownTrayIcon aria-hidden="true" className="size-4" />
@@ -119,7 +119,7 @@ export default async function ApplicantPdsPage() {
               </span>
               <div className="min-w-0 flex w-full gap-4 md:gap-8">
                 <div className="flex-1">
-                  <h2 className="font-[Bricolage_Grotesque] text-base font-semibold text-primary-dark">
+                  <h2 className="text-base font-semibold text-primary-dark">
                     Your PDS is submitted
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">

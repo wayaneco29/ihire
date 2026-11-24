@@ -30,7 +30,7 @@ export function PostingStatusPill({
 
   return (
     <StatusTag
-      className={`min-h-6 shrink-0 px-2.5 py-0.5 text-[11px] font-semibold ${presentation.className}`}
+      className={presentation.className}
     >
       {presentation.label}
     </StatusTag>

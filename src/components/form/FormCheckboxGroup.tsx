@@ -54,7 +54,7 @@ export function FormCheckboxGroup<T extends FieldValues>(
               }
               aria-invalid={fieldState.invalid}
               aria-required={required}
-              className={cn("grid gap-2 sm:grid-cols-2", className)}
+              className={cn("grid gap-2 sm:grid-cols-2 [&_.ant-checkbox-wrapper]:min-h-11 [&_.ant-checkbox-wrapper]:items-center", className)}
               disabled={disabled}
               name={field.name}
               onChange={(values: string[]) => field.onChange(values)}

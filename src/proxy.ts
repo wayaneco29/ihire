@@ -51,7 +51,22 @@ export async function proxy(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   const isSignedIn = !authError && Boolean(user);
   const roleClaim = user?.app_metadata?.role;
-  const role = isSignedIn && isUserRole(roleClaim) ? roleClaim : null;
+  let role = isSignedIn && isUserRole(roleClaim) ? roleClaim : null;
+  let applicantHasSubmittedPds: boolean | undefined;
+
+  // Registration creates an APPLICANT profile without adding an Auth role.
+  // Verify that profile instead of treating a valid applicant session as signed out.
+  if (isSignedIn && user && !role) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role, has_submitted_pds")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!profileError && profile?.role === "APPLICANT") {
+      role = "APPLICANT";
+      applicantHasSubmittedPds = profile.has_submitted_pds;
+    }
+  }
   const pathname = request.nextUrl.pathname;
   const protectedArea = PROTECTED_AREAS.find(
     ({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`),
@@ -76,12 +91,15 @@ export async function proxy(request: NextRequest) {
   const isPdsRoute =
     pathname === "/applicant/pds" || pathname.startsWith("/applicant/pds/");
   if (protectedArea?.role === "APPLICANT" && !isPdsRoute && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("has_submitted_pds")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!profile?.has_submitted_pds) {
+    if (applicantHasSubmittedPds === undefined) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("has_submitted_pds")
+        .eq("id", user.id)
+        .maybeSingle();
+      applicantHasSubmittedPds = profile?.has_submitted_pds ?? false;
+    }
+    if (!applicantHasSubmittedPds) {
       const destination = new URL("/applicant/pds", request.url);
       return copyCookies(response, NextResponse.redirect(destination));
     }

@@ -5,13 +5,13 @@ import { BrandMark } from "@/components/layout/BrandMark";
 export function AuthPageFrame({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <main className="grid min-h-screen place-items-center bg-canvas px-4 py-6 sm:px-6 sm:py-10">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-line bg-panel shadow-card md:min-h-[600px] md:grid-cols-2">
+      <section className="grid w-full max-w-5xl overflow-hidden rounded-md border border-line bg-panel shadow-card md:min-h-[600px] md:grid-cols-2">
         <div className="flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-10 lg:px-14">
           <div className="mb-8 flex items-center gap-3">
             <BrandMark compact />
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                Education portal
+              <p className="text-xs font-semibold text-primary">
+                Recruitment portal
               </p>
               <p className="mt-1 text-sm font-semibold text-ink">
                 Southern Leyte
@@ -32,7 +32,7 @@ export function AuthPageFrame({ children }: Readonly<{ children: ReactNode }>) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/15 to-slate-950/10" />
           <div className="absolute inset-x-5 bottom-5 rounded-sm border border-white/25 bg-slate-950/40 p-5 text-white shadow-xl backdrop-blur-md sm:inset-x-8 sm:bottom-8 sm:p-7">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-100">
+            <p className="text-xs font-semibold text-emerald-100">
               Southern Leyte Division
             </p>
             <h2 className="mt-3 max-w-sm text-2xl font-semibold leading-tight sm:text-3xl">

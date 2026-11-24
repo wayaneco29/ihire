@@ -42,7 +42,7 @@ export function DocumentPreviewModal({
 
   const previewUrl = result?.success ? result.signedUrl : null;
   return (
-    <Modal centered destroyOnHidden footer={null} onCancel={onClose} open title={title} width={960}>
+    <Modal centered destroyOnHidden footer={<Button onClick={onClose} variant="bordered">Close document</Button>} onCancel={onClose} open title={title} width={960}>
       <div className="max-h-[78dvh] overflow-y-auto">
         <div className="bg-panel-muted p-3 sm:p-5">
           {previewUrl ? (
@@ -62,7 +62,7 @@ export function DocumentPreviewModal({
                 <p className="p-5 text-center text-sm text-muted">Preview is not available for this file type. Download the file to view it.</p>
               )}
               <a
-                className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                className="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                 download href={previewUrl} target="_blank" rel="noopener noreferrer"
               >
                 Download document

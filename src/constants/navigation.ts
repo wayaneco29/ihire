@@ -48,7 +48,7 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
       title: "Workspace",
       items: [
         {
-          label: "Overview",
+          label: "Dashboard",
           href: "/applicant/dashboard",
           icon: Squares2X2Icon,
           available: true,
@@ -102,7 +102,7 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
           available: true,
         },
         {
-          label: "Evaluation Schedules",
+          label: "Evaluation schedules",
           href: "/evaluator/evaluation-schedules",
           icon: AcademicCapIcon,
           available: true,

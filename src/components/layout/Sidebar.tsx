@@ -12,6 +12,7 @@ import { BrandMark } from "./BrandMark";
 import { Button } from "@/components/ui/Button";
 import { useAppShell } from "@/context/AppShellContext";
 import { useAuth } from "@/context/AuthContext";
+import { ROLE_LABELS } from "@/constants/roles";
 import { getNavigation } from "@/constants/navigation";
 import { useAccountSecurity } from "./AccountSecurityProvider";
 
@@ -59,11 +60,12 @@ export function Sidebar() {
             <ul className="mt-2 space-y-1">
               {section.items.map(({ label, href, icon: Icon, available }) => {
                 const itemClasses =
-                  "flex min-h-10 w-full items-center font-[Bricolage_Grotesque] gap-3 rounded-xs border-l-2 px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
-                const isApplicantOverview = href === "/applicant";
+                  "flex min-h-11 w-full items-center gap-3 rounded-sm border-l-4 px-3 py-2 text-left text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+                const isApplicantOverview = href === "/applicant/dashboard";
                 const isActive = isApplicantOverview
-                  ? pathname === href || pathname === "/applicant/dashboard"
-                  : pathname === href || pathname.startsWith(`${href}/`);
+                  ? pathname === href || pathname === "/applicant"
+                  : pathname === href || pathname.startsWith(`${href}/`) ||
+                    (href === "/document-reviewer/documents" && pathname.startsWith("/document-reviewer/applicants/"));
 
                 return (
                   <li key={label}>
@@ -101,7 +103,7 @@ export function Sidebar() {
         <div className="pt-2 pb-4">
           <Button
             block
-            className="flex min-h-10 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
+            className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-base! font-semibold text-muted transition-colors hover:bg-panel-muted hover:text-ink"
             disabled={loading}
             icon={<LockClosedIcon className="size-5" />}
             onClick={handleChangePassword}
@@ -116,7 +118,7 @@ export function Sidebar() {
           )}
           <Button
             block
-            className="flex min-h-10 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm! font-semibold text-danger transition-colors hover:bg-danger/10"
+            className="flex min-h-11 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-base! font-semibold text-danger transition-colors hover:bg-danger/10"
             disabled={loading}
             icon={<ArrowRightStartOnRectangleIcon className="size-5" />}
             onClick={handleSignOut}
@@ -138,7 +140,7 @@ export function Sidebar() {
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-ink">
-              {role ?? "Recruitment portal"}
+              {role ? ROLE_LABELS[role] : "Recruitment portal"}
             </p>
             <p className="truncate text-xs text-muted">
               {user?.email ??

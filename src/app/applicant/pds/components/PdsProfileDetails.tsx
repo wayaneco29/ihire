@@ -111,13 +111,13 @@ function ProfileSection({
     >
       <header className="mb-3 flex flex-wrap items-center gap-3">
         <h2
-          className="font-[Bricolage_Grotesque] text-base font-semibold text-primary-dark"
+          className="text-base font-semibold text-primary-dark"
           id={id + "-heading"}
         >
           {title}
         </h2>
         {count !== undefined && (
-          <span className="rounded-full bg-primary px-2 py-0.5 text-xs tabular-nums text-white">
+          <span className="rounded-full bg-primary px-2 py-0.5 text-xs tabular-nums text-on-primary">
             {count}
           </span>
         )}

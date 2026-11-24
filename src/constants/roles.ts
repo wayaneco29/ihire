@@ -7,3 +7,11 @@ export const USER_ROLES = [
 ] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  APPLICANT: "Applicant",
+  EVALUATOR: "Evaluator",
+  DOCUMENT_REVIEWER: "Document reviewer",
+  HR: "Human resources",
+  ADMIN: "Administrator",
+};

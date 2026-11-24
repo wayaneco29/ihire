@@ -133,7 +133,7 @@ export function FormUpload<T extends FieldValues>(props: FormUploadProps<T>) {
                       </span>
                     </span>
                   </div>
-                  <span className="inline-flex min-h-10 shrink-0 items-center rounded-[8px] border border-primary/50 px-4 text-sm font-semibold text-primary">
+                  <span className="inline-flex min-h-11 shrink-0 items-center rounded-[8px] border border-primary/50 px-4 text-sm font-semibold text-primary">
                     Choose file
                   </span>
                 </div>

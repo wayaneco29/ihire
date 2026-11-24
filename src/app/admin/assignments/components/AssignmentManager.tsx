@@ -181,14 +181,14 @@ export function AssignmentManager({
           <div className="flex flex-wrap gap-2">
             <Link
               aria-current={filter === "all" ? "page" : undefined}
-              className={`inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "all" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
+              className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "all" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
               href={filterHref("all")}
             >
               All open
             </Link>
             <Link
               aria-current={filter === "unassigned" ? "page" : undefined}
-              className={`inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "unassigned" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
+              className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold ${filter === "unassigned" ? "border-primary bg-primary-light text-primary" : "border-line-strong text-ink hover:bg-panel-muted"}`}
               href={filterHref("unassigned")}
             >
               Unassigned

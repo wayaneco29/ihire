@@ -10,7 +10,7 @@ export function StatusTag({ children, className }: StatusTagProps) {
   return (
     <span
       className={cn(
-        "inline-flex min-h-7 items-center rounded-full border px-2.5 py-1 text-xs font-medium leading-none",
+        "inline-flex min-h-8 max-w-full items-center rounded-sm border px-2.5 py-1 text-xs font-medium leading-5",
         className,
       )}
     >

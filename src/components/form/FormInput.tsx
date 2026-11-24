@@ -37,6 +37,7 @@ export function FormInput<T extends FieldValues>(props: FormInputProps<T>) {
                   : undefined
             }
             aria-invalid={fieldState.invalid}
+            status={fieldState.invalid ? "error" : undefined}
             aria-labelledby={`${inputId}-label`}
             aria-required={required}
             id={inputId}

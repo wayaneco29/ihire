@@ -219,7 +219,7 @@ export function DocumentTypeCard({
             Search {recordLabel.toLowerCase()}s
           </label>
           <Input
-            className="min-h-10 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
+            className="min-h-11 min-w-0 flex-1 rounded-sm! border-line! bg-panel! px-4 text-sm! text-ink placeholder:text-muted"
             id={`${id}-search`}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -363,7 +363,7 @@ export function DocumentTypeCard({
         )}
         {signedUrl && (
           <a
-            className="inline-flex min-h-10 items-center text-sm font-semibold text-primary hover:underline"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
             href={signedUrl}
             rel="noreferrer"
             target="_blank"
@@ -429,7 +429,7 @@ export function DocumentTypeCard({
         )}
         {signedUrl && (
           <a
-            className="mt-1 inline-flex min-h-10 items-center text-sm font-semibold text-primary hover:underline"
+            className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
             href={signedUrl}
             rel="noreferrer"
             target="_blank"

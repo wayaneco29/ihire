@@ -38,7 +38,7 @@ export function WorkflowStatusTag({
 }) {
   return (
     <StatusTag
-      className={`block text-[10px]! min-w-0 justify-center px-4 text-center font-medium ${statusStyles[status] ?? "border-line bg-panel-muted text-muted text-center"}`}
+      className={`min-w-0 justify-center text-center ${statusStyles[status] ?? "border-line bg-panel-muted text-muted"}`}
     >
       {label ?? formatStatus(status)}
     </StatusTag>

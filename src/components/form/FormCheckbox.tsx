@@ -18,6 +18,7 @@ export function FormCheckbox<T extends FieldValues>(
       render={({ field, fieldState }) => (
         <div className="mb-4 min-w-0">
           <Checkbox
+            className="min-h-11 items-center"
             aria-describedby={
               fieldState.error
                 ? `${checkboxId}-error`
@@ -36,7 +37,7 @@ export function FormCheckbox<T extends FieldValues>(
             {label && (
               <span className="text-sm font-medium text-ink">
                 {label}
-                {required && <span className="ml-1 text-danger">*</span>}
+                {required && <span className="ml-2 text-xs font-normal text-muted">(required)</span>}
               </span>
             )}
           </Checkbox>

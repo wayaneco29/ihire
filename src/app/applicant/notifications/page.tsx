@@ -123,7 +123,7 @@ export default async function ApplicantNotificationsPage({
             >
               {page > 1 && (
                 <Link
-                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-line px-4 text-sm font-semibold text-primary hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-line px-4 text-sm font-semibold text-primary hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/notifications?page=${page - 1}`}
                 >
                   Newer notifications
@@ -131,7 +131,7 @@ export default async function ApplicantNotificationsPage({
               )}
               {page * pageSize < totalCount && (
                 <Link
-                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-line px-4 text-sm font-semibold text-primary hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-line px-4 text-sm font-semibold text-primary hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/notifications?page=${page + 1}`}
                 >
                   Show older notifications

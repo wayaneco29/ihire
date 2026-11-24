@@ -95,7 +95,7 @@ export function HrDashboardView({
             <p
               className={`mt-1 font-semibold tracking-tight ${
                 index === 0
-                  ? "text-4xl text-warning sm:text-5xl"
+                  ? "text-3xl text-warning"
                   : "text-3xl text-ink"
               }`}
             >
@@ -122,12 +122,12 @@ export function HrDashboardView({
 
           <nav
             aria-label="Filter postings"
-            className="inline-flex w-fit items-center gap-1 rounded-md border border-line bg-panel p-1"
+            className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-md border border-line bg-panel p-1"
           >
             {filters.map((option) => (
               <Button
                 aria-pressed={filter === option.id}
-                className={`inline-flex min-h-10 items-center justify-center rounded-sm px-4 text-sm font-semibold transition-colors ${
+                className={`inline-flex min-h-11 items-center justify-center rounded-sm px-4 text-sm font-semibold transition-colors ${
                   filter === option.id
                     ? "bg-primary-light text-primary"
                     : "text-muted hover:bg-panel-muted hover:text-ink"
@@ -150,7 +150,7 @@ export function HrDashboardView({
               Create a posting to begin receiving applications.
             </p>
             <Link
-              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
               href="/hr/postings/new"
             >
               Create your first posting
@@ -190,7 +190,7 @@ export function HrDashboardView({
                     <div className="min-w-0">
                       <PostingStatusPill status={posting.status} />
                       <h3
-                        className={`mt-1 truncate font-semibold ${
+                        className={`mt-1 break-words font-semibold ${
                           posting.status === "OPEN"
                             ? "text-ink group-hover:text-primary"
                             : "text-muted-strong"

@@ -212,7 +212,7 @@ export function AnonymizedApplicantReview({
             </span>
           </div>
           <div className="mt-4 rounded-sm border border-primary/20 bg-primary-light/40 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary-dark">
+            <p className="text-xs font-semibold text-primary-dark">
               Education points
             </p>
             <p className="mt-1 text-sm font-medium text-ink">
@@ -317,7 +317,7 @@ export function AnonymizedApplicantReview({
             </span>
           </div>
           <div className="mt-4 rounded-sm border border-primary/20 bg-primary-light/40 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary-dark">
+            <p className="text-xs font-semibold text-primary-dark">
               Qualifying public teaching experience
             </p>
             <p className="mt-1 text-sm font-medium text-ink">
@@ -554,7 +554,7 @@ export function AnonymizedApplicantReview({
               )}
               {previewUrl && (
                 <a
-                  className="mt-3 inline-flex min-h-10 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-primary hover:bg-primary-light"
                   download
                   href={previewUrl}
                 >
@@ -577,7 +577,7 @@ export function AnonymizedApplicantReview({
                   </p>
                 )}
               </div>
-              <span className="inline-flex min-h-10 items-center gap-2 text-sm text-muted">
+              <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted">
                 Document status{" "}
                 <WorkflowStatusTag status={selectedDocument.document_status} />
               </span>

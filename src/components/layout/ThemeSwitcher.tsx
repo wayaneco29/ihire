@@ -1,6 +1,6 @@
 "use client";
 
-import { DesktopOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
+import { ComputerDesktopIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import type { ReactNode } from "react";
@@ -13,9 +13,9 @@ const THEME_OPTIONS: {
   label: string;
   icon: ReactNode;
 }[] = [
-  { key: "system", label: "System", icon: <DesktopOutlined /> },
-  { key: "light", label: "Light", icon: <SunOutlined /> },
-  { key: "dark", label: "Dark", icon: <MoonOutlined /> },
+  { key: "system", label: "Use device setting", icon: <ComputerDesktopIcon className="size-5" /> },
+  { key: "light", label: "Light background", icon: <SunIcon className="size-5" /> },
+  { key: "dark", label: "Dark background", icon: <MoonIcon className="size-5" /> },
 ];
 
 export function ThemeSwitcher() {
@@ -32,11 +32,13 @@ export function ThemeSwitcher() {
     <Dropdown menu={menu} placement="bottomRight" trigger={["click"]}>
       <Button
         aria-label={`Color theme: ${activeOption.label}`}
-        className="grid size-11 place-items-center rounded-sm group cursor-pointer text-muted transition hover:bg-primary-light hover:text-primary-dark"
+        className="text-muted"
         icon={activeOption.icon}
         title={`Color theme: ${activeOption.label}`}
-        variant="unstyled"
-      />
+        variant="ghost"
+      >
+        Appearance
+      </Button>
     </Dropdown>
   );
 }

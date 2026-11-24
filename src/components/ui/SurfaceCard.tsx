@@ -7,10 +7,10 @@ type SurfaceCardProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const TONE_CLASSES = {
-  default: "border-line bg-panel shadow-card",
+  default: "border-line bg-panel",
   muted: "border-line-subtle bg-panel-muted",
   interactive:
-    "border-line bg-panel shadow-card transition duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-dropdown",
+    "border-line bg-panel transition-colors hover:border-primary hover:bg-panel-muted",
 } as const;
 
 export function SurfaceCard({

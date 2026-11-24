@@ -58,6 +58,7 @@ export function FormDatePicker<T extends FieldValues>(
             }
             disabledDate={disabledDate}
             aria-invalid={fieldState.invalid}
+            status={fieldState.invalid ? "error" : undefined}
             aria-labelledby={`${pickerId}-label`}
             aria-required={required}
             className="w-full"

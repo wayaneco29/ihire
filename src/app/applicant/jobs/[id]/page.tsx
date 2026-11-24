@@ -387,7 +387,7 @@ export default async function ApplicantJobDetailPage({
   return (
     <>
       <Link
-        className="mb-5 inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         href="/applicant/jobs"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
@@ -478,7 +478,7 @@ export default async function ApplicantJobDetailPage({
                 </p>
                 <WorkflowStatusTag status={application.status} />
                 <Link
-                  className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   href={`/applicant/applications/${application.id}`}
                 >
                   View your application
@@ -511,7 +511,7 @@ export default async function ApplicantJobDetailPage({
                     verification after your application is filed.
                   </p>
                   <Link
-                    className="mt-3 inline-flex min-h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                    className="mt-3 inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
                     href="/applicant/documents"
                   >
                     Go to documents
@@ -520,7 +520,7 @@ export default async function ApplicantJobDetailPage({
               )
             ) : (
               <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href="/applicant/pds"
               >
                 Complete your PDS first

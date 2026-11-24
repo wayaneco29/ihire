@@ -4,6 +4,8 @@ export type ResolvedTheme = Exclude<ThemePreference, "system">;
 export const DESIGN_TOKENS = {
   spacingUnit: 4,
   controlHeight: 44,
+  fontSize: 16,
+  fontSizeSmall: 14,
   radius: { sm: 6, md: 10, lg: 16, full: 9999 },
   layout: {
     headerHeight: 72,

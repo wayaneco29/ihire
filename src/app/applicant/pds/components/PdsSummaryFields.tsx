@@ -384,7 +384,7 @@ export function SummaryObject({
                 className={
                   variant === "profile"
                     ? "text-xs text-muted"
-                    : "text-[13px] text-muted"
+                    : "text-xs text-muted"
                 }
               >
                 {readableLabel(key)}
