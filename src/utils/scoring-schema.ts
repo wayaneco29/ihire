@@ -10,9 +10,9 @@ export const scoringRuleSchema = yup.object({
   points,
   minimum_level: yup.number().transform((value, original) => original === "" ? null : value).nullable().integer().min(1).max(31).default(null),
   bands: yup.array().of(yup.object({
-    threshold: yup.number().typeError("Enter a whole number.").integer().min(0).max(30).required(),
+    threshold: yup.number().typeError("Enter a whole number.").integer().min(0).max(61).required(),
     points,
-  })).max(31).required(),
+  })).max(32).required(),
 }).test("bands", "Use ascending, unique thresholds starting at 0 and nondecreasing points within the maximum.", (rule) => {
   if (!rule || !Array.isArray(rule.bands) || !isAutomaticCriterion(rule.criterion_key)) return true;
   return rule.bands.length > 0 && rule.bands[0].threshold === 0 && rule.bands.every((band, i) =>
@@ -28,8 +28,8 @@ export function scoringPublicationError(rules: ScoringFormValues["rules"]): stri
   for (const rule of rules) {
     if (!isAutomaticCriterion(rule.criterion_key) || rule.points === 0) continue;
     if (rule.minimum_level === null) return `${rule.title}: set a minimum qualification level.`;
-    if (!rule.bands.some((band) => band.points === rule.points && band.threshold <= 31 - rule.minimum_level!))
-      return `${rule.title}: award the full ${rule.points} points at a reachable threshold (at most ${31 - rule.minimum_level} extra levels).`;
+    if (!rule.bands.some((band) => band.points === rule.points && band.threshold <= 31))
+      return `${rule.title}: award the full ${rule.points} points at a reachable applicant level (31 or lower).`;
   }
   return null;
 }

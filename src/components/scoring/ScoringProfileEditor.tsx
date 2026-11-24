@@ -89,9 +89,12 @@ function RuleFields({
       {automatic && (
         <>
           <p className="text-xs leading-5 text-muted">
-            The highest threshold the applicant meets determines their points.
-            Start at 0 and add thresholds in ascending order. Full points must be
-            reachable by level 31 before publication.
+            The highest threshold at or below the applicant’s direct level
+            determines their points. The minimum level is checked separately;
+            applicants below it receive 0. Start at 0 and add thresholds in
+            ascending order. For example, 0:0, 2:2, 5:4, 10:7. Levels above 31
+            cannot be reached; migrated profiles may have higher thresholds to
+            preserve their previous scoring.
           </p>
           {fields.map((field, bandIndex) => (
             <div
@@ -100,8 +103,8 @@ function RuleFields({
             >
               <FormInput
                 control={control}
-                label="Extra levels"
-                max={30}
+                label="Applicant level threshold"
+                max={61}
                 min={0}
                 name={`rules.${index}.bands.${bandIndex}.threshold`}
                 required
@@ -129,13 +132,13 @@ function RuleFields({
             </div>
           ))}
           <Button
-            disabled={fields.length >= 31}
+            disabled={
+              fields.length >= 32 ||
+              Number(rule.bands.at(-1)?.threshold ?? 0) >= 31
+            }
             onClick={() =>
               append({
-                threshold: Math.min(
-                  30,
-                  Number(rule.bands.at(-1)?.threshold ?? 0) + 2,
-                ),
+                threshold: Math.min(31, Number(rule.bands.at(-1)?.threshold ?? 0) + 2),
                 points: Number(rule.bands.at(-1)?.points ?? 0),
               })
             }

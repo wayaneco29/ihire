@@ -102,12 +102,12 @@ export function ApplyButton({
             Maximum points / Your points
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted">
-            Education level differences map to equivalent points using the
-            configured Education weight. Training hours map to 8-hour
-            increments, then use the position’s minimum Training level and
-            configured weight. Public teaching experience uses government
-            service entries with teaching-related titles, merged to avoid
-            double-counting overlaps. Differences below 2 earn 0 points.
+            HR scoring thresholds compare directly with your applicant level;
+            the highest threshold at or below your level sets your points.
+            Applicants below the position minimum receive 0. Training level is
+            calculated from 8-hour steps. Experience uses government-service
+            entries with teaching-related titles, merged to avoid double-counting
+            overlaps.
           </p>
           <ul className="mt-3 divide-y divide-line-subtle">
             {selectedPosition.criteria.map((criterion) => (

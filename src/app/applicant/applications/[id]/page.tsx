@@ -149,7 +149,7 @@ export default async function ApplicantApplicationDetailPage({
         const weightsByCriterion = new Map(weights.map((weight) => [weight.criterion_id, weight.points]));
         const scoresByCriterion = new Map((scoresResult.data ?? []).map((score) => [score.criterion_id, score.points]));
         const scoringResult = await applicant.supabase.from("v_application_scoring")
-          .select("criterion_key, applicant_level, minimum_level, maximum_points, points, difference, matched_threshold")
+          .select("criterion_key, applicant_level, minimum_level, maximum_points, points, matched_threshold")
           .eq("application_id", application.id);
         if (scoringResult.error) {
           criteriaUnavailable = true;
@@ -161,7 +161,7 @@ export default async function ApplicantApplicationDetailPage({
             if (["EDUCATION", "TRAINING", "EXPERIENCE"].includes(criterion.criterion_key)) {
               const score = calculatedByKey.get(criterion.criterion_key);
               const detail = score?.applicant_level !== null && score?.applicant_level !== undefined && score.minimum_level !== null
-                ? `Applicant level ${score.applicant_level}; minimum level ${score.minimum_level}; ${score.difference} levels above the minimum${score.matched_threshold === null ? "" : `; matched the ${score.matched_threshold}-level threshold`}.`
+                ? `Applicant level ${score.applicant_level}; minimum level ${score.minimum_level}; ${score.matched_threshold === null ? "no threshold matched" : `matched the level ${score.matched_threshold} threshold`}.`
                 : "Complete the related PDS records and ensure the position requirement is configured.";
               return [{ id: criterion.id, title: criterion.title, maximumPoints,
                 earnedPoints: score?.points ?? null,

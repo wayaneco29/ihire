@@ -16,7 +16,7 @@ export function previewScore(rule: ScoringRule, level: number | null): number | 
   if (level === null || rule.minimum_level === null || !rule.bands.length) return null;
   if (level < rule.minimum_level) return 0;
   return [...rule.bands].sort((a, b) => b.threshold - a.threshold)
-    .find((band) => band.threshold <= level - rule.minimum_level!)?.points ?? null;
+    .find((band) => band.threshold <= level)?.points ?? null;
 }
 
 export function bandRange(bands: ScoringBand[], index: number): string {

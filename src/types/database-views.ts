@@ -1,7 +1,7 @@
 import type { PublicEnums } from './database-enums';
 
 export type PublicViews = {
-    v_application_scoring: { Row: { application_id: string; criterion_key: string; applicant_level: number | null; minimum_level: number | null; maximum_points: number; points: number | null; difference: number | null; matched_threshold: number | null }; Relationships: [] };
+    v_application_scoring: { Row: { application_id: string; criterion_key: string; applicant_level: number | null; minimum_level: number | null; maximum_points: number; points: number | null; matched_threshold: number | null }; Relationships: [] };
 
     "v_admin_application_assignment_history": {
         Row: {

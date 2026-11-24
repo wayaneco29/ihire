@@ -9,13 +9,17 @@ revoke update (base_qualification_level, base_training_increment_level, base_exp
 update public.job_postings set scoring_locked_at = now()
 where status <> 'DRAFT' or exists (select 1 from public.applications a where a.job_id = job_postings.id);
 
--- Preserve historical rounding, including whole-point education scores.
+-- Store historical band thresholds as direct applicant levels. Offsetting by
+-- the old minimum preserves existing published results under the new lookup.
 update public.position_criterion_weights w
 set minimum_level = case c.criterion_key
   when 'EDUCATION' then p.base_qualification_level
   when 'TRAINING' then p.base_training_increment_level
   when 'EXPERIENCE' then p.base_experience_increment_level end,
-  bands = (select jsonb_agg(jsonb_build_object('threshold', n * 2, 'points',
+  bands = (select jsonb_agg(jsonb_build_object('threshold', case when n = 0 then 0 else
+    coalesce(case c.criterion_key when 'EDUCATION' then p.base_qualification_level
+      when 'TRAINING' then p.base_training_increment_level
+      when 'EXPERIENCE' then p.base_experience_increment_level end, 0) + n * 2 end, 'points',
     round(w.points * n / 5, case when c.criterion_key = 'EDUCATION' then 0 else 2 end)) order by n)
     from generate_series(0, 5) n)
 from public.position_criteria c, public.positions p
@@ -47,16 +51,16 @@ begin
     if r.criterion_key not in ('EDUCATION', 'TRAINING', 'EXPERIENCE') then continue; end if;
     if r.bands is null or jsonb_typeof(r.bands) <> 'array' then
       raise exception 'Provide comparison bands.' using errcode = '22023'; end if;
-    if jsonb_array_length(r.bands) not between 1 and 31 then
-      raise exception 'Provide between 1 and 31 comparison bands.' using errcode = '22023'; end if;
+    if jsonb_array_length(r.bands) not between 1 and 32 then
+      raise exception 'Provide between 1 and 32 comparison bands.' using errcode = '22023'; end if;
     previous_threshold := -1; previous_points := -1; maximum_reachable := r.points = 0;
     for b in select * from jsonb_to_recordset(r.bands) x(threshold numeric, points numeric) loop
       if b.threshold is null or b.points is null or b.threshold <> trunc(b.threshold)
-        or b.threshold not between 0 and 30 or b.threshold <= previous_threshold
+        or b.threshold not between 0 and 61 or b.threshold <= previous_threshold
         or (previous_threshold = -1 and b.threshold <> 0)
         or b.points < previous_points or b.points not between 0 and r.points or b.points <> round(b.points, 2)
       then raise exception 'Bands must start at 0, have ascending unique thresholds, and nondecreasing points within the maximum.' using errcode = '22023'; end if;
-      maximum_reachable := maximum_reachable or (b.points = r.points and b.threshold <= 31 - r.minimum_level);
+      maximum_reachable := maximum_reachable or (b.points = r.points and b.threshold <= 31);
       previous_threshold := b.threshold; previous_points := b.points;
     end loop;
     if p_complete and r.points > 0 and (r.minimum_level is null or not coalesce(maximum_reachable, false)) then
@@ -100,7 +104,7 @@ returns numeric language sql immutable set search_path = '' as $$
    when p_minimum is null or p_level is null or p_level not between 1 and 31 then null
    when p_level < p_minimum then 0
    else (select b.points from jsonb_to_recordset(p_bands) b(threshold integer, points numeric)
-     where b.threshold <= p_level - p_minimum order by b.threshold desc limit 1) end
+     where b.threshold <= p_level order by b.threshold desc limit 1) end
 $$;
 
 -- An immutable profile can be shared until a draft posting customizes it.
@@ -200,7 +204,7 @@ $$;
 -- The caller supplies only an application ID; no applicant levels or awarded
 -- points are accepted. Authorization is checked before reading private PDS data.
 create function private.application_scoring(p_application_id uuid)
-returns table(criterion_key text, applicant_level integer, minimum_level integer, maximum_points numeric, points numeric, difference integer, matched_threshold integer)
+returns table(criterion_key text, applicant_level integer, minimum_level integer, maximum_points numeric, points numeric, matched_threshold integer)
 language plpgsql stable security definer set search_path = '' as $$
 declare app public.applications; education integer; training numeric; experience integer;
 begin
@@ -303,8 +307,9 @@ begin
   experience := least(31, floor(private.public_teaching_months(app.pds_version_id) / 6)::integer + 1);
   return query select c.criterion_key, levels.level, w.minimum_level::integer, w.points,
     public.scoring_band_points(w.minimum_level::integer, w.points, w.bands, levels.level),
-    levels.level - w.minimum_level, (select b.threshold from jsonb_to_recordset(w.bands) b(threshold integer, points numeric)
-      where b.threshold <= levels.level - w.minimum_level order by b.threshold desc limit 1)
+    (select b.threshold from jsonb_to_recordset(w.bands) b(threshold integer, points numeric)
+      where levels.level >= w.minimum_level and b.threshold <= levels.level
+      order by b.threshold desc limit 1)
   from public.job_posting_positions j
   join public.position_criterion_weights w on w.profile_id = j.weight_profile_id
   join public.position_criteria c on c.id = w.criterion_id
@@ -315,7 +320,7 @@ begin
     and c.criterion_key in ('EDUCATION', 'TRAINING', 'EXPERIENCE');
 end $$;
 create function public.application_scoring(p_application_id uuid)
-returns table(criterion_key text, applicant_level integer, minimum_level integer, maximum_points numeric, points numeric, difference integer, matched_threshold integer)
+returns table(criterion_key text, applicant_level integer, minimum_level integer, maximum_points numeric, points numeric, matched_threshold integer)
 language sql stable set search_path = '' as $$ select * from private.application_scoring(p_application_id) $$;
 create view public.v_application_scoring with (security_invoker = true) as
  select a.id application_id, s.* from public.applications a cross join lateral public.application_scoring(a.id) s;

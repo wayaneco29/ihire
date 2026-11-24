@@ -119,7 +119,7 @@ export default async function EvaluatorApplicationReviewPage({
       .order("sort_order"),
     evaluator.supabase
       .from("v_application_scoring")
-      .select("criterion_key, applicant_level, minimum_level, maximum_points, points, difference, matched_threshold")
+      .select("criterion_key, applicant_level, minimum_level, maximum_points, points, matched_threshold")
       .eq("application_id", id),
     evaluator.supabase
       .from("v_anonymized_work_experience")

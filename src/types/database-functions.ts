@@ -4,7 +4,7 @@ import type { Json } from "./database-json";
 export type PublicFunctions = {
     save_position_scoring_profile: { Args: { p_position_id: string; p_rules: Json }; Returns: string };
     save_scored_posting: { Args: { p_job_id: string | null; p_title: string; p_description: string; p_requirements: string | null; p_slots: number; p_status: PublicEnums["job_status"]; p_deadline: string | null; p_position_ids: string[]; p_scoring: Json | null }; Returns: string };
-    application_scoring: { Args: { p_application_id: string }; Returns: { criterion_key: string; applicant_level: number | null; minimum_level: number | null; maximum_points: number; points: number | null; difference: number | null; matched_threshold: number | null }[] };
+    application_scoring: { Args: { p_application_id: string }; Returns: { criterion_key: string; applicant_level: number | null; minimum_level: number | null; maximum_points: number; points: number | null; matched_threshold: number | null }[] };
 
     "education_points": {
         Args: {
