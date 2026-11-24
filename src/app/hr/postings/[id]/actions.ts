@@ -29,7 +29,7 @@ export async function recordHiringDecision(applicationId: string) {
     const message = error.message.includes("All available slots")
       ? "All available slots have been filled."
       : error.message.includes("Hiring is available after intake closes")
-        ? "Hiring opens after intake closes and all application reviews, required document checks, and correction windows are resolved."
+        ? "Hiring is still on hold until intake is closed, all evaluations are complete, required documents are verified, and correction windows are resolved. Refresh the readiness checklist for current blockers."
         : error.message.includes("final decision") || error.code === "23505"
           ? "This application already has a final decision. Refresh the list."
           : "The hiring decision could not be saved. Refresh and try again.";

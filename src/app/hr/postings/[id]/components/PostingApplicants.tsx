@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/Button";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
+import {
+  getHiringReadinessBlockers,
+  type HiringReadiness,
+} from "@/utils/hiring-readiness";
 import { recordHiringDecision } from "../actions";
 
 export type ApplicantItem = {
@@ -34,15 +38,6 @@ export type ApplicantItem = {
 };
 
 type ApplicantFilter = "QUALIFIED" | "HIRED" | "NOT_SELECTED";
-type HiringReadiness = {
-  intake_closed: boolean;
-  pending_applications: number;
-  pending_required_documents: number;
-  pending_document_corrections: number;
-  hired_count: number;
-  slot_count: number;
-  can_hire: boolean;
-};
 const FILTERS: { id: ApplicantFilter; label: string }[] = [
   { id: "QUALIFIED", label: "Qualified" },
   { id: "HIRED", label: "Hired" },
@@ -108,6 +103,9 @@ export function PostingApplicants({
     hiringReadiness?.can_hire === true &&
     !slotsFull &&
     !assessmentScoresUnavailable;
+  const readinessBlockers = hiringReadiness
+    ? getHiringReadinessBlockers(hiringReadiness)
+    : [];
   const selectedApplicant =
     applicants.find(
       (applicant) => applicant.application_id === selectedApplicantId,
@@ -315,6 +313,7 @@ export function PostingApplicants({
       ) : (
         <section
           aria-labelledby="hiring-readiness-heading"
+          aria-describedby="hiring-readiness-guidance"
           className="mb-4 overflow-hidden rounded-xl border border-line bg-panel"
         >
           <div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6">
@@ -325,16 +324,40 @@ export function PostingApplicants({
               >
                 Hiring readiness
               </h2>
-              <p className="mt-1 max-w-2xl text-xs leading-6 text-muted">
-                {assessmentScoresUnavailable
-                  ? "Applicant score data is unavailable; refresh before making a hiring decision."
-                  : `Intake is ${hiringReadiness.intake_closed ? "closed" : "open"}.`}
-                {!assessmentScoresUnavailable && hiringReadiness.can_hire
-                  ? " Reviews and required document checks are resolved; qualified applicants can be hired."
-                  : !assessmentScoresUnavailable
-                    ? " Hiring is enabled after intake closes and all active applications and required document correction windows are resolved."
-                    : ""}
-              </p>
+              <div
+                className="mt-1 max-w-2xl text-xs leading-6 text-muted"
+                id="hiring-readiness-guidance"
+              >
+                {canHire ? (
+                  <p>
+                    All evaluations, required document checks, and correction
+                    windows are complete. HR can now hire qualified applicants.
+                  </p>
+                ) : (
+                  <>
+                    {assessmentScoresUnavailable && (
+                      <p>
+                        Applicant score data is unavailable. Refresh before
+                        making a hiring decision.
+                      </p>
+                    )}
+                    {readinessBlockers.length > 0 ? (
+                      <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                        {readinessBlockers.map((blocker) => (
+                          <li key={blocker}>{blocker}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      !assessmentScoresUnavailable && (
+                        <p>
+                          Hiring readiness could not be confirmed. Refresh the
+                          page to check the latest applicant and slot data.
+                        </p>
+                      )
+                    )}
+                  </>
+                )}
+              </div>
             </div>
             <span
               className={`inline-flex min-h-7 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${canHire ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}

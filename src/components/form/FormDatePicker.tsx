@@ -17,6 +17,23 @@ type FormDatePickerProps<T extends FieldValues> = FormControlProps<T> & {
   disabledDate?: (date: Dayjs) => boolean;
 };
 
+function toPickerValue(value: unknown): Dayjs | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  if (dayjs.isDayjs(value)) return value;
+
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    value instanceof Date
+  ) {
+    const parsedValue = dayjs(value);
+    return parsedValue.isValid() ? parsedValue : null;
+  }
+
+  return null;
+}
+
 export function FormDatePicker<T extends FieldValues>(
   props: FormDatePickerProps<T>,
 ) {
@@ -71,13 +88,7 @@ export function FormDatePicker<T extends FieldValues>(
             }
             onBlur={field.onBlur}
             ref={field.ref}
-            value={
-              valueFormat && typeof field.value === "string"
-                ? field.value
-                  ? dayjs(field.value)
-                  : null
-                : (field.value as Dayjs | null | undefined)
-            }
+            value={toPickerValue(field.value)}
           />
         </FieldFrame>
       )}

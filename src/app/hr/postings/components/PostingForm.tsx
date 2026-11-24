@@ -282,6 +282,7 @@ export function PostingForm({
               label="Application deadline"
               name="deadline"
               format="MMMM DD, YYYY"
+              valueFormat="YYYY-MM-DDTHH:mm"
               disabledDate={(dateMap) => dayjs().isAfter(dateMap)}
             />
             <FormSelect

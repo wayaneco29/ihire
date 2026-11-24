@@ -445,13 +445,16 @@ export default async function HrPostingDetailPage({
         backLabel="Job postings"
         actions={
           displayStatus === "OPEN" ? (
-            <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-primary! bg-panel px-4 text-sm! font-semibold text-primary! transition-colors hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              href={`/hr/postings/${posting.id}/edit`}
-            >
-              <PencilSquareIcon aria-hidden="true" className="size-4" />
-              Edit posting
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <CloseIntakeButton jobId={posting.id} />
+              <Link
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-primary! bg-panel px-4 text-sm! font-semibold text-primary! transition-colors hover:bg-panel-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                href={`/hr/postings/${posting.id}/edit`}
+              >
+                <PencilSquareIcon aria-hidden="true" className="size-4" />
+                Edit posting
+              </Link>
+            </div>
           ) : null
         }
       />
