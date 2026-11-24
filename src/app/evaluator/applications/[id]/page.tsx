@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import {
+  ApplicationCriteriaPoints,
+  ApplicationProvisionalTotal,
+} from "@/components/application/ApplicationCriteriaPoints";
+import type { ApplicationCriterionPointsRow } from "@/types/application-criterion-points";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
@@ -8,8 +13,8 @@ import {
   calculatePublicTeachingExperience,
   formatExperienceMonths,
 } from "@/utils/calculate-public-teaching-experience";
+import { buildApplicationCriterionPoints } from "@/utils/build-application-criterion-points";
 import { formatPositionLabel } from "@/utils/format-position-track";
-import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
 import { ApplicationAssessmentScheduleForm } from "../components/ApplicationAssessmentScheduleForm";
 import {
@@ -53,7 +58,7 @@ export default async function EvaluatorApplicationReviewPage({
   const { data: application, error } = await evaluator.supabase
     .from("v_anonymized_applicants")
     .select(
-      "application_id, applicant_number, application_status, job_id, education_levels, experience_years, training_hours, skills, position_title, position_track",
+      "application_id, applicant_number, application_status, job_id, experience_years, skills, position_title, position_track",
     )
     .eq("application_id", id)
     .maybeSingle();
@@ -70,12 +75,13 @@ export default async function EvaluatorApplicationReviewPage({
 
   const { data: schedule, error: scheduleError } = await evaluator.supabase
     .from("applications")
-    .select("scheduled_assessment_at")
+    .select("scheduled_assessment_at, position_id")
     .eq("id", id)
     .maybeSingle();
 
   const [
     jobResult,
+    jobPositionsResult,
     requiredTypesResult,
     documentsResult,
     educationResult,
@@ -84,6 +90,7 @@ export default async function EvaluatorApplicationReviewPage({
     experienceStandardsResult,
     experienceResult,
     evaluationResult,
+    criterionScoresResult,
     queueApplicantsResult,
     allAssignedApplicationsResult,
   ] = await Promise.all([
@@ -92,6 +99,10 @@ export default async function EvaluatorApplicationReviewPage({
       .select("title")
       .eq("id", application.job_id)
       .maybeSingle(),
+    evaluator.supabase
+      .from("job_posting_positions")
+      .select("position_id, weight_profile_id")
+      .eq("job_id", application.job_id),
     evaluator.supabase
       .from("document_types")
       .select("name")
@@ -143,6 +154,12 @@ export default async function EvaluatorApplicationReviewPage({
       .order("evaluated_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    evaluator.supabase
+      .from("application_criterion_scores")
+      .select(
+        "criterion_id, points, criterion:position_criteria(criterion_key, title)",
+      )
+      .eq("application_id", id),
     jobId && jobId === application.job_id
       ? evaluator.supabase
           .from("v_evaluator_review_queue_with_scored")
@@ -160,6 +177,32 @@ export default async function EvaluatorApplicationReviewPage({
           .order("applied_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  const linkedPositionIds = (jobPositionsResult.data ?? []).map(
+    (jobPosition) => jobPosition.position_id,
+  );
+  const resolvedPositionId =
+    schedule?.position_id ??
+    (linkedPositionIds.length === 1 ? linkedPositionIds[0] : null);
+  const jobPosition = (jobPositionsResult.data ?? []).find(
+    (item) => item.position_id === resolvedPositionId,
+  );
+  const criterionWeightsResult = jobPosition
+    ? await evaluator.supabase
+        .from("position_criterion_weights")
+        .select("criterion_id, points")
+        .eq("profile_id", jobPosition.weight_profile_id)
+    : { data: [], error: null };
+  const criterionIds = (criterionWeightsResult.data ?? []).map(
+    (weight) => weight.criterion_id,
+  );
+  const criteriaResult = criterionIds.length
+    ? await evaluator.supabase
+        .from("position_criteria")
+        .select("id, criterion_key, title, display_order")
+        .in("id", criterionIds)
+        .order("display_order")
+    : { data: [], error: null };
 
   const latestDocumentStatusByType = new Map<string, string>();
   for (const document of documentsResult.data ?? []) {
@@ -187,24 +230,6 @@ export default async function EvaluatorApplicationReviewPage({
           application.application_status,
         )
       : readyForAssessment || Boolean(evaluationResult.data);
-  const submittedAssessment =
-    application.position_track === "TEACHING" &&
-    ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
-      application.application_status,
-    )
-      ? await evaluator.supabase
-          .from("application_criterion_scores")
-          .select("points, criterion:position_criteria(criterion_key, title)")
-          .eq("application_id", id)
-      : { data: [], error: null };
-  const submittedAssessmentScores = (submittedAssessment.data ?? []).filter(
-    (score) =>
-      score.criterion?.criterion_key === "CLASSROOM_OBSERVATION" ||
-      score.criterion?.criterion_key === "TEACHER_REFLECTION",
-  );
-  const assessmentScoresReady =
-    !submittedAssessment.error && submittedAssessmentScores.length === 2;
-
   const publicTeachingExperience = calculatePublicTeachingExperience(
     experienceResult.data ?? [],
   );
@@ -224,16 +249,42 @@ export default async function EvaluatorApplicationReviewPage({
     experienceStandardsResult.error ||
     experiencePointsResult.error,
   );
-  const experiencePoints = {
-    applicant_experience_increment_level:
-      publicTeachingExperience.incrementLevel,
-    qualifying_experience_months: publicTeachingExperience.qualifyingMonths,
-    minimum_experience_increment_level:
-      experienceStandards?.minimum_experience_increment_level ?? null,
-    maximum_experience_points:
-      experienceStandards?.maximum_experience_points ?? null,
-    experience_points: experiencePointsResult.data,
-  };
+  const experiencePoints = experiencePointsResult.data;
+
+  const criteriaUnavailable = Boolean(
+    jobPositionsResult.error ||
+      !jobPosition ||
+      criterionWeightsResult.error ||
+      criteriaResult.error,
+  );
+  const criteriaUnavailableMessage =
+    jobPositionsResult.error ||
+    criterionWeightsResult.error ||
+    criteriaResult.error
+      ? "Criteria points are unavailable right now. Refresh the page to try again."
+      : "Criteria points are unavailable because this application has no linked position scoring profile.";
+  const criterionRows: ApplicationCriterionPointsRow[] =
+    buildApplicationCriterionPoints({
+      criteria: criteriaResult.data ?? [],
+      weights: criterionWeightsResult.data ?? [],
+      scores: criterionScoresResult.data ?? [],
+      educationPoints: educationPointsResult.data,
+      educationUnavailable: Boolean(educationPointsResult.error),
+      trainingPoints: trainingPointsResult.data,
+      trainingUnavailable: Boolean(trainingPointsResult.error),
+      experiencePoints: {
+        points: experiencePoints,
+      },
+      experienceUnavailable: experiencePointsUnavailable,
+      scoresUnavailable: Boolean(criterionScoresResult.error),
+    });
+  const submittedAssessmentScores = (criterionScoresResult.data ?? []).filter(
+    (score) =>
+      score.criterion?.criterion_key === "CLASSROOM_OBSERVATION" ||
+      score.criterion?.criterion_key === "TEACHER_REFLECTION",
+  );
+  const assessmentScoresReady =
+    !criterionScoresResult.error && submittedAssessmentScores.length === 2;
 
   const queueItems = queueApplicantsResult.error
     ? []
@@ -294,13 +345,6 @@ export default async function EvaluatorApplicationReviewPage({
           <p className="text-xs font-semibold text-primary">
             Application status
           </p>
-          {application.application_status === "ASSESSMENT_SCHEDULED" &&
-            schedule?.scheduled_assessment_at && (
-              <p className="mt-1 text-sm font-medium text-ink">
-                Assessment:{" "}
-                {formatPhilippineDateTime(schedule.scheduled_assessment_at)}
-              </p>
-            )}
         </div>
         <WorkflowStatusTag status={application.application_status} />
       </section>
@@ -349,6 +393,24 @@ export default async function EvaluatorApplicationReviewPage({
           )}
         </nav>
       )}
+      <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(16rem,0.8fr)]">
+        <section className="rounded-sm border border-line bg-panel p-5 sm:p-6">
+          <ApplicationCriteriaPoints
+            description="Current applicant points out of the maximum for each criterion."
+            rows={criterionRows}
+            unavailable={criteriaUnavailable}
+            unavailableMessage={criteriaUnavailableMessage}
+          />
+        </section>
+        <div className="rounded-sm border border-line bg-panel">
+          <ApplicationProvisionalTotal
+            note="This total includes points currently available; unscored or unavailable criteria are excluded."
+            rows={criterionRows}
+            title="Current total"
+            unavailable={criteriaUnavailable}
+          />
+        </div>
+      </div>
       <AnonymizedApplicantReview
         applicationId={id}
         applicantNumber={application.applicant_number}
@@ -356,12 +418,7 @@ export default async function EvaluatorApplicationReviewPage({
         documents={documentsResult.data ?? []}
         educationUnavailable={Boolean(educationResult.error)}
         education={educationResult.data ?? []}
-        educationPoints={educationPointsResult.data}
-        educationPointsUnavailable={Boolean(educationPointsResult.error)}
-        trainingPoints={trainingPointsResult.data}
-        trainingPointsUnavailable={Boolean(trainingPointsResult.error)}
-        experiencePoints={experiencePoints}
-        experiencePointsUnavailable={experiencePointsUnavailable}
+        experienceIncrementLevel={publicTeachingExperience.incrementLevel}
         qualifyingExperienceLabel={formatExperienceMonths(
           publicTeachingExperience.qualifyingMonths,
         )}
@@ -369,7 +426,6 @@ export default async function EvaluatorApplicationReviewPage({
         workExperienceUnavailable={Boolean(experienceResult.error)}
         workExperience={experienceResult.data ?? []}
         skills={application.skills}
-        trainingHours={application.training_hours}
       />
       <div className="mt-5">
         <ApplicationAssessmentScheduleForm
@@ -379,34 +435,6 @@ export default async function EvaluatorApplicationReviewPage({
           scheduledAt={schedule?.scheduled_assessment_at ?? null}
         />
       </div>
-      {application.position_track === "TEACHING" &&
-        ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
-          application.application_status,
-        ) && (
-          <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
-            <h2 className="font-semibold text-ink">
-              Submitted assessment points
-            </h2>
-            {submittedAssessment.error ? (
-              <p className="mt-3 text-sm text-danger">
-                Scores could not be loaded. Refresh before making a decision.
-              </p>
-            ) : (
-              <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-                {submittedAssessmentScores.map((score) => (
-                  <div key={score.criterion!.criterion_key}>
-                    <dt className="text-sm text-muted">
-                      {score.criterion!.title}
-                    </dt>
-                    <dd className="mt-1 text-lg font-semibold text-ink">
-                      {score.points} points
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-          </section>
-        )}
       {readyForEvaluation &&
       (application.position_track !== "TEACHING" || assessmentScoresReady) ? (
         <div className="mt-5">
@@ -423,16 +451,14 @@ export default async function EvaluatorApplicationReviewPage({
             : "The evaluation panel will appear after all required documents are verified and an assessment has been scheduled."}
         </p>
       )}
-      <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
-        href={
-          jobId === application.job_id
-            ? `/evaluator/reviews?jobId=${jobId}`
-            : "/evaluator/reviews"
-        }
-      >
-        Back to {jobId === application.job_id ? "applicants" : "review queue"}
-      </Link>
+      {jobId !== application.job_id && (
+        <Link
+          className="mt-5 inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:bg-primary-light hover:text-primary-dark"
+          href="/evaluator/reviews"
+        >
+          Back to review queue
+        </Link>
+      )}
     </>
   );
 }

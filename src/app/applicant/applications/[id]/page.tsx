@@ -11,11 +11,12 @@ import {
 import { calculateApplicantTrainingHours } from "@/utils/calculate-applicant-training-hours";
 import { formatPositionTrack } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
+import { isDocumentComplianceRejection } from "@/utils/application-resubmission";
 import {
   ApplicationProvisionalTotal,
   ApplicationCriteriaPoints,
-  type ApplicationCriterionPointsRow,
-} from "./components/ApplicationCriteriaPoints";
+} from "@/components/application/ApplicationCriteriaPoints";
+import type { ApplicationCriterionPointsRow } from "@/types/application-criterion-points";
 import {
   ApplicationTimeline,
   type ApplicationEvent,
@@ -56,7 +57,7 @@ export default async function ApplicantApplicationDetailPage({
   ] = await Promise.all([
     applicant.supabase
       .from("job_postings")
-      .select("title, description, requirements, slots, deadline")
+      .select("title, description, requirements, slots, deadline, status")
       .eq("id", application.job_id)
       .maybeSingle(),
     applicant.supabase
@@ -88,6 +89,15 @@ export default async function ApplicantApplicationDetailPage({
       />
     );
   }
+
+  const canResubmit =
+    isDocumentComplianceRejection(
+      application.status,
+      application.status_reason,
+    ) &&
+    job !== null &&
+    job.status === "OPEN" &&
+    (!job.deadline || Date.parse(job.deadline) > Date.now());
 
   const [
     { data: jobPositions, error: jobPositionError },
@@ -522,6 +532,14 @@ export default async function ApplicantApplicationDetailPage({
           <p className="mt-1 text-sm leading-6 text-ink">
             {application.status_reason}
           </p>
+          {canResubmit && (
+            <Link
+              className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              href={`/applicant/jobs/${application.job_id}`}
+            >
+              Resubmit application
+            </Link>
+          )}
         </section>
       )}
 

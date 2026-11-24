@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getApplicantContext } from "@/lib/auth/server";
+import { isDocumentComplianceRejection } from "@/utils/application-resubmission";
 
 type ApplyResult =
   | { success: true; applicationId: string; alreadyApplied: boolean }
@@ -57,14 +58,17 @@ export async function applyToJob(
 
   const { data: existing, error: existingError } = await applicant.supabase
     .from("applications")
-    .select("id")
+    .select("id, status, status_reason")
     .eq("job_id", jobId)
     .eq("applicant_id", applicant.applicant.id)
     .maybeSingle();
   if (existingError) {
     return { success: false, message: "We could not check your application. Please try again." };
   }
-  if (existing) {
+  if (
+    existing &&
+    !isDocumentComplianceRejection(existing.status, existing.status_reason)
+  ) {
     return { success: true, applicationId: existing.id, alreadyApplied: true };
   }
 
@@ -87,6 +91,10 @@ export async function applyToJob(
               "Choose a position included in this job posting",
             )
           ? "That position is no longer available for this posting. Refresh and choose an available position."
+          : error?.message.includes(
+                "You must resubmit for the originally selected position",
+              )
+            ? "Choose the original position for this resubmission."
           : error?.message.includes("The job is not open for applications")
             ? "This posting is closed or no longer accepting applications."
             : error?.message.includes("Submit a PDS before applying")
@@ -101,6 +109,12 @@ export async function applyToJob(
   revalidatePath("/applicant/jobs");
   revalidatePath(`/applicant/jobs/${jobId}`);
   revalidatePath("/applicant/applications");
+  revalidatePath(`/applicant/applications/${applicationId}`);
   revalidatePath("/applicant/dashboard");
+  revalidatePath("/applicant/documents");
+  revalidatePath("/evaluator/reviews");
+  revalidatePath(`/evaluator/applications/${applicationId}`);
+  revalidatePath(`/hr/applications/${applicationId}`);
+  revalidatePath("/admin/assignments");
   return { success: true, applicationId, alreadyApplied: false };
 }

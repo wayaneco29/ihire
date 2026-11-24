@@ -61,9 +61,10 @@ export function ApplicationEvaluationPanel({
             Qualifying the applicant forwards them to HR for ranking.
           </p>
         </div>
-        {previousEvaluation && (
-          <WorkflowStatusTag status={previousEvaluation.result} />
-        )}
+        {previousEvaluation &&
+          previousEvaluation.result !== applicationStatus && (
+            <WorkflowStatusTag status={previousEvaluation.result} />
+          )}
       </div>
 
       {previousEvaluation && (

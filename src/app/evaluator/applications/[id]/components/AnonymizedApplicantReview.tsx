@@ -31,28 +31,6 @@ type EducationRecord = {
   honors_received: string | null;
 };
 
-type EducationPoints = {
-  applicant_qualification_level: number | null;
-  base_qualification_level: number | null;
-  education_points: number | null;
-};
-
-type TrainingPoints = {
-  applicant_training_increment_level: number | null;
-  maximum_training_points: number | null;
-  minimum_training_increment_level: number | null;
-  training_hours: number | null;
-  training_points: number | null;
-};
-
-type ExperiencePoints = {
-  applicant_experience_increment_level: number;
-  qualifying_experience_months: number;
-  minimum_experience_increment_level: number | null;
-  maximum_experience_points: number | null;
-  experience_points: number | null;
-};
-
 type WorkExperienceRecord = {
   experience_id: string;
   date_from: string;
@@ -68,15 +46,9 @@ export function AnonymizedApplicantReview({
   applicationId,
   applicantNumber,
   experienceYears,
-  trainingHours,
+  experienceIncrementLevel,
   skills,
   education,
-  educationPoints,
-  educationPointsUnavailable,
-  trainingPoints,
-  trainingPointsUnavailable,
-  experiencePoints,
-  experiencePointsUnavailable,
   qualifyingExperienceLabel,
   workExperience,
   educationUnavailable,
@@ -87,15 +59,9 @@ export function AnonymizedApplicantReview({
   applicationId: string;
   applicantNumber: string;
   experienceYears: number | null;
-  trainingHours: number | null;
+  experienceIncrementLevel: number;
   skills: string[] | null;
   education: EducationRecord[];
-  educationPoints: EducationPoints | null;
-  educationPointsUnavailable: boolean;
-  trainingPoints: TrainingPoints | null;
-  trainingPointsUnavailable: boolean;
-  experiencePoints: ExperiencePoints;
-  experiencePointsUnavailable: boolean;
   qualifyingExperienceLabel: string;
   workExperience: WorkExperienceRecord[];
   educationUnavailable: boolean;
@@ -145,35 +111,7 @@ export function AnonymizedApplicantReview({
 
   return (
     <>
-      <div className="mt-7 grid gap-4 sm:grid-cols-2">
-        <section className="rounded-sm border border-line bg-panel p-5">
-          <p className="text-xs text-muted">Applicant number</p>
-          <p className="mt-2 text-lg font-semibold text-primary">
-            {applicantNumber}
-          </p>
-        </section>
-        <section className="rounded-sm border border-line bg-panel p-5">
-          <p className="text-xs text-muted">Training hours</p>
-          <p className="mt-2 text-sm font-semibold text-ink">
-            {trainingHours ?? 0}
-          </p>
-          <p className="mt-2 text-xs leading-5 text-muted">
-            {trainingPointsUnavailable
-              ? "Training score unavailable."
-              : trainingPoints?.training_points !== null &&
-                  trainingPoints?.training_points !== undefined &&
-                  trainingPoints.maximum_training_points !== null &&
-                  trainingPoints.minimum_training_increment_level !== null &&
-                  trainingPoints.applicant_training_increment_level !== null
-                ? `${trainingPoints.training_points} / ${trainingPoints.maximum_training_points} points · increment ${trainingPoints.applicant_training_increment_level} (minimum ${trainingPoints.minimum_training_increment_level})`
-                : trainingPoints?.minimum_training_increment_level === null
-                  ? "Position minimum training increment is not set."
-                  : "Training points not available yet."}
-          </p>
-        </section>
-      </div>
-
-      <section className="mt-5 rounded-sm border border-line bg-panel p-5 sm:p-6">
+      <section className="mt-7 rounded-sm border border-line bg-panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-ink">Skills</h2>
@@ -210,23 +148,6 @@ export function AnonymizedApplicantReview({
             <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
               {education.length} record{education.length === 1 ? "" : "s"}
             </span>
-          </div>
-          <div className="mt-4 rounded-sm border border-primary/20 bg-primary-light/40 px-4 py-3">
-            <p className="text-xs font-semibold text-primary-dark">
-              Education points
-            </p>
-            <p className="mt-1 text-sm font-medium text-ink">
-              {educationPointsUnavailable
-                ? "Score unavailable. Refresh the page to try again."
-                : educationPoints?.education_points !== null &&
-                    educationPoints?.education_points !== undefined &&
-                    educationPoints.applicant_qualification_level !== null &&
-                    educationPoints.base_qualification_level !== null
-                  ? `${educationPoints.education_points} points (education ${educationPoints.applicant_qualification_level} − position standard ${educationPoints.base_qualification_level})`
-                  : educationPoints?.base_qualification_level === null
-                    ? "The position education standard has not been set."
-                    : "Not scored yet. Check the submitted PDS qualification level."}
-            </p>
           </div>
           {educationUnavailable ? (
             <p className="mt-5 rounded-sm border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
@@ -322,18 +243,7 @@ export function AnonymizedApplicantReview({
             </p>
             <p className="mt-1 text-sm font-medium text-ink">
               {qualifyingExperienceLabel} · Level{" "}
-              {experiencePoints.applicant_experience_increment_level}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-muted">
-              {experiencePointsUnavailable
-                ? "Experience score unavailable. Refresh the page to try again."
-                : experiencePoints.experience_points !== null &&
-                    experiencePoints.maximum_experience_points !== null &&
-                    experiencePoints.minimum_experience_increment_level !== null
-                  ? `${experiencePoints.experience_points} / ${experiencePoints.maximum_experience_points} points · position minimum Level ${experiencePoints.minimum_experience_increment_level}`
-                  : experiencePoints.minimum_experience_increment_level === null
-                    ? "The position minimum Experience level has not been set."
-                    : "Experience points are not available yet."}
+              {experienceIncrementLevel}
             </p>
             <p className="mt-1 text-xs leading-5 text-muted">
               Counts Government Service entries with Teacher, Instructor, or

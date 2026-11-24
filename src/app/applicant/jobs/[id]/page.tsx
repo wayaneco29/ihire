@@ -13,6 +13,7 @@ import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { calculatePublicTeachingExperience } from "@/utils/calculate-public-teaching-experience";
 import { calculateApplicantTrainingHours } from "@/utils/calculate-applicant-training-hours";
+import { isDocumentComplianceRejection } from "@/utils/application-resubmission";
 import { ApplyButton } from "./components/ApplyButton";
 
 const CURRENT_TIME_MS = Date.now();
@@ -36,7 +37,7 @@ export default async function ApplicantJobDetailPage({
       .maybeSingle(),
     applicant.supabase
       .from("applications")
-      .select("id, status, applied_at, position_id")
+      .select("id, status, status_reason, applied_at, position_id")
       .eq("job_id", id)
       .eq("applicant_id", applicant.applicant.id)
       .maybeSingle(),
@@ -383,6 +384,20 @@ export default async function ApplicantJobDetailPage({
   const selectedPosition = positions.find(
     (position) => position.id === application?.position_id,
   );
+  const canResubmit = application
+    ? isDocumentComplianceRejection(
+        application.status,
+        application.status_reason,
+      )
+    : false;
+  const requiredDocumentsReady = ["APPROVED", "FOR_REVIEW"].includes(
+    documentStatus.status,
+  );
+  const resubmissionPositions = application?.position_id
+    ? positionsWithScoringPoints.filter(
+        (position) => position.id === application.position_id,
+      )
+    : [];
 
   return (
     <>
@@ -394,7 +409,13 @@ export default async function ApplicantJobDetailPage({
         Back to jobs
       </Link>
       <PageHeader
-        description="Review the position details before submitting your application."
+        description={
+          canResubmit
+            ? "Submit the requested document corrections, then resubmit for this open posting."
+            : application
+              ? "Review the current status and details for your application."
+              : "Review the position details before submitting your application."
+        }
         eyebrow="Open job posting"
         title={job.title}
       />
@@ -461,7 +482,66 @@ export default async function ApplicantJobDetailPage({
           )}
 
           <section className="flex flex-col gap-5 border-t border-line-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
-            {application ? (
+            {application && canResubmit ? (
+              <div className="w-full space-y-4">
+                <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-sm font-semibold text-ink">
+                      Resubmit your application
+                    </h2>
+                    <WorkflowStatusTag status={application.status} />
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    {application.status_reason}
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex min-h-11 items-center rounded-sm text-sm font-semibold text-primary hover:text-primary-dark"
+                    href={`/applicant/applications/${application.id}`}
+                  >
+                    View application details
+                  </Link>
+                </div>
+                {!applicant.profile.has_submitted_pds ? (
+                  <Link
+                    className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    href="/applicant/pds"
+                  >
+                    Complete your PDS first
+                  </Link>
+                ) : !requiredDocumentsReady ? (
+                  <div className="max-w-md rounded-xl border border-warning/30 bg-warning/10 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-ink">
+                        Required documents
+                      </p>
+                      <WorkflowStatusTag status={documentStatus.status} />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-muted">
+                      Submit the requested document corrections for review before
+                      resubmitting your application.
+                    </p>
+                    <Link
+                      className="mt-3 inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
+                      href="/applicant/documents"
+                    >
+                      Go to documents
+                    </Link>
+                  </div>
+                ) : resubmissionPositions.length ? (
+                  <ApplyButton
+                    initialPositionId={application.position_id}
+                    jobId={job.id}
+                    positions={resubmissionPositions}
+                    submitLabel="Resubmit application"
+                  />
+                ) : (
+                  <p className="max-w-sm text-sm text-muted">
+                    The original position is no longer available. Contact HR
+                    for assistance with your resubmission.
+                  </p>
+                )}
+              </div>
+            ) : application ? (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <p className="text-sm text-muted">
                   Applying for{" "}

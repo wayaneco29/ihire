@@ -34,15 +34,25 @@ type PositionOption = {
 export function ApplyButton({
   jobId,
   positions,
+  initialPositionId,
+  submitLabel = "Submit application",
 }: {
   jobId: string;
   positions: PositionOption[];
+  initialPositionId?: string | null;
+  submitLabel?: string;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const form = useForm<ApplicationValues>({
     resolver: yupResolver(applicationSchema),
-    defaultValues: { positionId: "" },
+    defaultValues: {
+      positionId:
+        initialPositionId &&
+        positions.some((position) => position.id === initialPositionId)
+          ? initialPositionId
+          : "",
+    },
   });
   const selectedPositionId = useWatch({
     control: form.control,
@@ -149,7 +159,7 @@ export function ApplyButton({
         loading={form.formState.isSubmitting}
         variant="filled"
       >
-        Submit application
+        {submitLabel}
       </Button>
     </form>
   );
