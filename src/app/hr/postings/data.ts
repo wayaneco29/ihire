@@ -1,4 +1,6 @@
 import type { getHrContext } from "@/lib/auth/server";
+import type { ScoringRule } from "@/types/scoring";
+import { readBands } from "@/utils/scoring";
 
 type HrSupabase = NonNullable<Awaited<ReturnType<typeof getHrContext>>>["supabase"];
 const APPLICANT_STATUS_PAGE_SIZE = 1000;
@@ -92,7 +94,7 @@ export async function getConfiguredPositions(
 
   const { data: profiles, error: profilesError } = await supabase
     .from("position_weight_profiles")
-    .select("position_id")
+    .select("id, position_id, version")
     .eq("is_current", true)
     .in(
       "position_id",
@@ -101,11 +103,31 @@ export async function getConfiguredPositions(
 
   if (profilesError) return { data: null, error: profilesError };
 
-  const configuredIds = new Set(
-    (profiles ?? []).map((profile) => profile.position_id),
-  );
+  const profileIds = (profiles ?? []).map((profile) => profile.id);
+  const [weightsResult, criteriaResult] = await Promise.all([
+    profileIds.length ? supabase.from("position_criterion_weights")
+      .select("profile_id, criterion_id, points, minimum_level, bands").in("profile_id", profileIds) : Promise.resolve({ data: [], error: null }),
+    supabase.from("position_criteria").select("id, criterion_key, title, display_order")
+      .in("position_id", positionsWithTrack.map((position) => position.id)).order("display_order"),
+  ]);
+  if (weightsResult.error || criteriaResult.error) return { data: null, error: weightsResult.error ?? criteriaResult.error };
+  const criterionById = new Map((criteriaResult.data ?? []).map((criterion) => [criterion.id, criterion]));
+  const rulesByProfile = new Map<string, ScoringRule[]>();
+  for (const weight of weightsResult.data ?? []) {
+    const criterion = criterionById.get(weight.criterion_id);
+    if (!criterion) continue;
+    const rules = rulesByProfile.get(weight.profile_id) ?? [];
+    rules.push({ criterion_id: criterion.id, criterion_key: criterion.criterion_key, title: criterion.title, points: weight.points, minimum_level: weight.minimum_level, bands: readBands(weight.bands) });
+    rulesByProfile.set(weight.profile_id, rules);
+  }
+  const profileByPosition = new Map((profiles ?? []).map((profile) => [profile.position_id, profile]));
+  const configuredIds = new Set((profiles ?? []).filter((profile) =>
+    (rulesByProfile.get(profile.id) ?? []).length > 0).map((profile) => profile.position_id));
   return {
-    data: positionsWithTrack.filter((position) => configuredIds.has(position.id)),
+    data: positionsWithTrack.filter((position) => configuredIds.has(position.id)).map((position) => {
+      const profile = profileByPosition.get(position.id)!;
+      return { ...position, scoringProfileId: profile.id, scoringProfileVersion: profile.version, scoringRules: rulesByProfile.get(profile.id) ?? [] };
+    }),
     error: null,
   };
 }

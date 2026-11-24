@@ -58,7 +58,7 @@ export default async function EvaluatorApplicationReviewPage({
   const { data: application, error } = await evaluator.supabase
     .from("v_anonymized_applicants")
     .select(
-      "application_id, applicant_number, application_status, job_id, experience_years, skills, position_title, position_track",
+      "application_id, applicant_number, application_status, job_id, experience_years, training_hours, skills, position_title, position_track",
     )
     .eq("application_id", id)
     .maybeSingle();
@@ -85,9 +85,7 @@ export default async function EvaluatorApplicationReviewPage({
     requiredTypesResult,
     documentsResult,
     educationResult,
-    educationPointsResult,
-    trainingPointsResult,
-    experienceStandardsResult,
+    scoringResult,
     experienceResult,
     evaluationResult,
     criterionScoresResult,
@@ -120,26 +118,9 @@ export default async function EvaluatorApplicationReviewPage({
       .eq("application_id", id)
       .order("sort_order"),
     evaluator.supabase
-      .from("v_anonymized_application_education_points")
-      .select(
-        "applicant_qualification_level, base_qualification_level, education_points",
-      )
-      .eq("application_id", id)
-      .maybeSingle(),
-    evaluator.supabase
-      .from("v_anonymized_application_training_points")
-      .select(
-        "training_hours, applicant_training_increment_level, minimum_training_increment_level, training_points, maximum_training_points",
-      )
-      .eq("application_id", id)
-      .maybeSingle(),
-    evaluator.supabase
-      .from("v_anonymized_application_experience_standards")
-      .select(
-        "position_id, minimum_experience_increment_level, maximum_experience_points",
-      )
-      .eq("application_id", id)
-      .maybeSingle(),
+      .from("v_application_scoring")
+      .select("criterion_key, applicant_level, minimum_level, maximum_points, points, difference, matched_threshold")
+      .eq("application_id", id),
     evaluator.supabase
       .from("v_anonymized_work_experience")
       .select(
@@ -233,23 +214,12 @@ export default async function EvaluatorApplicationReviewPage({
   const publicTeachingExperience = calculatePublicTeachingExperience(
     experienceResult.data ?? [],
   );
-  const experienceStandards = experienceStandardsResult.data;
-  const experiencePointsResult =
-    experienceStandards?.position_id &&
-    experienceStandards.minimum_experience_increment_level !== null &&
-    experienceStandards.maximum_experience_points !== null
-      ? await evaluator.supabase.rpc("experience_equivalent_points", {
-          p_position_id: experienceStandards.position_id,
-          p_applicant_level: publicTeachingExperience.incrementLevel,
-          p_maximum_points: experienceStandards.maximum_experience_points,
-        })
-      : { data: null, error: null };
-  const experiencePointsUnavailable = Boolean(
-    experienceResult.error ||
-    experienceStandardsResult.error ||
-    experiencePointsResult.error,
-  );
-  const experiencePoints = experiencePointsResult.data;
+  const automaticScores = scoringResult.data ?? [];
+  const educationPointsResult = automaticScores.find((row) => row.criterion_key === "EDUCATION");
+  const trainingPointsResult = automaticScores.find((row) => row.criterion_key === "TRAINING");
+  const experiencePointsResult = automaticScores.find((row) => row.criterion_key === "EXPERIENCE");
+  const experiencePointsUnavailable = Boolean(experienceResult.error || scoringResult.error);
+  const experiencePoints = experiencePointsResult?.points ?? null;
 
   const criteriaUnavailable = Boolean(
     jobPositionsResult.error ||
@@ -268,10 +238,10 @@ export default async function EvaluatorApplicationReviewPage({
       criteria: criteriaResult.data ?? [],
       weights: criterionWeightsResult.data ?? [],
       scores: criterionScoresResult.data ?? [],
-      educationPoints: educationPointsResult.data,
-      educationUnavailable: Boolean(educationPointsResult.error),
-      trainingPoints: trainingPointsResult.data,
-      trainingUnavailable: Boolean(trainingPointsResult.error),
+      educationPoints: educationPointsResult ? { education_points: educationPointsResult.points } : null,
+      educationUnavailable: Boolean(educationResult.error || scoringResult.error),
+      trainingPoints: trainingPointsResult ? { training_hours: application.training_hours, training_points: trainingPointsResult.points } : null,
+      trainingUnavailable: Boolean(scoringResult.error),
       experiencePoints: {
         points: experiencePoints,
       },

@@ -242,6 +242,7 @@ export type InvitationsTable = {
 
 export type JobPostingsTable = {
     Row: {
+        scoring_locked_at: string | null;
         "created_at": string;
         "deadline": string | null;
         "description": string;
@@ -255,6 +256,7 @@ export type JobPostingsTable = {
     };
     ComputedFields: never;
     Insert: {
+        scoring_locked_at?: string | null;
         "created_at"?: string;
         "deadline"?: string | null;
         "description": string;
@@ -267,6 +269,7 @@ export type JobPostingsTable = {
         "updated_at"?: string;
     };
     Update: {
+        scoring_locked_at?: string | null;
         "created_at"?: string;
         "deadline"?: string | null;
         "description"?: string;

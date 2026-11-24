@@ -1,3 +1,5 @@
+import { readBands } from "@/utils/scoring";
+import type { ScoringRule } from "@/types/scoring";
 import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -133,7 +135,7 @@ export default async function HrPositionCriteriaPage() {
   const { data: currentWeights, error: weightsError } = profileIds.length
     ? await hr.supabase
         .from("position_criterion_weights")
-        .select("profile_id, criterion_id, points")
+        .select("profile_id, criterion_id, points, minimum_level, bands")
         .in("profile_id", profileIds)
     : { data: [], error: null };
 
@@ -157,7 +159,7 @@ export default async function HrPositionCriteriaPage() {
 
   const profileByPosition: Record<
     string,
-    { version: number; weights: Record<string, number> }
+    { version: number; weights: Record<string, number>; rules: ScoringRule[] }
   > = {};
   const positionByProfile = new Map(
     (currentProfiles ?? []).map((profile) => [
@@ -170,11 +172,14 @@ export default async function HrPositionCriteriaPage() {
     profileByPosition[profile.position_id] = {
       version: profile.version,
       weights: {},
+      rules: [],
     };
   }
   for (const weight of currentWeights ?? []) {
     const profile = positionByProfile.get(weight.profile_id);
     if (profile) {
+      const criterion = criteriaResult.data?.find((c) => c.id === weight.criterion_id);
+      if (criterion) profileByPosition[profile.positionId].rules.push({ criterion_id: criterion.id, criterion_key: criterion.criterion_key, title: criterion.title, points: weight.points, minimum_level: weight.minimum_level, bands: readBands(weight.bands) });
       profileByPosition[profile.positionId].weights[weight.criterion_id] =
         weight.points;
     }

@@ -1,10 +1,13 @@
 "use client";
+import { ScoringProfileEditor } from "@/components/scoring/ScoringProfileEditor";
+import type { ScoringRule } from "@/types/scoring";
+import { saveScoringProfile } from "../actions";
 
 import { useState } from "react";
 import { Alert, Modal, Table, type TableColumnsType } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch, type Resolver } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Button } from "@/components/ui/Button";
@@ -14,16 +17,10 @@ import {
 } from "@/utils/format-position-standards";
 import {
   positionSchema,
-  positionScoringStandardsSchema,
-  positionWeightFormSchema,
-  type PositionScoringStandardsValues,
   type PositionValues,
-  type PositionWeightValues,
 } from "../schema";
 import {
   createPosition,
-  savePositionScoringStandards,
-  savePositionWeights,
 } from "../actions";
 
 type Criterion = {
@@ -55,186 +52,9 @@ type CriteriaTableRow = {
   title: string;
   count?: number;
   position?: Position;
-  profile?: { version: number; weights: Record<string, number> };
+  profile?: { version: number; weights: Record<string, number>; rules: ScoringRule[] };
   positionCriteria?: Criterion[];
 };
-
-const TRAINING_INCREMENT_OPTIONS = Array.from({ length: 31 }, (_, index) => {
-  const level = index + 1;
-  const lowerHours = index * 8;
-  const range =
-    level === 31
-      ? `${lowerHours}+ hours`
-      : `${lowerHours} to <${lowerHours + 8} hours`;
-  return {
-    label: `Level ${level} · ${range}`,
-    value: level.toString(),
-  };
-});
-
-function formatExperienceMonths(months: number) {
-  const years = Math.floor(months / 12);
-  const remainingMonths = months % 12;
-  return [
-    years ? `${years} year${years === 1 ? "" : "s"}` : "",
-    remainingMonths
-      ? `${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-const EXPERIENCE_INCREMENT_OPTIONS = Array.from({ length: 31 }, (_, index) => {
-  const level = index + 1;
-  const lowerMonths = index * 6;
-  const upperMonths = lowerMonths + 6;
-  const range =
-    level === 1
-      ? "<6 months"
-      : level === 31
-        ? "15+ years"
-        : `${formatExperienceMonths(lowerMonths)} to <${formatExperienceMonths(upperMonths)}`;
-  return {
-    label: `Level ${level} · ${range}`,
-    value: level.toString(),
-  };
-});
-
-function PositionScoringStandardsEditor({
-  position,
-  educationLevels,
-}: {
-  position: Position;
-  educationLevels: EducationLevel[];
-}) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState<{
-    text: string;
-    isError: boolean;
-  } | null>(null);
-  const form = useForm<PositionScoringStandardsValues>({
-    resolver: yupResolver(
-      positionScoringStandardsSchema,
-    ) as Resolver<PositionScoringStandardsValues>,
-    defaultValues: {
-      baseQualificationLevel:
-        position.base_qualification_level?.toString() ?? "",
-      baseTrainingIncrementLevel:
-        position.base_training_increment_level?.toString() ?? "",
-      baseExperienceIncrementLevel:
-        position.base_experience_increment_level?.toString() ?? "",
-    },
-  });
-
-  async function submit(values: PositionScoringStandardsValues) {
-    setMessage(null);
-    const result = await savePositionScoringStandards(position.id, values);
-    setMessage({ text: result.message, isError: !result.success });
-    if (result.success) {
-      setOpen(false);
-      router.refresh();
-    }
-  }
-
-  return (
-    <>
-      <Button
-        onClick={() => {
-          form.reset({
-            baseQualificationLevel:
-              position.base_qualification_level?.toString() ?? "",
-            baseTrainingIncrementLevel:
-              position.base_training_increment_level?.toString() ?? "",
-            baseExperienceIncrementLevel:
-              position.base_experience_increment_level?.toString() ?? "",
-          });
-          setMessage(null);
-          setOpen(true);
-        }}
-        variant="ghost"
-      >
-        {position.base_qualification_level !== null ||
-        position.base_training_increment_level !== null ||
-        position.base_experience_increment_level !== null
-          ? "Edit standards"
-          : "Set standards"}
-      </Button>
-      <Modal
-        centered
-        destroyOnHidden
-        footer={null}
-        onCancel={() => {
-          if (!form.formState.isSubmitting) setOpen(false);
-        }}
-        open={open}
-        title={`Set ${position.title} scoring standards`}
-      >
-        <p className="mb-5 text-sm leading-6 text-muted">
-          Set the minimum Education, Training, and Experience standards for this
-          position. Training increments use 8-hour ranges; Experience uses
-          6-month ranges.
-        </p>
-        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-          <FormSelect
-            control={form.control}
-            label="Base education standard"
-            name="baseQualificationLevel"
-            options={[
-              { label: "Not set", value: "" },
-              ...educationLevels.map((level) => ({
-                label: `Level ${level.qualification_level} · ${level.description}`,
-                value: level.qualification_level.toString(),
-              })),
-            ]}
-          />
-          <FormSelect
-            control={form.control}
-            label="Minimum training increment level"
-            name="baseTrainingIncrementLevel"
-            options={[
-              { label: "Not set", value: "" },
-              ...TRAINING_INCREMENT_OPTIONS,
-            ]}
-          />
-          <FormSelect
-            control={form.control}
-            label="Minimum experience increment level"
-            name="baseExperienceIncrementLevel"
-            options={[
-              { label: "Not set", value: "" },
-              ...EXPERIENCE_INCREMENT_OPTIONS,
-            ]}
-          />
-          {message && (
-            <Alert
-              message={message.text}
-              showIcon
-              type={message.isError ? "error" : "success"}
-            />
-          )}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              disabled={form.formState.isSubmitting}
-              onClick={() => setOpen(false)}
-              variant="bordered"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={form.formState.isSubmitting}
-              variant="filled"
-            >
-              Save standards
-            </Button>
-          </div>
-        </form>
-      </Modal>
-    </>
-  );
-}
 
 function CreatePositionForm({
   open,
@@ -333,179 +153,6 @@ function CreatePositionForm({
   );
 }
 
-function PositionWeightEditor({
-  position,
-  criteria,
-  currentVersion,
-  currentWeights,
-}: {
-  position: Position;
-  criteria: Criterion[];
-  currentVersion: number | null;
-  currentWeights: Record<string, number>;
-}) {
-  const router = useRouter();
-  const [message, setMessage] = useState<{
-    text: string;
-    isError: boolean;
-  } | null>(null);
-  const form = useForm<PositionWeightValues>({
-    resolver: yupResolver(
-      positionWeightFormSchema,
-    ) as Resolver<PositionWeightValues>,
-    mode: "onChange",
-    defaultValues: {
-      weights: criteria.map((criterion) => currentWeights[criterion.id] ?? 0),
-    },
-  });
-  const weights = useWatch({ control: form.control, name: "weights" }) ?? [];
-  const [open, setOpen] = useState(false);
-  const total = weights.reduce(
-    (sum, value) => sum + (Number.isFinite(Number(value)) ? Number(value) : 0),
-    0,
-  );
-  const hasValidTotal = Math.round(total * 100) === 10000;
-
-  async function submit(values: PositionWeightValues) {
-    setMessage(null);
-    const result = await savePositionWeights(position.id, {
-      criterionIds: criteria.map((criterion) => criterion.id),
-      weights: values.weights,
-    });
-    setMessage({ text: result.message, isError: !result.success });
-    if (result.success) {
-      setOpen(false);
-      router.refresh();
-    }
-  }
-
-  return (
-    <>
-      <Button
-        onClick={() => {
-          form.reset({
-            weights: criteria.map(
-              (criterion) => currentWeights[criterion.id] ?? 0,
-            ),
-          });
-          setMessage(null);
-          setOpen(true);
-        }}
-        variant={currentVersion === null ? "filled" : "bordered"}
-      >
-        {currentVersion === null ? "Set up profile" : "Update profile"}
-      </Button>
-      <Modal
-        centered
-        destroyOnHidden
-        footer={null}
-        onCancel={() => setOpen(false)}
-        open={open}
-        title={`Update ${position.title} criteria`}
-        width={720}
-      >
-        <div className="mb-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <StatusTag className="border-primary/20 bg-primary-light text-primary-dark">
-                {position.applicationType === "teaching"
-                  ? "Teaching"
-                  : "Non-teaching"}
-              </StatusTag>
-              {currentVersion !== null && (
-                <span className="text-xs text-muted">
-                  Profile version {currentVersion}
-                </span>
-              )}
-            </div>
-            <p
-              aria-live="polite"
-              className={`text-sm font-semibold ${
-                hasValidTotal ? "text-primary-dark" : "text-ink"
-              }`}
-            >
-              {Number.isInteger(total) ? total : total.toFixed(2)} / 100 points
-            </p>
-          </div>
-          <div
-            aria-label={`Points assigned for ${position.title}`}
-            aria-valuemax={100}
-            aria-valuemin={0}
-            aria-valuenow={Math.min(Math.max(total, 0), 100)}
-            className="h-1.5 overflow-hidden rounded-full bg-panel-muted mt-2"
-            role="progressbar"
-          >
-            <div
-              className={`h-full rounded-full ${
-                hasValidTotal ? "bg-primary" : "bg-line-strong"
-              }`}
-              style={{ width: `${Math.min(Math.max(total, 0), 100)}%` }}
-            />
-          </div>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            Set each criterion’s share. The allocation must total 100 points.
-          </p>
-        </div>
-        <form onSubmit={form.handleSubmit(submit)}>
-          <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
-            {criteria.map((criterion, index) => (
-              <FormInput
-                control={form.control}
-                key={criterion.id}
-                label={
-                  criterion.criterion_key === "CLASSROOM_OBSERVATION"
-                    ? "Classroom Observation"
-                    : criterion.title
-                }
-                max={100}
-                min={0}
-                name={`weights.${index}`}
-                required
-                step="0.01"
-                type="number"
-              />
-            ))}
-          </div>
-          <p className="mb-4 text-xs leading-5 text-muted">
-            Saving creates a new profile version; existing postings keep their
-            saved version.
-          </p>
-          {message && (
-            <Alert
-              className="mb-4"
-              message={message.text}
-              showIcon
-              type={message.isError ? "error" : "success"}
-            />
-          )}
-          <div className="flex justify-end gap-3">
-            <Button
-              disabled={form.formState.isSubmitting}
-              onClick={() => setOpen(false)}
-              variant="bordered"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={
-                !form.formState.isDirty ||
-                !form.formState.isValid ||
-                !hasValidTotal ||
-                form.formState.isSubmitting
-              }
-              type="submit"
-              loading={form.formState.isSubmitting}
-              variant="filled"
-            >
-              Save changes
-            </Button>
-          </div>
-        </form>
-      </Modal>
-    </>
-  );
-}
-
 export function PositionCriteriaManager({
   positions,
   criteria,
@@ -517,9 +164,10 @@ export function PositionCriteriaManager({
   educationLevels: EducationLevel[];
   profileByPosition: Record<
     string,
-    { version: number; weights: Record<string, number> }
+    { version: number; weights: Record<string, number>; rules: ScoringRule[] }
   >;
 }) {
+  const router = useRouter();
   const [isAddingPosition, setIsAddingPosition] = useState(false);
   const [filter, setFilter] = useState<
     "all" | "teaching" | "non-teaching" | "needs-setup" | "archived"
@@ -684,15 +332,13 @@ export function PositionCriteriaManager({
       render: (_, row) =>
         row.position ? (
           <div className="flex flex-wrap justify-end gap-2">
-            <PositionScoringStandardsEditor
+            <ScoringProfileEditor
+              title={`${row.position.title} scoring profile`}
               educationLevels={educationLevels}
-              position={row.position}
-            />
-            <PositionWeightEditor
-              criteria={row.positionCriteria ?? []}
-              currentVersion={row.profile?.version ?? null}
-              currentWeights={row.profile?.weights ?? {}}
-              position={row.position}
+              requireComplete
+              rules={row.profile?.rules ?? (row.positionCriteria ?? []).map((criterion) => ({ criterion_id: criterion.id, criterion_key: criterion.criterion_key, title: criterion.title, points: 0, minimum_level: null, bands: [{ threshold: 0, points: 0 }] }))}
+              onSave={async (rules) => { const result = await saveScoringProfile(row.position!.id, rules); if (result.success) router.refresh(); return result; }}
+              label={row.profile ? "Edit scoring profile" : "Set up profile"}
             />
           </div>
         ) : null,

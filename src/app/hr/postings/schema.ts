@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { scoringRulesSchema } from "@/utils/scoring-schema";
 
 export const JOB_STATUSES = ["DRAFT", "OPEN", "CLOSED"] as const;
 export const HIRING_TRACKS = ["TEACHING", "NON_TEACHING"] as const;
@@ -52,6 +53,10 @@ export const postingSchema = yup.object({
       "Do not select a position more than once.",
       (values) => !values || new Set(values).size === values.length,
     ),
+  scoring: yup.array().of(yup.object({
+    position_id: yup.string().uuid().required(),
+    rules: scoringRulesSchema,
+  })).required(),
 });
 
 export type PostingValues = yup.InferType<typeof postingSchema>;

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { ValidationError } from "yup";
 import { getHrContext } from "@/lib/auth/server";
+import type { Json } from "@/types/database-json";
+import { scoringPublicationError } from "@/utils/scoring-schema";
 import { postingSchema, type HiringTrack } from "./schema";
 
 type ActionResult = { success: boolean; message: string };
@@ -123,7 +125,15 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
     return { success: false, message: "An expired posting cannot be opened." };
   }
 
-  const { error } = await hr.supabase.rpc("create_job_posting_with_positions", {
+  if (values.status !== "DRAFT") {
+    for (const entry of values.scoring) {
+      const issue = scoringPublicationError(entry.rules);
+      if (issue) return { success: false, message: issue };
+    }
+  }
+
+  const { data, error } = await hr.supabase.rpc("save_scored_posting", {
+    p_job_id: null,
     p_title: values.title,
     p_description: values.description,
     p_requirements: values.requirements || null,
@@ -131,10 +141,11 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
     p_status: values.status,
     p_deadline: deadlineIso(values.deadline),
     p_position_ids: values.positionIds,
+    p_scoring: values.scoring as unknown as Json,
   });
 
-  if (error) {
-    return { success: false, message: "The posting could not be created. Check its details and status." };
+  if (error || !data) {
+    return { success: false, message: error?.code === "22023" ? error.message : "The posting could not be created. Check its details and status." };
   }
 
   revalidatePath("/hr/dashboard");
@@ -191,8 +202,15 @@ export async function updateJobPosting(
   );
   if (capacityMessage) return { success: false, message: capacityMessage };
 
+  if (values.status !== "DRAFT") {
+    for (const entry of values.scoring) {
+      const issue = scoringPublicationError(entry.rules);
+      if (issue) return { success: false, message: issue };
+    }
+  }
+
   const { data, error } = await hr.supabase.rpc(
-    "update_job_posting_with_positions",
+    "save_scored_posting",
     {
       p_job_id: jobId,
       p_title: values.title,
@@ -202,11 +220,12 @@ export async function updateJobPosting(
       p_status: values.status,
       p_deadline: deadlineIso(values.deadline),
       p_position_ids: values.positionIds,
+      p_scoring: values.scoring as unknown as Json,
     },
   );
 
   if (error || !data) {
-    return { success: false, message: "The posting could not be updated. Refresh and try again." };
+    return { success: false, message: error?.code === "22023" ? error.message : "The posting could not be updated. Refresh and try again." };
   }
 
   revalidatePath("/hr/dashboard");

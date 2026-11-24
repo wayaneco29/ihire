@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getHrContext } from "@/lib/auth/server";
 import { getConfiguredPositions } from "../../data";
 import { PostingForm } from "../../components/PostingForm";
+import { readBands } from "@/utils/scoring";
+import type { ScoringRule } from "@/types/scoring";
 
 export default async function EditPostingPage({
   params,
@@ -17,14 +19,14 @@ export default async function EditPostingPage({
     "Describe the opportunity, choose the roles it covers, and set how applicants can respond.";
   const { data: posting, error } = await hr.supabase
     .from("job_postings")
-    .select("id, title, description, requirements, slots, status, deadline")
+    .select("id, title, description, requirements, slots, status, deadline, scoring_locked_at")
     .eq("id", id)
     .maybeSingle();
   if (error || !posting) notFound();
 
   const selectedResult = await hr.supabase
     .from("job_posting_positions")
-    .select("position_id")
+    .select("position_id, weight_profile_id")
     .eq("job_id", id);
   if (selectedResult.error) {
     return (
@@ -48,6 +50,32 @@ export default async function EditPostingPage({
   const positionIds = (selectedResult.data ?? []).map(
     (selection) => selection.position_id,
   );
+  const snapshotProfileIds = (selectedResult.data ?? []).map((link) => link.weight_profile_id);
+  const snapshotWeights = snapshotProfileIds.length
+    ? await hr.supabase.from("position_criterion_weights")
+        .select("profile_id, criterion_id, points, minimum_level, bands")
+        .in("profile_id", snapshotProfileIds)
+    : { data: [], error: null };
+  const snapshotCriterionIds = [...new Set((snapshotWeights.data ?? []).map((weight) => weight.criterion_id))];
+  const snapshotCriteria = snapshotCriterionIds.length
+    ? await hr.supabase.from("position_criteria").select("id, criterion_key, title").in("id", snapshotCriterionIds)
+    : { data: [], error: null };
+  if (snapshotWeights.error || snapshotCriteria.error) {
+    return <EmptyState description="Refresh the page to try loading the saved scoring rules." title="Scoring rules unavailable" />;
+  }
+  const criterionById = new Map((snapshotCriteria.data ?? []).map((criterion) => [criterion.id, criterion]));
+  const rulesByProfile = new Map<string, ScoringRule[]>();
+  for (const weight of snapshotWeights.data ?? []) {
+    const criterion = criterionById.get(weight.criterion_id);
+    if (!criterion) continue;
+    const rules = rulesByProfile.get(weight.profile_id) ?? [];
+    rules.push({ criterion_id: criterion.id, criterion_key: criterion.criterion_key, title: criterion.title, points: weight.points, minimum_level: weight.minimum_level, bands: readBands(weight.bands) });
+    rulesByProfile.set(weight.profile_id, rules);
+  }
+  const scoring = (selectedResult.data ?? []).map((link) => ({
+    position_id: link.position_id,
+    rules: rulesByProfile.get(link.weight_profile_id) ?? [],
+  }));
   const positionsResult = await getConfiguredPositions(
     hr.supabase,
     positionIds,
@@ -147,6 +175,8 @@ export default async function EditPostingPage({
           hiringTrack:
             hiringTrack === "NON_TEACHING" ? "NON_TEACHING" : "TEACHING",
           positionIds,
+          scoring,
+          scoringLockedAt: posting.scoring_locked_at,
         }}
       />
     </div>

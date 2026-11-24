@@ -16,17 +16,22 @@ import { Button } from "@/components/ui/Button";
 import { createJobPosting, updateJobPosting } from "../actions";
 import { HIRING_TRACKS, postingSchema, type PostingValues } from "../schema";
 import dayjs from "dayjs";
+import { ScoringProfileEditor } from "@/components/scoring/ScoringProfileEditor";
+import type { ScoringRule } from "@/types/scoring";
 
 type PositionOption = {
   id: string;
   title: string;
   track: string;
   is_active: boolean;
+  scoringProfileId: string;
+  scoringProfileVersion: number;
+  scoringRules: ScoringRule[];
 };
 
 type Values = PostingValues;
 
-type PostingSeed = Values & { id: string };
+type PostingSeed = Values & { id: string; scoringLockedAt: string | null };
 
 const positionOptionClasses = [
   "md:grid-cols-3",
@@ -73,6 +78,7 @@ export function PostingForm({
           status: posting.status,
           hiringTrack: posting.hiringTrack,
           positionIds: posting.positionIds,
+          scoring: posting.scoring,
         }
       : {
           title: "",
@@ -82,9 +88,12 @@ export function PostingForm({
           deadline: "",
           status: "DRAFT",
           positionIds: [],
+          scoring: [],
         },
   });
   const hiringTrack = useWatch({ control, name: "hiringTrack" });
+  const selectedPositionIds = useWatch({ control, name: "positionIds" }) ?? [];
+  const scoring = useWatch({ control, name: "scoring" }) ?? [];
 
   useEffect(() => {
     if (!posting?.deadline) return;
@@ -104,6 +113,11 @@ export function PostingForm({
     const payload = {
       ...values,
       deadline: values.deadline ? new Date(values.deadline).toISOString() : "",
+      scoring: values.positionIds.map((positionId) => ({
+        position_id: positionId,
+        rules: values.scoring.find((entry) => entry.position_id === positionId)?.rules ??
+          positions.find((position) => position.id === positionId)?.scoringRules ?? [],
+      })),
     };
     const result = posting
       ? await updateJobPosting(posting.id, payload)
@@ -216,6 +230,7 @@ export function PostingForm({
                   <FormCheckboxGroup
                     className={positionOptionClasses}
                     control={control}
+                    disabled={Boolean(posting?.scoringLockedAt)}
                     hint="Applicants can apply separately to each selected position. Archived positions are available only when already linked to this posting."
                     label="Applicable positions"
                     name="positionIds"
@@ -252,6 +267,40 @@ export function PostingForm({
                 </>
               )}
             </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="posting-scoring-heading" className="grid gap-5 border-t border-line-subtle px-5 py-6 sm:px-7 sm:py-7 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8 lg:gap-10">
+          <div className="max-w-xs">
+            <h3 className="text-base font-semibold text-ink" id="posting-scoring-heading">Scoring rules</h3>
+            <p className="mt-1 text-sm leading-6 text-muted">Use the saved position profile or adjust the point bands for this posting. Publishing locks its scoring rules.</p>
+          </div>
+          <div className="space-y-3">
+            {selectedPositionIds.map((positionId) => {
+              const position = positions.find((item) => item.id === positionId);
+              if (!position) return null;
+              const saved = scoring.find((entry) => entry.position_id === positionId);
+              const rules = saved?.rules ?? position.scoringRules;
+              return <div key={positionId} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line p-4">
+                <div><p className="font-semibold text-ink">{position.title}</p><p className="text-xs text-muted">Position profile v{position.scoringProfileVersion} | {saved ? "Saved posting rules" : "Adjust these defaults before publishing"} · {rules.filter((rule) => ["EDUCATION", "TRAINING", "EXPERIENCE"].includes(rule.criterion_key)).map((rule) => `${rule.title} ${rule.points} pts`).join(" · ")}</p></div>
+                <div className="flex flex-wrap gap-2">
+                <Button variant="bordered" disabled={Boolean(posting?.scoringLockedAt)} onClick={() => {
+                  const current = getValues("scoring");
+                  const next = current.filter((entry) => entry.position_id !== positionId);
+                  next.push({ position_id: positionId, rules: position.scoringRules });
+                  setValue("scoring", next, { shouldDirty: true, shouldValidate: true });
+                }}>Load latest defaults</Button>
+                <ScoringProfileEditor title={`${position.title} posting rules`} rules={rules} disabled={Boolean(posting?.scoringLockedAt)} requireComplete={true} label={posting?.scoringLockedAt ? "Rules locked" : "Edit posting rules"} onSave={async (nextRules) => {
+                  const current = getValues("scoring");
+                  const next = current.filter((entry) => entry.position_id !== positionId);
+                  next.push({ position_id: positionId, rules: nextRules });
+                  setValue("scoring", next, { shouldDirty: true, shouldValidate: true });
+                  return { success: true, message: "Posting rules updated." };
+                }} />
+                </div>
+              </div>;
+            })}
+            {posting?.scoringLockedAt && <Alert className="mt-3" message="These scoring rules were locked when the posting was published." type="info" showIcon />}
           </div>
         </section>
 

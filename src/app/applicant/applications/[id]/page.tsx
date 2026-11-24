@@ -5,11 +5,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getApplicantContext } from "@/lib/auth/server";
 import { CalendarDaysIcon } from "@heroicons/react/24/outline";
-import {
-  calculatePublicTeachingExperience,
-  formatExperienceMonths,
-} from "@/utils/calculate-public-teaching-experience";
-import { calculateApplicantTrainingHours } from "@/utils/calculate-applicant-training-hours";
 import { formatPositionTrack } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { isDocumentComplianceRejection } from "@/utils/application-resubmission";
@@ -100,110 +95,19 @@ export default async function ApplicantApplicationDetailPage({
     job.status === "OPEN" &&
     (!job.deadline || Date.parse(job.deadline) > Date.now());
 
-  const [
-    { data: jobPositions, error: jobPositionError },
-    { data: certificateType, error: certificateTypeError },
-    learningResult,
-    educationResult,
-    workExperienceResult,
-  ] = await Promise.all([
-    applicant.supabase
-      .from("job_posting_positions")
-      .select("position_id, weight_profile_id")
-      .eq("job_id", application.job_id),
-    applicant.supabase
-      .from("document_types")
-      .select("id")
-      .eq("name", "Training and Seminar Certificates")
-      .maybeSingle(),
-    applicant.supabase
-      .from("pds_learning_development")
-      .select("id, hours")
-      .eq("pds_version_id", application.pds_version_id),
-    applicant.supabase
-      .from("pds_education")
-      .select("qualification_level")
-      .eq("pds_version_id", application.pds_version_id),
-    applicant.supabase
-      .from("pds_work_experience")
-      .select("date_from, date_to, is_gov_service, position_title")
-      .eq("pds_version_id", application.pds_version_id),
-  ]);
-
-  const linkedPositionIds = (jobPositions ?? []).map(
-    (jobPosition) => jobPosition.position_id,
-  );
-  const resolvedPositionId =
-    application.position_id ??
-    (linkedPositionIds.length === 1 ? linkedPositionIds[0] : null);
+  const { data: jobPositions, error: jobPositionError } = await applicant.supabase
+    .from("job_posting_positions")
+    .select("position_id, weight_profile_id")
+    .eq("job_id", application.job_id);
+  const linkedPositionIds = (jobPositions ?? []).map((jobPosition) => jobPosition.position_id);
+  const resolvedPositionId = application.position_id ?? (linkedPositionIds.length === 1 ? linkedPositionIds[0] : null);
   let resolvedPosition = position;
-  let resolvedPositionUnavailable = false;
   if (application.position_id === null && resolvedPositionId) {
-    const resolvedPositionResult = await applicant.supabase
-      .from("positions")
-      .select(
-        "id, title, base_qualification_level, base_training_increment_level, base_experience_increment_level, application_type(name)",
-      )
-      .eq("id", resolvedPositionId)
-      .maybeSingle();
+    const resolvedPositionResult = await applicant.supabase.from("positions")
+      .select("id, title, base_qualification_level, base_training_increment_level, base_experience_increment_level, application_type(name)")
+      .eq("id", resolvedPositionId).maybeSingle();
     resolvedPosition = resolvedPositionResult.data;
-    resolvedPositionUnavailable = Boolean(resolvedPositionResult.error);
   }
-  const applicantQualificationLevel = (educationResult.data ?? []).reduce<
-    number | null
-  >(
-    (highest, education) =>
-      education.qualification_level !== null &&
-      (highest === null || education.qualification_level > highest)
-        ? education.qualification_level
-        : highest,
-    null,
-  );
-  const publicTeachingExperience = calculatePublicTeachingExperience(
-    workExperienceResult.data ?? [],
-  );
-  let trainingHours: number | null = null;
-  let trainingUnavailable =
-    Boolean(certificateTypeError || !certificateType) ||
-    Boolean(learningResult.error);
-  if (!trainingUnavailable && certificateType) {
-    const certificatesResult = await applicant.supabase
-      .from("documents")
-      .select(
-        "id, training_hours, ocr_training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
-      )
-      .eq("applicant_id", applicant.applicant.id)
-      .eq("document_type_id", certificateType.id)
-      .order("uploaded_at", { ascending: false })
-      .order("version", { ascending: false });
-    if (certificatesResult.error) {
-      trainingUnavailable = true;
-    } else {
-      const certificateIds = (certificatesResult.data ?? []).map(
-        (certificate) => certificate.id,
-      );
-      const trainingReviewsResult = certificateIds.length
-        ? await applicant.supabase
-            .from("document_reviews")
-            .select(
-              "id, document_id, status, confirmed_training_hours, reviewed_at",
-            )
-            .in("document_id", certificateIds)
-            .order("reviewed_at", { ascending: false })
-            .order("id", { ascending: false })
-        : { data: [], error: null };
-      if (trainingReviewsResult.error) {
-        trainingUnavailable = true;
-      } else {
-        trainingHours = calculateApplicantTrainingHours(
-          learningResult.data ?? [],
-          certificatesResult.data ?? [],
-          trainingReviewsResult.data ?? [],
-        );
-      }
-    }
-  }
-
   const jobPosition = jobPositions?.find(
     (jobPosition) => jobPosition.position_id === resolvedPositionId,
   );
@@ -242,167 +146,33 @@ export default async function ApplicantApplicationDetailPage({
       if (criteriaResult.error || scoresResult.error) {
         criteriaUnavailable = true;
       } else {
-        const weightsByCriterion = new Map(
-          weights.map((weight) => [weight.criterion_id, weight.points]),
-        );
-        const scoresByCriterion = new Map(
-          (scoresResult.data ?? []).map((score) => [
-            score.criterion_id,
-            score.points,
-          ]),
-        );
-        const educationCriterion = (criteriaResult.data ?? []).find(
-          (criterion) => criterion.criterion_key === "EDUCATION",
-        );
-        const educationMaximumPoints = educationCriterion
-          ? weightsByCriterion.get(educationCriterion.id)
-          : undefined;
-        const educationPointsResult =
-          resolvedPositionId &&
-          applicantQualificationLevel !== null &&
-          educationMaximumPoints !== undefined
-            ? await applicant.supabase.rpc("education_equivalent_points", {
-                p_position_id: resolvedPositionId,
-                p_applicant_level: applicantQualificationLevel,
-                p_maximum_points: educationMaximumPoints,
-              })
-            : { data: null, error: null };
-        const educationScoringUnavailable = Boolean(
-          educationResult.error ||
-          resolvedPositionUnavailable ||
-          educationPointsResult.error,
-        );
-        const trainingCriterion = (criteriaResult.data ?? []).find(
-          (criterion) => criterion.criterion_key === "TRAINING",
-        );
-        const trainingMaximumPoints = trainingCriterion
-          ? weightsByCriterion.get(trainingCriterion.id)
-          : undefined;
-        const trainingPointsResult =
-          resolvedPositionId &&
-          trainingHours !== null &&
-          trainingMaximumPoints !== undefined &&
-          resolvedPosition?.base_training_increment_level !== null &&
-          resolvedPosition?.base_training_increment_level !== undefined
-            ? await applicant.supabase.rpc("training_equivalent_points", {
-                p_position_id: resolvedPositionId,
-                p_training_hours: trainingHours,
-                p_maximum_points: trainingMaximumPoints,
-              })
-            : { data: null, error: null };
-        const trainingScoringUnavailable =
-          trainingUnavailable || Boolean(trainingPointsResult.error);
-        const experienceCriterion = (criteriaResult.data ?? []).find(
-          (criterion) => criterion.criterion_key === "EXPERIENCE",
-        );
-        const experienceMaximumPoints = experienceCriterion
-          ? weightsByCriterion.get(experienceCriterion.id)
-          : undefined;
-        const experiencePointsResult =
-          resolvedPositionId &&
-          experienceMaximumPoints !== undefined &&
-          resolvedPosition?.base_experience_increment_level !== null &&
-          resolvedPosition?.base_experience_increment_level !== undefined
-            ? await applicant.supabase.rpc("experience_equivalent_points", {
-                p_position_id: resolvedPositionId,
-                p_applicant_level: publicTeachingExperience.incrementLevel,
-                p_maximum_points: experienceMaximumPoints,
-              })
-            : { data: null, error: null };
-        const experienceScoringUnavailable =
-          Boolean(workExperienceResult.error) ||
-          Boolean(experiencePointsResult.error);
-        criteriaRows = (criteriaResult.data ?? []).flatMap(
-          (criterion): ApplicationCriterionPointsRow[] => {
+        const weightsByCriterion = new Map(weights.map((weight) => [weight.criterion_id, weight.points]));
+        const scoresByCriterion = new Map((scoresResult.data ?? []).map((score) => [score.criterion_id, score.points]));
+        const scoringResult = await applicant.supabase.from("v_application_scoring")
+          .select("criterion_key, applicant_level, minimum_level, maximum_points, points, difference, matched_threshold")
+          .eq("application_id", application.id);
+        if (scoringResult.error) {
+          criteriaUnavailable = true;
+        } else {
+          const calculatedByKey = new Map((scoringResult.data ?? []).map((score) => [score.criterion_key, score]));
+          criteriaRows = (criteriaResult.data ?? []).flatMap((criterion): ApplicationCriterionPointsRow[] => {
             const maximumPoints = weightsByCriterion.get(criterion.id);
             if (maximumPoints === undefined) return [];
-
-            if (criterion.criterion_key === "EDUCATION") {
-              return [
-                {
-                  id: criterion.id,
-                  title: criterion.title,
-                  maximumPoints,
-                  earnedPoints: educationPointsResult.data,
-                  earnedStatus: educationScoringUnavailable
-                    ? "unavailable"
-                    : educationPointsResult.data === null
-                      ? "not_scored"
-                      : "scored",
-                  detail:
-                    educationPointsResult.data !== null &&
-                    resolvedPosition &&
-                    resolvedPosition.base_qualification_level !== null &&
-                    applicantQualificationLevel !== null
-                      ? `Education difference: ${applicantQualificationLevel - resolvedPosition.base_qualification_level} increments; equivalent points use the configured Education weight.`
-                      : "Complete the education details in the submitted PDS and make sure HR has set the position standard.",
-                },
-              ];
+            if (["EDUCATION", "TRAINING", "EXPERIENCE"].includes(criterion.criterion_key)) {
+              const score = calculatedByKey.get(criterion.criterion_key);
+              const detail = score?.applicant_level !== null && score?.applicant_level !== undefined && score.minimum_level !== null
+                ? `Applicant level ${score.applicant_level}; minimum level ${score.minimum_level}; ${score.difference} levels above the minimum${score.matched_threshold === null ? "" : `; matched the ${score.matched_threshold}-level threshold`}.`
+                : "Complete the related PDS records and ensure the position requirement is configured.";
+              return [{ id: criterion.id, title: criterion.title, maximumPoints,
+                earnedPoints: score?.points ?? null,
+                earnedStatus: score?.points === null || score?.points === undefined ? "not_scored" : "scored",
+                detail }];
             }
-
-            if (criterion.criterion_key === "TRAINING") {
-              return [
-                {
-                  id: criterion.id,
-                  title: criterion.title,
-                  maximumPoints,
-                  earnedPoints: trainingPointsResult.data,
-                  earnedStatus: trainingScoringUnavailable
-                    ? "unavailable"
-                    : trainingPointsResult.data === null
-                      ? "not_scored"
-                      : "scored",
-                  detail:
-                    trainingPointsResult.data !== null &&
-                    resolvedPosition?.base_training_increment_level !== null &&
-                    resolvedPosition?.base_training_increment_level !==
-                      undefined
-                      ? `Calculated from ${trainingHours} submitted training hours against minimum increment level ${resolvedPosition.base_training_increment_level}.`
-                      : "Set the position’s minimum Training increment level and provide training hours in the submitted PDS or certificates.",
-                },
-              ];
-            }
-
-            if (criterion.criterion_key === "EXPERIENCE") {
-              return [
-                {
-                  id: criterion.id,
-                  title: criterion.title,
-                  maximumPoints,
-                  earnedPoints: experiencePointsResult.data,
-                  earnedStatus: experienceScoringUnavailable
-                    ? "unavailable"
-                    : experiencePointsResult.data === null
-                      ? "not_scored"
-                      : "scored",
-                  detail:
-                    experiencePointsResult.data !== null &&
-                    resolvedPosition?.base_experience_increment_level !==
-                      null &&
-                    resolvedPosition?.base_experience_increment_level !==
-                      undefined
-                      ? `${formatExperienceMonths(publicTeachingExperience.qualifyingMonths)} qualifying public teaching experience (Level ${publicTeachingExperience.incrementLevel}; minimum Level ${resolvedPosition.base_experience_increment_level}).`
-                      : "Only government-service work with a teacher-, instructor-, or educator-related title counts. Set the position’s minimum Experience increment level to calculate points.",
-                },
-              ];
-            }
-
-            const savedPoints =
-              criterion.criterion_key === "CLASSROOM_OBSERVATION"
-                ? scoresByCriterion.get(criterion.id)
-                : undefined;
-            return [
-              {
-                id: criterion.id,
-                title: criterion.title,
-                maximumPoints,
-                earnedPoints: savedPoints ?? null,
-                earnedStatus:
-                  savedPoints === undefined ? "not_scored" : "scored",
-              },
-            ];
-          },
-        );
+            const savedPoints = criterion.criterion_key === "CLASSROOM_OBSERVATION" ? scoresByCriterion.get(criterion.id) : undefined;
+            return [{ id: criterion.id, title: criterion.title, maximumPoints,
+              earnedPoints: savedPoints ?? null, earnedStatus: savedPoints === undefined ? "not_scored" : "scored" }];
+          });
+        }
       }
     }
   }

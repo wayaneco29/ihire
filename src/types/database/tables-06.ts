@@ -1,3 +1,4 @@
+import type { Json } from "../database-json";
 export type JobPostingPositionsTable = {
   Row: {
     created_at: string;
@@ -95,14 +96,20 @@ export type PositionCriterionWeightsTable = {
   Row: {
     criterion_id: string;
     points: number;
+    minimum_level: number | null;
+    bands: Json;
     profile_id: string;
   };
   Insert: {
+    minimum_level?: number | null;
+    bands?: Json;
     criterion_id: string;
     points: number;
     profile_id: string;
   };
   Update: {
+    minimum_level?: number | null;
+    bands?: Json;
     criterion_id?: string;
     points?: number;
     profile_id?: string;
