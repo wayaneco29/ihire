@@ -28,7 +28,23 @@ type Values = PostingValues;
 
 type PostingSeed = Values & { id: string };
 
-const positionOptionClasses = [].join(" ");
+const positionOptionClasses = [
+  "md:grid-cols-3",
+  "[&_.ant-checkbox-wrapper]:m-0!",
+  "[&_.ant-checkbox-wrapper]:w-fit",
+  "[&_.ant-checkbox-wrapper]:rounded-full",
+  "[&_.ant-checkbox-wrapper]:border",
+  "[&_.ant-checkbox-wrapper]:border-line",
+  "[&_.ant-checkbox-wrapper]:bg-panel",
+  "[&_.ant-checkbox-wrapper]:px-3",
+  "[&_.ant-checkbox-wrapper]:py-2",
+  "[&_.ant-checkbox-wrapper]:text-sm",
+  "[&_.ant-checkbox-wrapper]:text-ink",
+  "[&_.ant-checkbox-wrapper:hover]:border-primary",
+  "[&_.ant-checkbox-wrapper-checked]:border-primary",
+  "[&_.ant-checkbox-wrapper-checked]:bg-primary-light",
+  "[&_.ant-checkbox-wrapper-checked]:text-primary",
+].join(" ");
 
 export function PostingForm({
   posting,
@@ -43,7 +59,7 @@ export function PostingForm({
     getValues,
     reset,
     setValue,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isDirty },
   } = useForm<Values>({
     mode: "onChange",
     resolver: yupResolver(postingSchema) as Resolver<Values>,
@@ -103,24 +119,17 @@ export function PostingForm({
 
   return (
     <form
-      className="mt-8 overflow-hidden rounded-md border border-line bg-panel shadow-card"
+      className="overflow-hidden rounded-xl border border-line bg-panel"
       onSubmit={submit}
     >
-      <div className="border-b border-line-subtle px-5 py-5 sm:px-8 sm:py-6">
-        <h2 className="text-base font-semibold text-ink">
-          Posting information
-        </h2>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-          Describe the opportunity, choose the roles it covers, and set how
-          applicants can respond.
-        </p>
-      </div>
-
-      <div className="space-y-8 px-5 py-6 sm:px-8 sm:py-8">
-        <section aria-labelledby="posting-overview-heading">
-          <div className="mb-4">
+      <div className="divide-y divide-line-subtle">
+        <section
+          aria-labelledby="posting-overview-heading"
+          className="grid gap-5 px-5 py-6 sm:px-7 sm:py-7 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8 lg:gap-10"
+        >
+          <div className="max-w-xs">
             <h3
-              className="text-sm font-semibold text-ink"
+              className="text-base font-semibold text-ink"
               id="posting-overview-heading"
             >
               Role overview
@@ -129,7 +138,7 @@ export function PostingForm({
               Start with a clear title and a concise description of the work.
             </p>
           </div>
-          <div className="mb-4">
+          <div className="space-y-5">
             <FormInput
               autoComplete="off"
               control={control}
@@ -138,25 +147,25 @@ export function PostingForm({
               name="title"
               required
             />
+            <FormTextArea
+              control={control}
+              label="Description"
+              maxLength={10000}
+              name="description"
+              required
+              rows={5}
+              showCount
+            />
           </div>
-          <FormTextArea
-            control={control}
-            label="Description"
-            maxLength={10000}
-            name="description"
-            required
-            rows={5}
-            showCount
-          />
         </section>
 
         <section
           aria-labelledby="posting-positions-heading"
-          className="rounded-md border border-primary/20 bg-primary-light/40 p-4 sm:p-5"
+          className="grid gap-5 px-5 py-6 sm:px-7 sm:py-7 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8 lg:gap-10"
         >
-          <div className="mb-4">
+          <div className="max-w-xs">
             <h3
-              className="text-sm font-semibold text-ink"
+              className="text-base font-semibold text-ink"
               id="posting-positions-heading"
             >
               Who can apply
@@ -166,156 +175,178 @@ export function PostingForm({
               posting.
             </p>
           </div>
-          {positions.length === 0 && (
-            <Alert
-              className="mb-4"
-              description="Configure an active position and its scoring profile before adding it to a posting."
-              message="No positions are ready to select"
-              showIcon
-              type="warning"
-            />
-          )}
-          <div className="space-y-4">
-            <FormSelect
-              control={control}
-              hint="A posting can include multiple positions, but they must share one hiring type."
-              label="Hiring type"
-              name="hiringTrack"
-              onValueChange={(track) => {
-                const matchingPositionIds = new Set(
-                  positions
-                    .filter((position) => position.track === track)
-                    .map((position) => position.id),
-                );
-                setValue(
-                  "positionIds",
-                  getValues("positionIds").filter((id) =>
-                    matchingPositionIds.has(id),
-                  ),
-                  { shouldDirty: true, shouldValidate: true },
-                );
-              }}
-              options={[
-                { label: "Teaching", value: HIRING_TRACKS[0] },
-                { label: "Non-teaching", value: HIRING_TRACKS[1] },
-              ]}
-              placeholder="Choose a hiring type"
-              required
-            />
-            {hiringTrack && (
-              <>
-                <FormCheckboxGroup
-                  className={positionOptionClasses}
-                  control={control}
-                  hint="Applicants can apply separately to each selected position. Archived positions are available only when already linked to this posting."
-                  label="Applicable positions"
-                  name="positionIds"
-                  options={positions
-                    .filter((position) => position.track === hiringTrack)
-                    .map((position) => ({
-                      label: (
-                        <span className="font-medium text-ink">
-                          {position.title}
-                          {!position.is_active && (
-                            <span className="ml-2 text-xs font-normal text-muted">
-                              Archived · existing posting
-                            </span>
-                          )}
-                        </span>
-                      ),
-                      value: position.id,
-                      disabled:
-                        !position.is_active &&
-                        !posting?.positionIds.includes(position.id),
-                    }))}
-                  required
-                />
-                {hiringTrack &&
-                  positions.length > 0 &&
-                  positions.every(
-                    (position) => position.track !== hiringTrack,
-                  ) && (
-                    <p className="mt-2 text-sm text-muted">
-                      No configured positions are available for this hiring
-                      type.
-                    </p>
-                  )}
-              </>
+          <div className="space-y-5">
+            {positions.length === 0 && (
+              <Alert
+                description="Configure an active position and its scoring profile before adding it to a posting."
+                message="No positions are ready to select"
+                showIcon
+                type="warning"
+              />
             )}
+            <div className="space-y-4">
+              <FormSelect
+                control={control}
+                hint="A posting can include multiple positions, but they must share one hiring type."
+                label="Hiring type"
+                name="hiringTrack"
+                onValueChange={(track) => {
+                  const matchingPositionIds = new Set(
+                    positions
+                      .filter((position) => position.track === track)
+                      .map((position) => position.id),
+                  );
+                  setValue(
+                    "positionIds",
+                    getValues("positionIds").filter((id) =>
+                      matchingPositionIds.has(id),
+                    ),
+                    { shouldDirty: true, shouldValidate: true },
+                  );
+                }}
+                options={[
+                  { label: "Teaching", value: HIRING_TRACKS[0] },
+                  { label: "Non-teaching", value: HIRING_TRACKS[1] },
+                ]}
+                placeholder="Choose a hiring type"
+                required
+              />
+              {hiringTrack && (
+                <>
+                  <FormCheckboxGroup
+                    className={positionOptionClasses}
+                    control={control}
+                    hint="Applicants can apply separately to each selected position. Archived positions are available only when already linked to this posting."
+                    label="Applicable positions"
+                    name="positionIds"
+                    options={positions
+                      .filter((position) => position.track === hiringTrack)
+                      .map((position) => ({
+                        label: (
+                          <span className="font-medium text-ink">
+                            {position.title}
+                            {!position.is_active && (
+                              <span className="ml-2 text-xs font-normal text-muted">
+                                Archived · existing posting
+                              </span>
+                            )}
+                          </span>
+                        ),
+                        value: position.id,
+                        disabled:
+                          !position.is_active &&
+                          !posting?.positionIds.includes(position.id),
+                      }))}
+                    required
+                  />
+                  {hiringTrack &&
+                    positions.length > 0 &&
+                    positions.every(
+                      (position) => position.track !== hiringTrack,
+                    ) && (
+                      <p className="mt-2 text-sm text-muted">
+                        No configured positions are available for this hiring
+                        type.
+                      </p>
+                    )}
+                </>
+              )}
+            </div>
           </div>
         </section>
 
         <section
           aria-labelledby="posting-settings-heading"
-          className="border-t border-line-subtle pt-6"
+          className="grid gap-5 px-5 py-6 sm:px-7 sm:py-7 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8 lg:gap-10"
         >
-          <div className="mb-4">
+          <div className="max-w-xs">
             <h3
-              className="text-sm font-semibold text-ink"
+              className="text-base font-semibold text-ink"
               id="posting-settings-heading"
             >
               Application settings
             </h3>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              Set requirements, capacity and when applications close.
+            </p>
           </div>
-          <FormTextArea
-            control={control}
-            hint="Include qualifications and supporting details for applicants."
-            label="Requirements"
-            maxLength={10000}
-            name="requirements"
-            rows={4}
-            showCount
-          />
-          <div className="grid mt-4 gap-x-5 sm:grid-cols-2 lg:grid-cols-3">
-            <FormInput
+          <div className="space-y-5">
+            <FormTextArea
               control={control}
-              label="Available slots"
-              max={10000}
-              min={1}
-              name="slots"
-              required
-              step={1}
-              type="number"
+              hint="Include qualifications and supporting details for applicants."
+              label="Requirements"
+              maxLength={10000}
+              name="requirements"
+              rows={4}
+              showCount
             />
-            <FormDatePicker
-              control={control}
-              label="Application deadline"
-              name="deadline"
-              format="MMMM DD, YYYY"
-              valueFormat="YYYY-MM-DDTHH:mm"
-              disabledDate={(dateMap) => dayjs().isAfter(dateMap)}
-            />
-            <FormSelect
-              control={control}
-              label="Posting status"
-              name="status"
-              options={[
-                { label: "Draft", value: "DRAFT" },
-                { label: "Open for applications", value: "OPEN" },
-                { label: "Closed", value: "CLOSED" },
-              ]}
-              required
-            />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <FormInput
+                control={control}
+                label="Available slots"
+                max={10000}
+                min={1}
+                name="slots"
+                required
+                step={1}
+                type="number"
+              />
+              <FormDatePicker
+                control={control}
+                label="Application deadline"
+                name="deadline"
+                format="MMMM DD, YYYY"
+                valueFormat="YYYY-MM-DDTHH:mm"
+                disabledDate={(dateMap) => dayjs().isAfter(dateMap)}
+              />
+              <FormSelect
+                control={control}
+                label="Posting status"
+                name="status"
+                options={[
+                  { label: "Draft", value: "DRAFT" },
+                  { label: "Open for applications", value: "OPEN" },
+                  { label: "Closed", value: "CLOSED" },
+                ]}
+                required
+              />
+            </div>
           </div>
         </section>
 
-        {error && <Alert message={error} showIcon type="error" />}
-        {message && <Alert message={message} showIcon type="success" />}
+        {(error || message) && (
+          <div className="border-t border-line-subtle px-5 py-5 sm:px-7">
+            {error && <Alert message={error} showIcon type="error" />}
+            {message && <Alert message={message} showIcon type="success" />}
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-col-reverse gap-3 border-t border-line-subtle bg-panel-muted px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
-        <Button
-          disabled={isSubmitting}
-          onClick={() =>
-            router.push(posting ? `/hr/postings/${posting.id}` : "/hr/postings")
-          }
-          variant="bordered"
-        >
-          Cancel
-        </Button>
-        <Button type="submit" loading={isSubmitting} variant="filled">
-          {posting ? "Save changes" : "Create posting"}
-        </Button>
+      <div className="flex flex-col-reverse gap-4 border-t border-line-subtle bg-panel-muted px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+        <p aria-live="polite" className="text-sm text-muted">
+          {isDirty ? "Unsaved changes" : "No changes yet"}
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button
+            disabled={isSubmitting}
+            onClick={() =>
+            router.push(
+              posting ? `/hr/postings/${posting.id}` : "/hr/postings",
+            )
+            }
+            variant="bordered"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={!isDirty}
+            loading={isSubmitting}
+            type="submit"
+            variant="filled"
+          >
+            {posting ? "Save changes" : "Create posting"}
+          </Button>
+        </div>
       </div>
     </form>
   );

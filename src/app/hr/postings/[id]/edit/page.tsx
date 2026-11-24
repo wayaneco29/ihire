@@ -5,11 +5,18 @@ import { getHrContext } from "@/lib/auth/server";
 import { getConfiguredPositions } from "../../data";
 import { PostingForm } from "../../components/PostingForm";
 
-export default async function EditPostingPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditPostingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const hr = await getHrContext();
   if (!hr) redirect("/");
-  const { data: posting, error } = await hr.supabase.from("job_postings")
+  const editDescription =
+    "Describe the opportunity, choose the roles it covers, and set how applicants can respond.";
+  const { data: posting, error } = await hr.supabase
+    .from("job_postings")
     .select("id, title, description, requirements, slots, status, deadline")
     .eq("id", id)
     .maybeSingle();
@@ -23,11 +30,11 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
     return (
       <>
         <PageHeader
-          description="Update position details and applicable roles."
-          eyebrow="HR workspace"
+          divider={false}
+          description={editDescription}
           backHref={"/hr/postings/" + id}
           backLabel="Job posting"
-          title="Edit job posting"
+          title="Edit posting"
         />
         <div className="mt-7">
           <EmptyState
@@ -41,16 +48,19 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
   const positionIds = (selectedResult.data ?? []).map(
     (selection) => selection.position_id,
   );
-  const positionsResult = await getConfiguredPositions(hr.supabase, positionIds);
+  const positionsResult = await getConfiguredPositions(
+    hr.supabase,
+    positionIds,
+  );
   if (positionsResult.error || !positionsResult.data) {
     return (
       <>
         <PageHeader
-          description="Update position details and applicable roles."
-          eyebrow="HR workspace"
+          divider={false}
+          description={editDescription}
           backHref={"/hr/postings/" + id}
           backLabel="Job posting"
-          title="Edit job posting"
+          title="Edit posting"
         />
         <div className="mt-7">
           <EmptyState
@@ -71,11 +81,11 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
     return (
       <>
         <PageHeader
-          description="Update position details and applicable roles."
-          eyebrow="HR workspace"
+          divider={false}
+          description={editDescription}
           backHref={"/hr/postings/" + id}
           backLabel="Job posting"
-          title="Edit job posting"
+          title="Edit posting"
         />
         <div className="mt-7">
           <EmptyState
@@ -86,7 +96,8 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
       </>
     );
   }
-  const applicationTypeId = selectedPositionsResult.data?.[0]?.application_type_id;
+  const applicationTypeId =
+    selectedPositionsResult.data?.[0]?.application_type_id;
   const selectedApplicationType = applicationTypeId
     ? await hr.supabase
         .from("application_type")
@@ -98,11 +109,11 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
     return (
       <>
         <PageHeader
-          description="Update position details and applicable roles."
-          eyebrow="HR workspace"
+          divider={false}
+          description={editDescription}
           backHref={"/hr/postings/" + id}
           backLabel="Job posting"
-          title="Edit job posting"
+          title="Edit posting"
         />
         <div className="mt-7">
           <EmptyState
@@ -119,13 +130,13 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
       : "TEACHING";
 
   return (
-    <>
+    <div className="mx-auto w-full">
       <PageHeader
-        description="Update the position details and manage its open, draft, or closed status."
-        eyebrow="HR workspace"
+        divider={false}
+        description={editDescription}
         backHref={`/hr/postings/${id}`}
         backLabel="Job posting"
-        title="Edit job posting"
+        title="Edit posting"
       />
       <PostingForm
         positions={positionsResult.data}
@@ -138,6 +149,6 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
           positionIds,
         }}
       />
-    </>
+    </div>
   );
 }
