@@ -253,14 +253,21 @@ export async function submitApplicationCriterionScores(input: {
       weights.map((weight) => weight.criterion_id),
     )
     .eq("position_id", applicationResult.data.position_id)
-    .in("criterion_key", ["CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"]);
+    .in("criterion_key", [
+      "PERFORMANCE",
+      "CLASSROOM_OBSERVATION",
+      "TEACHER_REFLECTION",
+    ]);
   if (criteriaError || !criteria?.length) {
     return { success: false, message: "The position scoring criteria could not be loaded." };
   }
 
   if (
     criteria.some(
-      (criterion) => !["CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"].includes(criterion.criterion_key),
+      (criterion) =>
+        !["PERFORMANCE", "CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"].includes(
+          criterion.criterion_key,
+        ),
     )
   ) {
     return { success: false, message: "The position scoring criteria are invalid." };
@@ -269,14 +276,15 @@ export async function submitApplicationCriterionScores(input: {
     weights.map((weight) => [weight.criterion_id, weight.points]),
   );
   if (
-    criteria.length !== 2 ||
-    input.scores.length !== 2 ||
-    new Set(input.scores.map((score) => score.criterionId)).size !== 2 ||
+    criteria.length !== 3 ||
+    new Set(criteria.map((criterion) => criterion.criterion_key)).size !== 3 ||
+    input.scores.length !== 3 ||
+    new Set(input.scores.map((score) => score.criterionId)).size !== 3 ||
     criteria.some((criterion) => !input.scores.some((score) => score.criterionId === criterion.id))
   ) {
     return {
       success: false,
-      message: "Enter both demo teaching and teaching reflection form points.",
+      message: "Enter performance, demo teaching and teaching reflection form points.",
     };
   }
   const validatedScores: { criterionId: string; points: number }[] = [];

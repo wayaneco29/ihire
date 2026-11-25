@@ -29,6 +29,7 @@ export type ApplicationAssessmentScheduleValues = yup.InferType<
 
 export type ManualScoringCriterion = {
   id: string;
+  criterionKey: string;
   title: string;
   maxPoints: number;
 };

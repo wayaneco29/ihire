@@ -250,11 +250,16 @@ export default async function EvaluatorApplicationReviewPage({
     });
   const submittedAssessmentScores = (criterionScoresResult.data ?? []).filter(
     (score) =>
+      score.criterion?.criterion_key === "PERFORMANCE" ||
       score.criterion?.criterion_key === "CLASSROOM_OBSERVATION" ||
       score.criterion?.criterion_key === "TEACHER_REFLECTION",
   );
   const assessmentScoresReady =
-    !criterionScoresResult.error && submittedAssessmentScores.length === 2;
+    !criterionScoresResult.error &&
+    (submittedAssessmentScores.length === 3 ||
+      ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
+        application.application_status,
+      ));
 
   const queueItems = queueApplicantsResult.error
     ? []

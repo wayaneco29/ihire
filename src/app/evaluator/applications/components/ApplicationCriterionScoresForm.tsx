@@ -83,8 +83,8 @@ export function ApplicationCriterionScoresForm({
             Award points
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted">
-            Record each activity separately using the position&apos;s scoring
-            limits.
+            Record points for each configured criterion using the position&apos;s
+            scoring limits.
           </p>
         </div>
         {criteria.length > 0 && (
@@ -120,15 +120,17 @@ export function ApplicationCriterionScoresForm({
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold text-primary">
-                      Category {index + 1}
+                      Criterion {index + 1}
                     </p>
                     <h3 className="mt-1 font-semibold text-ink">
                       {criterion.title}
                     </h3>
                     <p className="mt-1 text-xs leading-5 text-muted">
-                      {criterion.title.toLowerCase().includes("reflection")
-                        ? "Score the teaching reflection form."
-                        : "Score the applicant's demo teaching presentation."}
+                      {criterion.criterionKey === "PERFORMANCE"
+                        ? "Score the applicant's performance using the configured position criteria."
+                        : criterion.criterionKey === "TEACHER_REFLECTION"
+                          ? "Score the teaching reflection form."
+                          : "Score the applicant's demo teaching presentation."}
                     </p>
                   </div>
                   <span className="rounded-sm border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold tabular-nums text-ink">

@@ -225,7 +225,7 @@ export async function TeachingAssessmentPage({
   return (
     <>
       <PageHeader
-        description="Review scheduled teaching assessments and record points for each activity."
+        description="Review scheduled teaching assessments and score each configured criterion."
         eyebrow="Evaluator workspace"
         title="Evaluation Schedules"
         backHref={showSchedule ? undefined : `/evaluator/evaluation-schedules?date=${date}`}
@@ -442,17 +442,25 @@ export async function TeachingAssessmentPage({
                 return criterion ? [{ weight, criterion }] : [];
               })
               .filter((item) =>
-                ["CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"].includes(
+                [
+                  "PERFORMANCE",
+                  "CLASSROOM_OBSERVATION",
+                  "TEACHER_REFLECTION",
+                ].includes(
                   item.criterion.criterion_key,
                 ),
               )
-              .sort((first, second) =>
-                first.criterion.criterion_key === "CLASSROOM_OBSERVATION"
-                  ? -1
-                  : second.criterion.criterion_key === "CLASSROOM_OBSERVATION"
-                    ? 1
-                    : 0,
-              );
+              .sort((first, second) => {
+                const order = [
+                  "PERFORMANCE",
+                  "CLASSROOM_OBSERVATION",
+                  "TEACHER_REFLECTION",
+                ];
+                return (
+                  order.indexOf(first.criterion.criterion_key) -
+                  order.indexOf(second.criterion.criterion_key)
+                );
+              });
 
             return (
               <article className="space-y-5" key={application.application_id}>
@@ -499,10 +507,10 @@ export async function TeachingAssessmentPage({
                         Teaching assessment points are only available for
                         teaching positions.
                       </p>
-                    ) : assessmentCriteria.length !== 2 ? (
+                    ) : assessmentCriteria.length !== 3 ? (
                       <p className="rounded-sm border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
-                        Demo teaching and teaching reflection form criteria must
-                        both be configured for this position.
+                        Performance, demo teaching and teaching reflection form
+                        criteria must all be configured for this position.
                       </p>
                     ) : (
                       <ApplicationCriterionScoresForm
@@ -512,11 +520,14 @@ export async function TeachingAssessmentPage({
                         criteria={assessmentCriteria.map(
                           ({ criterion, weight }) => ({
                             id: criterion.id,
+                            criterionKey: criterion.criterion_key,
                             title:
-                              criterion.criterion_key ===
-                              "CLASSROOM_OBSERVATION"
-                                ? "Demo teaching points"
-                                : "Teaching reflection form points",
+                              criterion.criterion_key === "PERFORMANCE"
+                                ? "Performance points"
+                                : criterion.criterion_key ===
+                                    "CLASSROOM_OBSERVATION"
+                                  ? "Demo teaching points"
+                                  : "Teaching reflection form points",
                             maxPoints: weight.points,
                           }),
                         )}

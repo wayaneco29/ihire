@@ -125,16 +125,25 @@ export function ReviewQueueList({
         {[
           { value: undefined, label: "All statuses" },
           ...REVIEW_QUEUE_STATUS_OPTIONS,
-        ].map((option) => (
-          <Link
-            aria-current={selectedStatus === option.value ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
-            href={reviewQueueHref(selectedJobId, 1, option.value)}
-            key={option.value ?? "ALL"}
-          >
-            {option.label}
-          </Link>
-        ))}
+        ]
+          .filter(
+            (item) =>
+              !["QUALIFIED", "NOT_QUALIFIED"].includes(
+                item.value as "QUALIFIED" | "NOT_QUALIFIED",
+              ),
+          )
+          .map((option) => (
+            <Link
+              aria-current={
+                selectedStatus === option.value ? "page" : undefined
+              }
+              className={`inline-flex min-h-11 items-center rounded-sm border px-4 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedStatus === option.value ? "border-primary bg-primary-light text-primary" : "border-line bg-panel text-muted hover:border-primary hover:text-primary"}`}
+              href={reviewQueueHref(selectedJobId, 1, option.value)}
+              key={option.value ?? "ALL"}
+            >
+              {option.label}
+            </Link>
+          ))}
       </div>
     </nav>
   );
