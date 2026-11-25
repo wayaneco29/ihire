@@ -23,6 +23,7 @@ const confirmedMetric = () =>
 export function createDocumentReviewSchema(
   includesTrainingHours: boolean,
   includesTotalUnits: boolean,
+  isGraduated = false,
 ) {
   const trainingHours = confirmedMetric();
   const totalUnits = confirmedMetric();
@@ -40,7 +41,7 @@ export function createDocumentReviewSchema(
             schema.required("Confirm the training hours from the document."),
         })
       : trainingHours,
-    confirmedTotalUnits: includesTotalUnits
+    confirmedTotalUnits: includesTotalUnits && !isGraduated
       ? totalUnits.when("status", {
           is: "VERIFIED",
           then: (schema) =>

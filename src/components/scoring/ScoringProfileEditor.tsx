@@ -76,9 +76,9 @@ function RuleFields({
               value: i + 1,
               label: `Level ${i + 1} · ${
                 rule.criterion_key === "EDUCATION"
-                  ? educationLevels.find(
+                  ? (educationLevels.find(
                       (education) => education.qualification_level === i + 1,
-                    )?.description ?? "Education"
+                    )?.description ?? "Education")
                   : levelDescription(rule.criterion_key, i + 1)
               }`,
             }))}
@@ -88,74 +88,81 @@ function RuleFields({
 
       {automatic && (
         <>
-          <p className="text-xs leading-5 text-muted">
-            The highest threshold at or below the applicant’s direct level
-            determines their points. The minimum level is checked separately;
-            applicants below it receive 0. Start at 0 and add thresholds in
-            ascending order. For example, 0:0, 2:2, 5:4, 10:7. Levels above 31
-            cannot be reached; migrated profiles may have higher thresholds to
-            preserve their previous scoring.
-          </p>
-          {fields.map((field, bandIndex) => (
-            <div
-              className="grid grid-cols-[1fr_1fr_auto] items-end gap-3"
-              key={field.id}
-            >
-              <FormInput
-                control={control}
-                label="Applicant level threshold"
-                max={61}
-                min={0}
-                name={`rules.${index}.bands.${bandIndex}.threshold`}
-                required
-                step={1}
-                type="number"
-              />
-              <FormInput
-                control={control}
-                label="Awarded points"
-                max={100}
-                min={0}
-                name={`rules.${index}.bands.${bandIndex}.points`}
-                required
-                step="0.01"
-                type="number"
-              />
+          <details className="rounded-md border border-line-subtle px-3">
+            <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-medium text-primary">
+              <span>{rule.title} comparison bands</span>
+              <span className="text-xs font-normal text-muted">
+                {fields.length} {fields.length === 1 ? "band" : "bands"}
+              </span>
+            </summary>
+            <div className="space-y-3 pb-3">
+              {fields.map((field, bandIndex) => (
+                <div
+                  className="grid grid-cols-[1fr_1fr_auto] items-end gap-3"
+                  key={field.id}
+                >
+                  <FormInput
+                    control={control}
+                    label="Applicant level threshold"
+                    max={61}
+                    min={0}
+                    name={`rules.${index}.bands.${bandIndex}.threshold`}
+                    required
+                    step={1}
+                    type="number"
+                  />
+                  <FormInput
+                    control={control}
+                    label="Awarded points"
+                    max={100}
+                    min={0}
+                    name={`rules.${index}.bands.${bandIndex}.points`}
+                    required
+                    step="0.01"
+                    type="number"
+                  />
+                  <Button
+                    aria-label={`Remove ${rule.title} band ${bandIndex + 1}`}
+                    disabled={bandIndex === 0}
+                    onClick={() => remove(bandIndex)}
+                    variant="bordered"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
               <Button
-                aria-label={`Remove ${rule.title} band ${bandIndex + 1}`}
-                disabled={bandIndex === 0}
-                onClick={() => remove(bandIndex)}
+                disabled={
+                  fields.length >= 32 ||
+                  Number(rule.bands.at(-1)?.threshold ?? 0) >= 31
+                }
+                onClick={() =>
+                  append({
+                    threshold: Math.min(
+                      31,
+                      Number(rule.bands.at(-1)?.threshold ?? 0) + 2,
+                    ),
+                    points: Number(rule.bands.at(-1)?.points ?? 0),
+                  })
+                }
                 variant="bordered"
               >
-                Remove
+                Add band
               </Button>
-            </div>
-          ))}
-          <Button
-            disabled={
-              fields.length >= 32 ||
-              Number(rule.bands.at(-1)?.threshold ?? 0) >= 31
-            }
-            onClick={() =>
-              append({
-                threshold: Math.min(31, Number(rule.bands.at(-1)?.threshold ?? 0) + 2),
-                points: Number(rule.bands.at(-1)?.points ?? 0),
-              })
-            }
-            variant="bordered"
-          >
-            Add band
-          </Button>
-          <details>
-            <summary className="cursor-pointer text-sm font-medium text-primary">
-              Preview all applicant levels
-            </summary>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-              {Array.from({ length: 31 }, (_, i) => (
-                <span key={i}>
-                  Level {i + 1}: {previewScore(numericRule, i + 1) ?? "Not scored"} / {numericRule.points}
-                </span>
-              ))}
+              <details>
+                <summary className="cursor-pointer text-sm font-medium text-primary">
+                  Preview all applicant levels
+                </summary>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                  {Array.from({ length: 31 }, (_, i) => (
+                    <span key={i}>
+                      Level {i + 1}:{" "}
+                      {previewScore(numericRule, i + 1) ?? "Not scored"} /{" "}
+                      {numericRule.points}
+                    </span>
+                  ))}
+                </div>
+              </details>
             </div>
           </details>
         </>
@@ -191,7 +198,10 @@ export function ScoringProfileEditor({
     defaultValues: { rules },
   });
   const watched = useWatch({ control: form.control, name: "rules" });
-  const total = watched.reduce((sum, rule) => sum + (Number(rule.points) || 0), 0);
+  const total = watched.reduce(
+    (sum, rule) => sum + (Number(rule.points) || 0),
+    0,
+  );
 
   return (
     <>
@@ -214,6 +224,7 @@ export function ScoringProfileEditor({
         }}
         open={open}
         title={title}
+        className="pb-10!"
         width={850}
       >
         <form

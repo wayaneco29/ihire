@@ -6,6 +6,11 @@ import { getConfiguredPositions } from "../../data";
 import { PostingForm } from "../../components/PostingForm";
 import { readBands } from "@/utils/scoring";
 import type { ScoringRule } from "@/types/scoring";
+import {
+  getJobRequirements,
+  getJobRequirementsPdfPath,
+  JOB_REQUIREMENTS_BUCKET,
+} from "@/utils/job-requirements";
 
 export default async function EditPostingPage({
   params,
@@ -19,10 +24,13 @@ export default async function EditPostingPage({
     "Describe the opportunity, choose the roles it covers, and set how applicants can respond.";
   const { data: posting, error } = await hr.supabase
     .from("job_postings")
-    .select("id, title, description, requirements, slots, status, deadline, scoring_locked_at")
+    .select("id, title, description, requirements, requirements_items, slots, status, deadline, scoring_locked_at")
     .eq("id", id)
     .maybeSingle();
   if (error || !posting) notFound();
+  const { data: requirementsPdf } = await hr.supabase.storage
+    .from(JOB_REQUIREMENTS_BUCKET)
+    .createSignedUrl(getJobRequirementsPdfPath(id), 3600);
 
   const selectedResult = await hr.supabase
     .from("job_posting_positions")
@@ -170,13 +178,17 @@ export default async function EditPostingPage({
         positions={positionsResult.data}
         posting={{
           ...posting,
-          requirements: posting.requirements ?? "",
+          requirements: getJobRequirements(
+            posting.requirements_items,
+            posting.requirements,
+          ),
           deadline: posting.deadline ?? "",
           hiringTrack:
             hiringTrack === "NON_TEACHING" ? "NON_TEACHING" : "TEACHING",
           positionIds,
           scoring,
           scoringLockedAt: posting.scoring_locked_at,
+          requirementsPdfUrl: requirementsPdf?.signedUrl ?? null,
         }}
       />
     </div>

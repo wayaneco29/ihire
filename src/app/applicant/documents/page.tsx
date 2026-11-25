@@ -32,7 +32,7 @@ export default async function ApplicantDocumentsPage() {
     applicant.supabase
       .from("documents")
       .select(
-        "id, document_type_id, file_path, version, status, uploaded_at, certificate_title, certificate_type, certificate_issuer, certificate_date, training_hours, pds_learning_development_id, total_units, pds_education_id, current_highest_education_level, replaces_document_id",
+        "id, document_type_id, file_path, version, status, uploaded_at, certificate_title, certificate_type, certificate_issuer, certificate_date, training_hours, pds_learning_development_id, total_units, is_graduated, pds_education_id, current_highest_education_level, replaces_document_id",
       )
       .eq("applicant_id", applicant.applicant.id)
       .order("version", { ascending: false }),

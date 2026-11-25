@@ -2,6 +2,20 @@ import * as yup from "yup";
 import type { UploadFile } from "antd";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 
+const totalUnitsSchema = () =>
+  yup
+    .number()
+    .transform((value, originalValue) => originalValue === "" ? null : value)
+    .nullable()
+    .optional()
+    .min(0, "Units cannot be negative.")
+    .max(99999999.99, "Enter no more than 99,999,999.99 units.")
+    .test(
+      "two-decimal-places",
+      "Enter up to two decimal places.",
+      (value) => value == null || Math.abs(value * 100 - Math.round(value * 100)) < 1e-8,
+    );
+
 const documentUploadSchemaBase = yup.object({
   files: yup
     .array()
@@ -40,18 +54,8 @@ const documentUploadSchemaBase = yup.object({
       message: "Choose a valid certificate date.",
       excludeEmptyString: true,
     }),
-  totalUnits: yup
-    .number()
-    .transform((value, originalValue) => originalValue === "" ? null : value)
-    .nullable()
-    .optional()
-    .min(0, "Units cannot be negative.")
-    .max(99999999.99, "Enter no more than 99,999,999.99 units.")
-    .test(
-      "two-decimal-places",
-      "Enter up to two decimal places.",
-      (value) => value == null || Math.abs(value * 100 - Math.round(value * 100)) < 1e-8,
-    ),
+  totalUnits: totalUnitsSchema(),
+  isGraduated: yup.boolean().default(false),
   pdsLearningDevelopmentId: yup.string().optional(),
   pdsEducationId: yup.string().optional(),
   currentHighestEducationLevel: yup.string().optional(),
@@ -69,6 +73,13 @@ export const documentUploadSchema = (
           .required("Enter the certificate title.")
           .max(200, "Certificate titles must be 200 characters or fewer.")
       : yup.string().optional(),
+    totalUnits: isTranscript
+      ? totalUnitsSchema().when("isGraduated", {
+          is: true,
+          otherwise: (schema) =>
+            schema.required("Enter the total transcript units."),
+        })
+      : totalUnitsSchema(),
     currentHighestEducationLevel: isTranscript
       ? yup
           .string()

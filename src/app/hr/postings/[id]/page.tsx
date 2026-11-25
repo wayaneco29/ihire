@@ -44,7 +44,7 @@ export default async function HrPostingDetailPage({
   const { data: posting, error: postingError } = await hr.supabase
     .from("job_postings")
     .select(
-      "id, title, description, requirements, slots, status, deadline, created_at",
+      "id, title, description, slots, status, deadline, created_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -60,13 +60,20 @@ export default async function HrPostingDetailPage({
 
   const applicantColumns =
     "application_id, applicant_number, application_status, applied_at, education_levels, experience_years, training_hours, skills, position_title, position_track";
-  const firstApplicantPage = await hr.supabase
-    .from("v_anonymized_applicants")
-    .select(applicantColumns, { count: "exact" })
-    .eq("job_id", posting.id)
-    .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
-    .order("applied_at", { ascending: false })
-    .range(0, 999);
+  const [firstApplicantPage, hiredCountResult] = await Promise.all([
+    hr.supabase
+      .from("v_anonymized_applicants")
+      .select(applicantColumns, { count: "exact" })
+      .eq("job_id", posting.id)
+      .eq("application_status", "QUALIFIED")
+      .order("applied_at", { ascending: false })
+      .range(0, 999),
+    hr.supabase
+      .from("v_anonymized_applicants")
+      .select("application_id", { count: "exact", head: true })
+      .eq("job_id", posting.id)
+      .eq("application_status", "HIRED"),
+  ]);
 
   const applicants = [...(firstApplicantPage.data ?? [])];
   let applicantsError = firstApplicantPage.error;
@@ -88,7 +95,7 @@ export default async function HrPostingDetailPage({
           .from("v_anonymized_applicants")
           .select(applicantColumns)
           .eq("job_id", posting.id)
-          .in("application_status", ["QUALIFIED", "HIRED", "NOT_SELECTED"])
+          .eq("application_status", "QUALIFIED")
           .order("applied_at", { ascending: false })
           .range(offset, offset + 999),
       ),
@@ -146,14 +153,17 @@ export default async function HrPostingDetailPage({
     assessmentScoreBatches.find((batch) => batch.error)?.error ?? null;
   const scoringBatches = await Promise.all(
     scoreApplicantIdBatches.map((batch) =>
-      hr.supabase.from("v_application_scoring")
+      hr.supabase
+        .from("v_application_scoring")
         .select("application_id, criterion_key, points")
         .in("application_id", batch),
     ),
   );
   const rankingDataUnavailable = Boolean(
-    assessmentScoresError || applicationPositionsResult.error ||
-    postingPositionsResult.error || criterionWeightsResult.error ||
+    assessmentScoresError ||
+    applicationPositionsResult.error ||
+    postingPositionsResult.error ||
+    criterionWeightsResult.error ||
     scoringBatches.some((batch) => batch.error),
   );
   const pointsByApplication = new Map<string, Map<string, number>>();
@@ -161,33 +171,55 @@ export default async function HrPostingDetailPage({
   for (const score of assessmentScores) {
     const key = score.criterion?.criterion_key;
     if (!key) continue;
-    const points = pointsByApplication.get(score.application_id) ?? new Map<string, number>();
+    const points =
+      pointsByApplication.get(score.application_id) ??
+      new Map<string, number>();
     points.set(key, Number(score.points));
     pointsByApplication.set(score.application_id, points);
-    if (score.criterion?.title) titleByCriterion.set(key, score.criterion.title);
+    if (score.criterion?.title)
+      titleByCriterion.set(key, score.criterion.title);
   }
-  function addCalculatedPoints(applicationId: string, key: string, value: number | null) {
+  function addCalculatedPoints(
+    applicationId: string,
+    key: string,
+    value: number | null,
+  ) {
     if (value === null) return;
-    const points = pointsByApplication.get(applicationId) ?? new Map<string, number>();
+    const points =
+      pointsByApplication.get(applicationId) ?? new Map<string, number>();
     if (!points.has(key)) points.set(key, Number(value));
     pointsByApplication.set(applicationId, points);
   }
   for (const batch of scoringBatches) {
-    for (const row of batch.data ?? []) addCalculatedPoints(row.application_id, row.criterion_key, row.points);
+    for (const row of batch.data ?? [])
+      addCalculatedPoints(row.application_id, row.criterion_key, row.points);
   }
   const positionByApplication = new Map(
-    (applicationPositionsResult.data ?? []).map((row) => [row.id, row.position_id]),
+    (applicationPositionsResult.data ?? []).map((row) => [
+      row.id,
+      row.position_id,
+    ]),
   );
   const profileByPosition = new Map(
-    (postingPositionsResult.data ?? []).map((row) => [row.position_id, row.weight_profile_id]),
+    (postingPositionsResult.data ?? []).map((row) => [
+      row.position_id,
+      row.weight_profile_id,
+    ]),
   );
-  const criteriaByProfile = new Map<string, Map<string, { title: string; maximumPoints: number }>>();
+  const criteriaByProfile = new Map<
+    string,
+    Map<string, { title: string; maximumPoints: number }>
+  >();
   for (const weight of criterionWeightsResult.data ?? []) {
     const criterion = weight.criterion;
     const key = criterion?.criterion_key;
     if (!criterion || !key) continue;
-    const profileCriteria = criteriaByProfile.get(weight.profile_id) ?? new Map();
-    profileCriteria.set(key, { title: criterion.title, maximumPoints: Number(weight.points) });
+    const profileCriteria =
+      criteriaByProfile.get(weight.profile_id) ?? new Map();
+    profileCriteria.set(key, {
+      title: criterion.title,
+      maximumPoints: Number(weight.points),
+    });
     criteriaByProfile.set(weight.profile_id, profileCriteria);
     titleByCriterion.set(key, criterion.title);
   }
@@ -268,9 +300,8 @@ export default async function HrPostingDetailPage({
   )
     ? requestedApplicationId
     : null;
-  const hiredCount = applicantItems.filter(
-    (applicant) => applicant.application_status === "HIRED",
-  ).length;
+  const hiredCount =
+    hiredCountResult.count ?? hiringReadiness?.hired_count ?? 0;
   const deadlineTimestamp = posting.deadline
     ? Date.parse(posting.deadline)
     : null;
@@ -360,20 +391,11 @@ export default async function HrPostingDetailPage({
         <PostingApplicants
           applicants={applicantItems}
           assessmentScoresUnavailable={rankingDataUnavailable}
+          hiredCount={hiredCount}
           hiringReadiness={hiringReadiness}
           initialApplicationId={initialApplicationId}
           slots={posting.slots}
         />
-      )}
-      {posting.requirements && (
-        <details className="mt-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm">
-          <summary className="cursor-pointer font-semibold text-ink">
-            View posting requirements
-          </summary>
-          <p className="mt-3 whitespace-pre-wrap leading-6 text-muted">
-            {posting.requirements}
-          </p>
-        </details>
       )}
     </div>
   );

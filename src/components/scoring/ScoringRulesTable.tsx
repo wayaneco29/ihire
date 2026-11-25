@@ -16,24 +16,37 @@ export function ScoringRulesTable({
         <h3 className="font-semibold text-ink">Maximum points by criterion</h3>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <caption className="sr-only">Maximum points for each criterion</caption>
+            <caption className="sr-only">
+              Maximum points for each criterion
+            </caption>
             <thead className="border-b border-line text-muted">
               <tr>
-                <th className="p-2" scope="col">Criterion</th>
-                <th className="p-2 text-right" scope="col">Maximum points</th>
+                <th className="p-2" scope="col">
+                  Criterion
+                </th>
+                <th className="p-2 text-right" scope="col">
+                  Maximum points
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle">
               {rules.map((rule) => (
                 <tr key={rule.criterion_id}>
-                  <th className="p-2 font-medium" scope="row">{rule.title}</th>
+                  <th className="p-2 font-medium" scope="row">
+                    {rule.title}
+                  </th>
                   <td className="p-2 text-right">{rule.points}</td>
                 </tr>
               ))}
               <tr>
-                <th className="p-2" scope="row">Total</th>
+                <th className="p-2" scope="row">
+                  Total
+                </th>
                 <td className="p-2 text-right font-semibold">
-                  {rules.reduce((total, rule) => total + rule.points, 0).toFixed(2)} / 100
+                  {rules
+                    .reduce((total, rule) => total + rule.points, 0)
+                    .toFixed(2)}{" "}
+                  / 100
                 </td>
               </tr>
             </tbody>
@@ -43,29 +56,42 @@ export function ScoringRulesTable({
       {rules
         .filter((rule) => isAutomaticCriterion(rule.criterion_key))
         .map((rule) => (
-          <section className="rounded-xl border border-line p-4" key={rule.criterion_id}>
+          <section
+            className="rounded-xl border border-line p-4"
+            key={rule.criterion_id}
+          >
             <h3 className="font-semibold text-ink">
               {rule.title} - {rule.points} maximum points
             </h3>
             <p className="mt-1 text-sm text-muted">
-              Minimum: {rule.minimum_level === null
+              Minimum:{" "}
+              {rule.minimum_level === null
                 ? "Not configured"
                 : `${
                     rule.criterion_key === "EDUCATION"
-                      ? educationLevels.find(
-                          (level) => level.qualification_level === rule.minimum_level,
-                        )?.description ?? "Education qualification"
+                      ? (educationLevels.find(
+                          (level) =>
+                            level.qualification_level === rule.minimum_level,
+                        )?.description ?? "Education qualification")
                       : levelDescription(rule.criterion_key, rule.minimum_level)
                   } (level ${rule.minimum_level})`}
             </p>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <caption className="sr-only">{rule.title} comparison bands</caption>
+                <caption className="sr-only">
+                  {rule.title} comparison bands
+                </caption>
                 <thead className="border-b border-line text-muted">
                   <tr>
-                    <th className="p-2" scope="col">Applicant level threshold</th>
-                    <th className="p-2" scope="col">Applicable applicant levels</th>
-                    <th className="p-2" scope="col">Points</th>
+                    <th className="p-2" scope="col">
+                      Applicant level threshold
+                    </th>
+                    <th className="p-2" scope="col">
+                      Applicable applicant levels
+                    </th>
+                    <th className="p-2" scope="col">
+                      Points
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line-subtle">
@@ -78,20 +104,24 @@ export function ScoringRulesTable({
                     </td>
                     <td className="p-2">0</td>
                   </tr>
-                  {rule.bands.map((band) => {
+                  {rule.bands.map((band, index) => {
                     const nextThreshold = rule.bands[index + 1]?.threshold;
-                    const startLevel = Math.max(band.threshold, rule.minimum_level ?? 1);
+                    const startLevel = Math.max(
+                      band.threshold,
+                      rule.minimum_level ?? 1,
+                    );
                     const endLevel = Math.min(
                       31,
                       nextThreshold === undefined ? 31 : nextThreshold - 1,
                     );
-                    const levelRange = rule.minimum_level === null
-                      ? "-"
-                      : startLevel > endLevel
-                        ? "No eligible level"
-                        : startLevel === endLevel
-                          ? `Level ${startLevel}`
-                          : `Levels ${startLevel}-${endLevel}`;
+                    const levelRange =
+                      rule.minimum_level === null
+                        ? "-"
+                        : startLevel > endLevel
+                          ? "No eligible level"
+                          : startLevel === endLevel
+                            ? `Level ${startLevel}`
+                            : `Levels ${startLevel}-${endLevel}`;
 
                     return (
                       <tr key={band.threshold}>
@@ -116,7 +146,7 @@ export function QualificationReference({
   educationLevels: EducationLevel[];
 }) {
   return (
-    <details open className="rounded-xl border border-line p-4">
+    <details open className="rounded-xl border border-line p-4 mt-5">
       <summary className="cursor-pointer font-semibold text-ink">
         Education, training, and experience level reference
       </summary>
@@ -129,21 +159,28 @@ export function QualificationReference({
       </p>
       <div className="mt-3 overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <caption className="sr-only">Qualification levels 1 through 31</caption>
+          <caption className="sr-only">
+            Qualification levels 1 through 31
+          </caption>
           <thead>
             <tr>
               {["Level", "Education", "Training", "Experience"].map((label) => (
-                <th className="p-2" scope="col" key={label}>{label}</th>
+                <th className="p-2" scope="col" key={label}>
+                  {label}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-line-subtle">
             {Array.from({ length: 31 }, (_, i) => i + 1).map((level) => (
               <tr key={level}>
-                <th className="p-2" scope="row">{level}</th>
+                <th className="p-2" scope="row">
+                  {level}
+                </th>
                 <td className="p-2">
-                  {educationLevels.find((entry) => entry.qualification_level === level)
-                    ?.description ?? `Qualification level ${level}`}
+                  {educationLevels.find(
+                    (entry) => entry.qualification_level === level,
+                  )?.description ?? `Qualification level ${level}`}
                 </td>
                 <td className="whitespace-nowrap p-2">
                   {levelDescription("TRAINING", level)}

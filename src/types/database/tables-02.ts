@@ -1,4 +1,5 @@
 import type { PublicEnums } from '../database-enums';
+import type { Json } from '../database-json';
 
 export type DocumentsTable = {
     Row: {
@@ -11,6 +12,7 @@ export type DocumentsTable = {
         "document_type_id": string;
         "file_path": string;
         "id": string;
+        "is_graduated": boolean | null;
         "ocr_confidence": number | null;
         "ocr_processed_at": string | null;
         "ocr_total_units": number | null;
@@ -35,6 +37,7 @@ export type DocumentsTable = {
         "document_type_id": string;
         "file_path"?: string;
         "id"?: string;
+        "is_graduated"?: boolean | null;
         "ocr_confidence"?: number | null;
         "ocr_processed_at"?: string | null;
         "ocr_total_units"?: number | null;
@@ -58,6 +61,7 @@ export type DocumentsTable = {
         "document_type_id"?: string;
         "file_path"?: string;
         "id"?: string;
+        "is_graduated"?: boolean | null;
         "ocr_confidence"?: number | null;
         "ocr_processed_at"?: string | null;
         "ocr_total_units"?: number | null;
@@ -249,6 +253,7 @@ export type JobPostingsTable = {
         "hr_id": string;
         "id": string;
         "requirements": string | null;
+        "requirements_items": Json;
         "slots": number;
         "status": PublicEnums["job_status"];
         "title": string;
@@ -263,6 +268,7 @@ export type JobPostingsTable = {
         "hr_id": string;
         "id"?: string;
         "requirements"?: string | null;
+        "requirements_items"?: Json;
         "slots": number;
         "status"?: PublicEnums["job_status"];
         "title": string;
@@ -276,6 +282,7 @@ export type JobPostingsTable = {
         "hr_id"?: string;
         "id"?: string;
         "requirements"?: string | null;
+        "requirements_items"?: Json;
         "slots"?: number;
         "status"?: PublicEnums["job_status"];
         "title"?: string;

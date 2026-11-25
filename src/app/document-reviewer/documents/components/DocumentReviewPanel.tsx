@@ -34,6 +34,7 @@ export function DocumentReviewPanel({
   trainingHours,
   totalUnits,
   currentHighestEducationLevel,
+  isGraduated,
   ocrTrainingHours,
   ocrTotalUnits,
   ocrConfidence,
@@ -47,6 +48,7 @@ export function DocumentReviewPanel({
   trainingHours: number | null;
   totalUnits: number | null;
   currentHighestEducationLevel: string | null;
+  isGraduated: boolean | null;
   ocrTrainingHours: number | null;
   ocrTotalUnits: number | null;
   ocrConfidence: number | null;
@@ -68,9 +70,14 @@ export function DocumentReviewPanel({
   const includesTrainingHours =
     documentType === TRAINING_CERTIFICATE_DOCUMENT_TYPE;
   const includesTotalUnits = documentType === TRANSCRIPT_DOCUMENT_TYPE;
+  const graduationConfirmed = includesTotalUnits && isGraduated === true;
   const form = useForm<DocumentReviewValues>({
     resolver: yupResolver(
-      createDocumentReviewSchema(includesTrainingHours, includesTotalUnits),
+      createDocumentReviewSchema(
+        includesTrainingHours,
+        includesTotalUnits,
+        graduationConfirmed,
+      ),
     ),
     defaultValues: {
       status: "VERIFIED",
@@ -79,8 +86,9 @@ export function DocumentReviewPanel({
         previousReview?.confirmed_training_hours ??
         trainingHours ??
         ocrTrainingHours,
-      confirmedTotalUnits:
-        previousReview?.confirmed_total_units ?? totalUnits ?? ocrTotalUnits,
+      confirmedTotalUnits: graduationConfirmed
+        ? null
+        : previousReview?.confirmed_total_units ?? totalUnits ?? ocrTotalUnits,
     },
   });
 
@@ -172,7 +180,9 @@ export function DocumentReviewPanel({
               <p className="mt-1 text-xs leading-5 text-muted">
                 {includesTrainingHours
                   ? `Applicant entered ${trainingHours ?? "no"} hours.`
-                  : `Applicant entered ${totalUnits ?? "no"} units.`}
+                  : graduationConfirmed
+                    ? "Applicant indicated they graduated from this education level."
+                    : `Applicant entered ${totalUnits ?? "no"} units.`}
                 {includesTotalUnits &&
                   currentHighestEducationLevel &&
                   ` Applicant indicated ${EDUCATION_LEVEL_OPTIONS.find(({ value }) => value === currentHighestEducationLevel)?.label ?? currentHighestEducationLevel} as their current highest educational attainment.`}
@@ -193,7 +203,7 @@ export function DocumentReviewPanel({
                   type="number"
                 />
               )}
-              {includesTotalUnits && (
+              {includesTotalUnits && !graduationConfirmed && (
                 <FormInput
                   control={form.control}
                   label="Confirmed transcript units"

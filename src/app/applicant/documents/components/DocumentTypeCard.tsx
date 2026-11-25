@@ -23,6 +23,7 @@ export type DocumentRecord = {
   remarks: string | null;
   training_hours: number | null;
   total_units: number | null;
+  is_graduated: boolean | null;
   current_highest_education_level: string | null;
   pds_learning_development_id: string | null;
   pds_education_id: string | null;
@@ -87,7 +88,11 @@ export function DocumentTypeCard({
         formatDate(latest.uploaded_at),
         ...(isTranscript
           ? [
-              `${latest.total_units ?? 0} units`,
+              ...(latest.is_graduated === true
+                ? ["Graduated"]
+                : latest.total_units != null
+                  ? [`${latest.total_units} units`]
+                  : []),
               ...(highestEducationLabel
                 ? [`Highest education: ${highestEducationLabel}`]
                 : []),
@@ -489,7 +494,7 @@ export function DocumentTypeCard({
               ? "Replace a document"
               : "Upload a document"
         }
-        width={640}
+        width={840}
       >
         <p className="mb-4 text-sm text-muted">
           {isTranscript

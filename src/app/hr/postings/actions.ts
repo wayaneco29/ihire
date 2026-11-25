@@ -5,9 +5,10 @@ import { ValidationError } from "yup";
 import { getHrContext } from "@/lib/auth/server";
 import type { Json } from "@/types/database-json";
 import { scoringPublicationError } from "@/utils/scoring-schema";
+import { serializeRequirements } from "@/utils/job-requirements";
 import { postingSchema, type HiringTrack } from "./schema";
 
-type ActionResult = { success: boolean; message: string };
+type ActionResult = { success: boolean; message: string; jobId?: string };
 
 function validationMessage(error: unknown) {
   return error instanceof ValidationError
@@ -136,7 +137,7 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
     p_job_id: null,
     p_title: values.title,
     p_description: values.description,
-    p_requirements: values.requirements || null,
+    p_requirements: serializeRequirements(values.requirements),
     p_slots: values.slots,
     p_status: values.status,
     p_deadline: deadlineIso(values.deadline),
@@ -151,7 +152,8 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
   revalidatePath("/hr/dashboard");
   revalidatePath("/hr/postings");
   revalidatePath("/applicant/jobs");
-  return { success: true, message: "Job posting created." };
+  revalidatePath("/applicant/jobs/" + data);
+  return { success: true, message: "Job posting created.", jobId: data };
 }
 
 export async function updateJobPosting(
@@ -215,7 +217,7 @@ export async function updateJobPosting(
       p_job_id: jobId,
       p_title: values.title,
       p_description: values.description,
-      p_requirements: values.requirements || null,
+      p_requirements: serializeRequirements(values.requirements),
       p_slots: values.slots,
       p_status: values.status,
       p_deadline: deadlineIso(values.deadline),
@@ -232,5 +234,6 @@ export async function updateJobPosting(
   revalidatePath("/hr/postings");
   revalidatePath(`/hr/postings/${jobId}`);
   revalidatePath("/applicant/jobs");
-  return { success: true, message: "Job posting updated." };
+  revalidatePath("/applicant/jobs/" + jobId);
+  return { success: true, message: "Job posting updated.", jobId: data };
 }

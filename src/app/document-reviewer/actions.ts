@@ -143,6 +143,21 @@ export async function submitDocumentReview(input: {
   const includesTrainingHours =
     document.document_type === TRAINING_CERTIFICATE_DOCUMENT_TYPE;
   const includesTotalUnits = document.document_type === TRANSCRIPT_DOCUMENT_TYPE;
+  let applicantMarkedGraduated = false;
+  if (includesTotalUnits) {
+    const { data: transcriptMetrics, error: metricsError } = await reviewer.supabase
+      .from("v_anonymized_document_metrics")
+      .select("is_graduated")
+      .eq("document_id", input.documentId)
+      .maybeSingle();
+    if (metricsError || !transcriptMetrics) {
+      return {
+        success: false,
+        message: "Transcript values could not be loaded. Refresh and try again.",
+      };
+    }
+    applicantMarkedGraduated = transcriptMetrics.is_graduated === true;
+  }
   const isValidMetric = (value: number | null, max: number) =>
     value === null ||
     (Number.isFinite(value) &&
@@ -156,8 +171,12 @@ export async function submitDocumentReview(input: {
       input.status === "VERIFIED" &&
       input.confirmedTrainingHours === null) ||
     (includesTotalUnits &&
+      !applicantMarkedGraduated &&
       input.status === "VERIFIED" &&
       input.confirmedTotalUnits === null) ||
+    (includesTotalUnits &&
+      applicantMarkedGraduated &&
+      input.confirmedTotalUnits !== null) ||
     (!includesTrainingHours && input.confirmedTrainingHours !== null) ||
     (!includesTotalUnits && input.confirmedTotalUnits !== null)
   ) {

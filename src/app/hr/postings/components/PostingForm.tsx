@@ -18,6 +18,12 @@ import { HIRING_TRACKS, postingSchema, type PostingValues } from "../schema";
 import dayjs from "dayjs";
 import { ScoringProfileEditor } from "@/components/scoring/ScoringProfileEditor";
 import type { ScoringRule } from "@/types/scoring";
+import { createClient as createBrowserSupabaseClient } from "@/lib/supabase/client";
+import {
+  getJobRequirementsPdfPath,
+  JOB_REQUIREMENTS_BUCKET,
+} from "@/utils/job-requirements";
+import { RequirementsEditor } from "./RequirementsEditor";
 
 type PositionOption = {
   id: string;
@@ -31,7 +37,11 @@ type PositionOption = {
 
 type Values = PostingValues;
 
-type PostingSeed = Values & { id: string; scoringLockedAt: string | null };
+type PostingSeed = Values & {
+  id: string;
+  scoringLockedAt: string | null;
+  requirementsPdfUrl: string | null;
+};
 
 const positionOptionClasses = [
   "md:grid-cols-3",
@@ -58,6 +68,11 @@ export function PostingForm({
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [savedPostingId, setSavedPostingId] = useState<string | null>(
+    posting?.id ?? null,
+  );
+  const [requirementsPdf, setRequirementsPdf] = useState<File | null>(null);
+  const [removeRequirementsPdf, setRemoveRequirementsPdf] = useState(false);
   const {
     control,
     handleSubmit,
@@ -72,7 +87,7 @@ export function PostingForm({
       ? {
           title: posting.title,
           description: posting.description,
-          requirements: posting.requirements,
+          requirements: posting.requirements.length ? posting.requirements : [""],
           slots: posting.slots,
           deadline: "",
           status: posting.status,
@@ -83,7 +98,7 @@ export function PostingForm({
       : {
           title: "",
           description: "",
-          requirements: "",
+          requirements: [""],
           slots: 1,
           deadline: "",
           status: "DRAFT",
@@ -104,7 +119,11 @@ export function PostingForm({
     )
       .toISOString()
       .slice(0, 16);
-    reset({ ...posting, deadline: localValue });
+    reset({
+      ...posting,
+      requirements: posting.requirements.length ? posting.requirements : [""],
+      deadline: localValue,
+    });
   }, [posting, reset]);
 
   const submit = handleSubmit(async (values) => {
@@ -119,13 +138,48 @@ export function PostingForm({
           positions.find((position) => position.id === positionId)?.scoringRules ?? [],
       })),
     };
-    const result = posting
-      ? await updateJobPosting(posting.id, payload)
+    const result = savedPostingId
+      ? await updateJobPosting(savedPostingId, payload)
       : await createJobPosting(payload);
     if (!result.success) {
       setError(result.message);
       return;
     }
+
+    const jobId = result.jobId ?? savedPostingId;
+    if (!jobId) {
+      setError("The posting was saved, but its ID could not be confirmed.");
+      return;
+    }
+    setSavedPostingId(jobId);
+
+    const supabase = createBrowserSupabaseClient();
+    const pdfPath = getJobRequirementsPdfPath(jobId);
+    if (requirementsPdf) {
+      const { error: uploadError } = await supabase.storage
+        .from(JOB_REQUIREMENTS_BUCKET)
+        .upload(pdfPath, requirementsPdf, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+      if (uploadError) {
+        setError(
+          "The posting was saved, but its PDF could not be uploaded. Save again to retry the upload.",
+        );
+        return;
+      }
+    } else if (removeRequirementsPdf) {
+      const { error: removeError } = await supabase.storage
+        .from(JOB_REQUIREMENTS_BUCKET)
+        .remove([pdfPath]);
+      if (removeError) {
+        setError(
+          "The posting was saved, but its attached PDF could not be removed. Save again to retry.",
+        );
+        return;
+      }
+    }
+
     setMessage(result.message);
     router.refresh();
     router.push(posting ? `/hr/postings/${posting.id}` : "/hr/postings");
@@ -316,18 +370,17 @@ export function PostingForm({
               Application settings
             </h3>
             <p className="mt-1 text-sm leading-6 text-muted">
-              Set requirements, capacity and when applications close.
+              Add applicant requirements, capacity and when applications close.
             </p>
           </div>
           <div className="space-y-5">
-            <FormTextArea
+            <RequirementsEditor
               control={control}
-              hint="Include qualifications and supporting details for applicants."
-              label="Requirements"
-              maxLength={10000}
-              name="requirements"
-              rows={4}
-              showCount
+              existingPdfUrl={posting?.requirementsPdfUrl ?? null}
+              getValues={getValues}
+              onPdfChange={setRequirementsPdf}
+              onRemoveExistingPdf={setRemoveRequirementsPdf}
+              removeExistingPdf={removeRequirementsPdf}
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormInput
@@ -373,7 +426,9 @@ export function PostingForm({
 
       <div className="flex flex-col-reverse gap-4 border-t border-line-subtle bg-panel-muted px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <p aria-live="polite" className="text-sm text-muted">
-          {isDirty ? "Unsaved changes" : "No changes yet"}
+          {isDirty || requirementsPdf !== null || removeRequirementsPdf
+            ? "Unsaved changes"
+            : "No changes yet"}
         </p>
         <div className="flex justify-end gap-3">
           <Button
@@ -388,12 +443,12 @@ export function PostingForm({
             Cancel
           </Button>
           <Button
-            disabled={!isDirty}
+            disabled={!isDirty && !requirementsPdf && !removeRequirementsPdf}
             loading={isSubmitting}
             type="submit"
             variant="filled"
           >
-            {posting ? "Save changes" : "Create posting"}
+            {savedPostingId ? "Save changes" : "Create posting"}
           </Button>
         </div>
       </div>

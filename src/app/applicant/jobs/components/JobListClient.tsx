@@ -13,6 +13,8 @@ import {
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { formatDate } from "@/utils/format-date";
+import { isPostingOpenForApplications } from "@/utils/job-posting-status";
+import { getJobRequirements } from "@/utils/job-requirements";
 
 type DeadlineFilter = "ALL" | "SOON" | "NONE";
 
@@ -21,12 +23,23 @@ export type JobListItem = {
   title: string;
   description: string;
   requirements: string | null;
+  requirements_items: unknown;
   slots: number;
   deadline: string | null;
+  status: string;
   applied: boolean;
 };
 
-function getDeadlineMessage(deadline: string | null, nowMs: number) {
+function getDeadlineMessage(
+  deadline: string | null,
+  nowMs: number,
+  acceptingApplications: boolean,
+  expired: boolean,
+) {
+  if (expired) return "The application deadline has passed.";
+  if (!acceptingApplications) {
+    return "This posting is closed to new applications.";
+  }
   if (!deadline) return "No application deadline has been announced.";
 
   const daysRemaining = Math.ceil(
@@ -53,7 +66,11 @@ export function JobListClient({
     return jobs.filter((job) => {
       const matchesSearch =
         !query ||
-        [job.title, job.description, job.requirements ?? ""]
+        [
+          job.title,
+          job.description,
+          getJobRequirements(job.requirements_items, job.requirements).join(" "),
+        ]
           .join(" ")
           .toLocaleLowerCase()
           .includes(query);
@@ -62,6 +79,7 @@ export function JobListClient({
         deadlineFilter === "ALL" ||
         (deadlineFilter === "SOON" &&
           deadline !== null &&
+          deadline >= nowMs &&
           deadline <= closingSoon) ||
         (deadlineFilter === "NONE" && deadline === null);
       return matchesSearch && matchesDeadline;
@@ -140,7 +158,17 @@ export function JobListClient({
       {filteredJobs.length ? (
         <ul className="mt-4 grid gap-4">
           {filteredJobs.map((job) => {
-            const deadlineMessage = getDeadlineMessage(job.deadline, nowMs);
+            const acceptingApplications = isPostingOpenForApplications(
+              job,
+              nowMs,
+            );
+            const expired = job.status === "OPEN" && !acceptingApplications;
+            const deadlineMessage = getDeadlineMessage(
+              job.deadline,
+              nowMs,
+              acceptingApplications,
+              expired,
+            );
             return (
               <li
                 className="grid overflow-hidden rounded-sm border border-line bg-panel shadow-card lg:grid-cols-[minmax(0,1fr)_19rem]"
@@ -151,12 +179,26 @@ export function JobListClient({
                     <h2 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
                       {job.title}
                     </h2>
-                    <StatusTag className="gap-2 border-primary/10 bg-primary-light px-3 text-primary">
+                    <StatusTag
+                      className={
+                        acceptingApplications
+                          ? "gap-2 border-primary/10 bg-primary-light px-3 text-primary"
+                          : "gap-2 border-line-strong bg-panel-muted px-3 text-muted"
+                      }
+                    >
                       <span
                         aria-hidden="true"
-                        className="size-2 rounded-full bg-primary"
+                        className={
+                          acceptingApplications
+                            ? "size-2 rounded-full bg-primary"
+                            : "size-2 rounded-full bg-muted"
+                        }
                       />
-                      Open
+                      {acceptingApplications
+                        ? "Open"
+                        : expired
+                          ? "Expired"
+                          : "Closed"}
                     </StatusTag>
                   </div>
                   <p className="mt-4 line-clamp-3 whitespace-pre-line text-sm leading-6 text-muted sm:text-base">
@@ -217,7 +259,9 @@ export function JobListClient({
                     className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     href={`/applicant/jobs/${job.id}`}
                   >
-                    {job.applied ? "View posting" : "View and apply"}
+                    {job.applied || !acceptingApplications
+                      ? "View posting"
+                      : "View and apply"}
                   </Link>
                 </aside>
               </li>

@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import {
-  CalendarDaysIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/outline";
+import { CalendarDaysIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
+import { JobPostingContent } from "@/components/job-postings/JobPostingContent";
 import { getApplicantContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
@@ -17,8 +15,12 @@ import { ApplyButton } from "./components/ApplyButton";
 import { JobScoringGuide } from "@/components/scoring/JobScoringGuide";
 import type { ScoringRule, EducationLevel } from "@/types/scoring";
 import { previewScore, readBands } from "@/utils/scoring";
-
-const CURRENT_TIME_MS = Date.now();
+import { isPostingOpenForApplications } from "@/utils/job-posting-status";
+import {
+  getJobRequirements,
+  getJobRequirementsPdfPath,
+  JOB_REQUIREMENTS_BUCKET,
+} from "@/utils/job-requirements";
 
 export default async function ApplicantJobDetailPage({
   params,
@@ -32,10 +34,9 @@ export default async function ApplicantJobDetailPage({
     applicant.supabase
       .from("job_postings")
       .select(
-        "id, title, description, requirements, slots, deadline, created_at",
+        "id, title, description, requirements, requirements_items, slots, deadline, created_at, status",
       )
       .eq("id", id)
-      .eq("status", "OPEN")
       .maybeSingle(),
     applicant.supabase
       .from("applications")
@@ -45,8 +46,25 @@ export default async function ApplicantJobDetailPage({
       .maybeSingle(),
   ]);
 
-  if (!job || (job.deadline && Date.parse(job.deadline) <= CURRENT_TIME_MS))
-    notFound();
+  // Use the request's time so a long-running server doesn't keep stale deadlines.
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  if (!job) notFound();
+  const acceptingApplications = isPostingOpenForApplications(job, nowMs);
+  const postingDisplayStatus = acceptingApplications
+    ? "OPEN"
+    : job.status === "OPEN"
+      ? "EXPIRED"
+      : "CLOSED";
+
+  const requirements = getJobRequirements(
+    job.requirements_items,
+    job.requirements,
+  );
+  const { data: requirementsPdf } = await applicant.supabase.storage
+    .from(JOB_REQUIREMENTS_BUCKET)
+    .createSignedUrl(getJobRequirementsPdfPath(job.id), 3600);
+  const requirementsPdfUrl = requirementsPdf?.signedUrl ?? null;
 
   const { data: jobPositions, error: jobPositionsError } =
     await applicant.supabase
@@ -149,7 +167,14 @@ export default async function ApplicantJobDetailPage({
       title: criterion.title,
       points: weight.points,
       displayOrder: criterion.display_order,
-      rule: { criterion_id: criterion.id, criterion_key: criterion.criterion_key, title: criterion.title, points: weight.points, minimum_level: weight.minimum_level, bands: readBands(weight.bands) },
+      rule: {
+        criterion_id: criterion.id,
+        criterion_key: criterion.criterion_key,
+        title: criterion.title,
+        points: weight.points,
+        minimum_level: weight.minimum_level,
+        bands: readBands(weight.bands),
+      },
     });
     weightsByProfile.set(weight.profile_id, profileWeights);
   }
@@ -168,9 +193,15 @@ export default async function ApplicantJobDetailPage({
       ...position,
       criteria,
       scoringRules,
-      base_qualification_level: scoringRules.find((rule) => rule.criterion_key === "EDUCATION")?.minimum_level ?? null,
-      base_training_increment_level: scoringRules.find((rule) => rule.criterion_key === "TRAINING")?.minimum_level ?? null,
-      base_experience_increment_level: scoringRules.find((rule) => rule.criterion_key === "EXPERIENCE")?.minimum_level ?? null,
+      base_qualification_level:
+        scoringRules.find((rule) => rule.criterion_key === "EDUCATION")
+          ?.minimum_level ?? null,
+      base_training_increment_level:
+        scoringRules.find((rule) => rule.criterion_key === "TRAINING")
+          ?.minimum_level ?? null,
+      base_experience_increment_level:
+        scoringRules.find((rule) => rule.criterion_key === "EXPERIENCE")
+          ?.minimum_level ?? null,
     };
   });
   if (positions.some((position) => position.criteria.length === 0)) {
@@ -207,11 +238,7 @@ export default async function ApplicantJobDetailPage({
       .maybeSingle(),
   ]);
 
-  if (
-    pdsError ||
-    certificateTypeError ||
-    documentStatusResult.error
-  ) {
+  if (pdsError || certificateTypeError || documentStatusResult.error) {
     return (
       <EmptyState
         description="Refresh the page to try loading your document eligibility and training records."
@@ -238,14 +265,15 @@ export default async function ApplicantJobDetailPage({
           .eq("pds_version_id", submittedPds.id)
       : Promise.resolve({ data: [], error: null }),
     certificateType
-      ? applicant.supabase.from("documents")
-      .select(
-        "id, training_hours, ocr_training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
-      )
-      .eq("applicant_id", applicant.applicant.id)
-      .eq("document_type_id", certificateType.id)
-      .order("uploaded_at", { ascending: false })
-      .order("version", { ascending: false })
+      ? applicant.supabase
+          .from("documents")
+          .select(
+            "id, training_hours, ocr_training_hours, pds_learning_development_id, replaces_document_id, uploaded_at, version",
+          )
+          .eq("applicant_id", applicant.applicant.id)
+          .eq("document_type_id", certificateType.id)
+          .order("uploaded_at", { ascending: false })
+          .order("version", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
     submittedPds
       ? applicant.supabase
@@ -260,6 +288,7 @@ export default async function ApplicantJobDetailPage({
           .eq("pds_version_id", submittedPds.id)
       : Promise.resolve({ data: [], error: null }),
   ]);
+
   if (
     learningResult.error ||
     certificatesResult.error ||
@@ -315,14 +344,29 @@ export default async function ApplicantJobDetailPage({
     workExperienceResult.data ?? [],
   );
   const positionsWithScoringPoints = positions.map((position) => {
-    const educationRule = position.scoringRules.find((rule) => rule.criterion_key === "EDUCATION");
-    const trainingRule = position.scoringRules.find((rule) => rule.criterion_key === "TRAINING");
-    const experienceRule = position.scoringRules.find((rule) => rule.criterion_key === "EXPERIENCE");
+    const educationRule = position.scoringRules.find(
+      (rule) => rule.criterion_key === "EDUCATION",
+    );
+    const trainingRule = position.scoringRules.find(
+      (rule) => rule.criterion_key === "TRAINING",
+    );
+    const experienceRule = position.scoringRules.find(
+      (rule) => rule.criterion_key === "EXPERIENCE",
+    );
     return {
       ...position,
-      educationPoints: educationRule ? previewScore(educationRule, applicantQualificationLevel) : null,
-      trainingPoints: trainingRule ? previewScore(trainingRule, Math.min(31, Math.floor(trainingHours / 8) + 1)) : null,
-      experiencePoints: experienceRule ? previewScore(experienceRule, publicTeachingExperience.incrementLevel) : null,
+      educationPoints: educationRule
+        ? previewScore(educationRule, applicantQualificationLevel)
+        : null,
+      trainingPoints: trainingRule
+        ? previewScore(
+            trainingRule,
+            Math.min(31, Math.floor(trainingHours / 8) + 1),
+          )
+        : null,
+      experiencePoints: experienceRule
+        ? previewScore(experienceRule, publicTeachingExperience.incrementLevel)
+        : null,
       qualifyingExperienceMonths: publicTeachingExperience.qualifyingMonths,
       experienceIncrementLevel: publicTeachingExperience.incrementLevel,
     };
@@ -358,17 +402,21 @@ export default async function ApplicantJobDetailPage({
         backLabel="Back to jobs"
         description={
           canResubmit
-            ? "Submit the requested document corrections, then resubmit for this open posting."
+            ? acceptingApplications
+              ? "Submit the requested document corrections, then resubmit for this open posting."
+              : "Review your application and the posting details. The application period has ended."
             : application
               ? "Review the current status and details for your application."
-              : "Review the position details before submitting your application."
+              : acceptingApplications
+                ? "Review the position details before submitting your application."
+                : "Review the expired posting details. Applications are closed."
         }
-        eyebrow="Open job posting"
+        eyebrow="Job posting"
         title={job.title}
       />
       <article className="mt-6 overflow-hidden rounded-2xl border border-line bg-panel shadow-card">
         <div className="flex flex-wrap items-center gap-3 px-5 pt-5 sm:px-7 sm:pt-7">
-          <WorkflowStatusTag status="OPEN" />
+          <WorkflowStatusTag status={postingDisplayStatus} />
           <span className="text-sm text-muted">
             Posted {formatDate(job.created_at)}
           </span>
@@ -410,25 +458,16 @@ export default async function ApplicantJobDetailPage({
         </dl>
 
         <div className="px-5 pb-6 sm:px-7 sm:pb-7">
-          <section className="py-6">
-            <h2 className="text-base font-semibold text-ink">
-              Position details
-            </h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">
-              {job.description}
-            </p>
-          </section>
+          <JobPostingContent
+            description={job.description}
+            requirements={requirements}
+            requirementsPdfUrl={requirementsPdfUrl}
+          />
 
-          {job.requirements && (
-            <section className="border-t border-line-subtle py-6">
-              <h2 className="text-base font-semibold text-ink">Requirements</h2>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">
-                {job.requirements}
-              </p>
-            </section>
-          )}
-
-          <JobScoringGuide positions={positions} educationLevels={educationLevels} />
+          <JobScoringGuide
+            positions={positions}
+            educationLevels={educationLevels}
+          />
 
           <section className="flex flex-col gap-5 border-t border-line-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
             {application && canResubmit ? (
@@ -450,7 +489,12 @@ export default async function ApplicantJobDetailPage({
                     View application details
                   </Link>
                 </div>
-                {!applicant.profile.has_submitted_pds ? (
+                {!acceptingApplications ? (
+                  <p className="max-w-sm text-sm text-muted">
+                    The application period has ended, so this application can no
+                    longer be resubmitted.
+                  </p>
+                ) : !applicant.profile.has_submitted_pds ? (
                   <Link
                     className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     href="/applicant/pds"
@@ -466,8 +510,8 @@ export default async function ApplicantJobDetailPage({
                       <WorkflowStatusTag status={documentStatus.status} />
                     </div>
                     <p className="mt-2 text-sm leading-6 text-muted">
-                      Submit the requested document corrections for review before
-                      resubmitting your application.
+                      Submit the requested document corrections for review
+                      before resubmitting your application.
                     </p>
                     <Link
                       className="mt-3 inline-flex min-h-11 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-dark"
@@ -485,8 +529,8 @@ export default async function ApplicantJobDetailPage({
                   />
                 ) : (
                   <p className="max-w-sm text-sm text-muted">
-                    The original position is no longer available. Contact HR
-                    for assistance with your resubmission.
+                    The original position is no longer available. Contact HR for
+                    assistance with your resubmission.
                   </p>
                 )}
               </div>
@@ -513,6 +557,11 @@ export default async function ApplicantJobDetailPage({
                   View your application
                 </Link>
               </div>
+            ) : !acceptingApplications ? (
+              <p className="max-w-sm text-sm text-muted">
+                This posting has expired and is no longer accepting
+                applications.
+              </p>
             ) : applicant.profile.has_submitted_pds ? (
               ["APPROVED", "FOR_REVIEW"].includes(documentStatus.status) ? (
                 positions.length ? (

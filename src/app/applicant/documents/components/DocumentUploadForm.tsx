@@ -6,6 +6,7 @@ import type { UploadFile } from "antd";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { FormCheckbox } from "@/components/form/FormCheckbox";
 import { FormDatePicker } from "@/components/form/FormDatePicker";
 import { FormInput } from "@/components/form/FormInput";
 import { FormSelect } from "@/components/form/FormSelect";
@@ -88,6 +89,7 @@ export function DocumentUploadForm({
       certificateIssuer: replacementDocument?.certificate_issuer ?? "",
       certificateDate: replacementDocument?.certificate_date ?? null,
       totalUnits: null,
+      isGraduated: false,
       pdsLearningDevelopmentId: trainingEntries.some(
         (entry) =>
           entry.id === replacementDocument?.pds_learning_development_id,
@@ -98,6 +100,7 @@ export function DocumentUploadForm({
       currentHighestEducationLevel: "",
     },
   });
+  const isGraduated = isTranscript && form.watch("isGraduated") === true;
 
   useEffect(() => {
     onProcessingChange?.(busy);
@@ -239,7 +242,7 @@ export function DocumentUploadForm({
       });
       return;
     }
-    if (isTranscript && values.totalUnits == null) {
+    if (isTranscript && !values.isGraduated && values.totalUnits == null) {
       form.setError("totalUnits", {
         message: "Enter the total units shown on the transcript.",
       });
@@ -264,7 +267,11 @@ export function DocumentUploadForm({
       );
     }
     if (isTranscript) {
-      formData.set("total_units", String(values.totalUnits));
+      formData.set("is_graduated", String(values.isGraduated));
+      formData.set(
+        "total_units",
+        values.isGraduated ? "" : String(values.totalUnits),
+      );
       formData.set("pds_education_id", values.pdsEducationId ?? "");
       formData.set(
         "current_highest_education_level",
@@ -296,6 +303,7 @@ export function DocumentUploadForm({
         certificateIssuer: "",
         certificateDate: null,
         totalUnits: null,
+        isGraduated: false,
         pdsLearningDevelopmentId: "",
         pdsEducationId: "",
         currentHighestEducationLevel: "",
@@ -312,7 +320,9 @@ export function DocumentUploadForm({
         : isTrainingCertificate
           ? `Certificate uploaded with ${values.trainingHours} hours. Submit all documents when you are ready for review. Add another certificate or close this form.`
           : isTranscript
-            ? `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. Submit all documents when you are ready for review.`
+            ? values.isGraduated
+              ? "Transcript uploaded with your graduation status and current highest educational attainment recorded. Submit all documents when you are ready for review."
+              : `Transcript uploaded with ${values.totalUnits} units and your current highest educational attainment recorded. Submit all documents when you are ready for review.`
             : `Version ${result.version} uploaded. Submit all documents when you are ready for review.`;
       const successMessage = `${uploadSuccessMessage}${pdsSyncMessage}`;
       if (onSuccess) onSuccess(successMessage);
@@ -342,7 +352,7 @@ export function DocumentUploadForm({
         hint={
           isTrainingCertificate
             ? "Select one certificate per upload so each entry has its own hours."
-            : "PDF, JPG, PNG, DOC, or DOCX · up to 50 MB"
+            : ""
         }
         label={isTrainingCertificate ? "Certificate file" : "Document file"}
         maxCount={1}
@@ -413,31 +423,39 @@ export function DocumentUploadForm({
         </div>
       )}
       {isTranscript && (
-        <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <FormCheckbox
+              control={form.control}
+              disabled={busy}
+              label="I have graduated from this education level"
+              name="isGraduated"
+            />
+          </div>
           <FormSelect
             control={form.control}
             disabled={busy}
-            hint="Choose the highest education level you have attained, using the same levels as your PDS."
-            label="Current highest educational attainment"
+            label="Latest Educational attainment"
             name="currentHighestEducationLevel"
             options={[...EDUCATION_LEVEL_OPTIONS]}
             placeholder="Choose education level"
             required
           />
-          <div>
-            <FormInput
-              control={form.control}
-              disabled={busy}
-              hint="Total units shown on the transcript. Decimals allowed."
-              placeholder="e.g. 120"
-              label="Total units"
-              min={0}
-              name="totalUnits"
-              required
-              step="0.01"
-              type="number"
-            />
-          </div>
+          {!isGraduated && (
+            <div>
+              <FormInput
+                control={form.control}
+                disabled={busy}
+                placeholder="e.g. 120"
+                label="Total units"
+                min={0}
+                name="totalUnits"
+                required
+                step="0.01"
+                type="number"
+              />
+            </div>
+          )}
           <div>
             <FormSelect
               control={form.control}

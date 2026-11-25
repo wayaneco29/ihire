@@ -26,7 +26,9 @@ export function FieldFrame({
           id={`${id}-label`}
         >
           {label}
-          {required && <span className="ml-2 text-xs font-normal text-muted">(required)</span>}
+          {required && (
+            <span className="ml-1 text-xs font-normal text-red-500">*</span>
+          )}
         </label>
       )}
       {children}

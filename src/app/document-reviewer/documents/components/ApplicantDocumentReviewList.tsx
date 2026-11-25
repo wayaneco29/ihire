@@ -38,6 +38,7 @@ function DocumentRow({
     document.certificateDate
       ? formatDate(document.certificateDate, "MMM D, YYYY")
       : null,
+    document.isGraduated === true ? "Graduated" : null,
     document.totalUnits != null ? `${document.totalUnits} units` : null,
     highestEducationLabel
       ? `Highest education: ${highestEducationLabel}`
@@ -229,6 +230,7 @@ export function ApplicantDocumentReviewList({
             trainingHours={selectedDocument.trainingHours}
             totalUnits={selectedDocument.totalUnits}
             currentHighestEducationLevel={selectedDocument.currentHighestEducationLevel}
+            isGraduated={selectedDocument.isGraduated}
             ocrTrainingHours={selectedDocument.ocrTrainingHours}
             ocrTotalUnits={selectedDocument.ocrTotalUnits}
             ocrConfidence={selectedDocument.ocrConfidence}

@@ -18,7 +18,27 @@ export const postingSchema = yup.object({
     .min(10, "Add a little more detail to the description.")
     .max(10000)
     .required("Enter a job description."),
-  requirements: yup.string().trim().max(10000).defined(),
+  requirements: yup
+    .array()
+    .of(
+      yup
+        .string()
+        .trim()
+        .min(1, "Enter a requirement or remove this row.")
+        .max(10000, "Each requirement must be 10,000 characters or fewer.")
+        .required("Enter a requirement or remove this row."),
+    )
+    .min(1, "Add at least one requirement.")
+    .max(50, "A posting can have up to 50 requirements.")
+    .test(
+      "requirements-size",
+      "The requirements list is too long.",
+      (items) =>
+        !items ||
+        (items.every((item) => typeof item === "string") &&
+          items.map((item) => item.trim()).join("\n").length <= 10000),
+    )
+    .required("Add at least one requirement."),
   slots: yup
     .number()
     .transform((value, original) => (original === "" ? Number.NaN : value))

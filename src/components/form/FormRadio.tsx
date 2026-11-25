@@ -76,8 +76,8 @@ export function FormRadio<T extends FieldValues>(props: FormRadioProps<T>) {
                 <Radio
                   className={
                     cardLayout
-                      ? "m-0! flex min-h-11 w-full items-start rounded-sm border border-line-subtle bg-panel-muted/40 px-3 py-2.5 transition-colors [&.ant-radio-wrapper-checked]:border-primary [&.ant-radio-wrapper-checked]:bg-primary-light"
-                      : "min-h-11 items-center"
+                      ? "m-0! flex min-h-10 w-full items-center! rounded-sm border border-line-subtle bg-panel-muted/40 px-3 py-2.5 transition-colors [&.ant-radio-wrapper-checked]:border-primary [&.ant-radio-wrapper-checked]:bg-primary-light"
+                      : "min-h-11 items-center!"
                   }
                   disabled={option.disabled}
                   key={String(option.value)}

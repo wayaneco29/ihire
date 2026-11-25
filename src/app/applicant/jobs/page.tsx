@@ -14,8 +14,9 @@ export default async function ApplicantJobsPage() {
   const [postingsResult, applicationsResult] = await Promise.all([
     applicant.supabase
       .from("job_postings")
-      .select("id, title, description, requirements, slots, deadline")
-      .eq("status", "OPEN")
+      .select(
+        "id, title, description, requirements, requirements_items, slots, deadline, status",
+      )
       .order("created_at", { ascending: false }),
     applicant.supabase
       .from("applications")
@@ -30,15 +31,11 @@ export default async function ApplicantJobsPage() {
     (applicationsResult.data ?? []).map((application) => application.job_id),
   );
   const jobs = (postingsResult.data ?? [])
-    .filter(
-      (posting) => !posting.deadline || Date.parse(posting.deadline) > nowMs,
-    )
     .map((posting) => ({ ...posting, applied: appliedJobIds.has(posting.id) }));
-
   return (
     <>
       <PageHeader
-        description="Explore open positions from the Division of Southern Leyte."
+        description="Explore current openings and review expired postings from the Division of Southern Leyte."
         eyebrow="Applicant workspace"
         title="Browse jobs"
       />

@@ -47,7 +47,7 @@ export default async function DocumentReviewerDetailPage({
     reviewer.supabase
       .from("v_anonymized_document_metrics")
       .select(
-        "training_hours, total_units, current_highest_education_level, ocr_training_hours, ocr_total_units, ocr_confidence",
+        "training_hours, total_units, current_highest_education_level, is_graduated, ocr_training_hours, ocr_total_units, ocr_confidence",
       )
       .eq("document_id", document.document_id)
       .limit(1)
@@ -91,6 +91,7 @@ export default async function DocumentReviewerDetailPage({
           currentHighestEducationLevel={
             metricsResult.data.current_highest_education_level
           }
+          isGraduated={metricsResult.data.is_graduated}
           ocrTrainingHours={metricsResult.data.ocr_training_hours}
           ocrTotalUnits={metricsResult.data.ocr_total_units}
           ocrConfidence={metricsResult.data.ocr_confidence}

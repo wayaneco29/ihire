@@ -12,6 +12,17 @@ type PostingStatusInput = {
   slots: number;
 };
 
+export function isPostingOpenForApplications(
+  posting: Pick<PostingStatusInput, "status" | "deadline">,
+  now: number,
+): boolean {
+  if (posting.status !== "OPEN") return false;
+  if (!posting.deadline) return true;
+
+  const deadlineTimestamp = Date.parse(posting.deadline);
+  return Number.isFinite(deadlineTimestamp) && deadlineTimestamp > now;
+}
+
 export function getPostingDisplayStatus(
   posting: PostingStatusInput,
   now: number,

@@ -35,7 +35,7 @@ export async function getApplicantReviewDocuments(applicantNumber: string) {
     reviewer.supabase
       .from("v_anonymized_document_metrics")
       .select(
-        "document_id, training_hours, total_units, current_highest_education_level, ocr_training_hours, ocr_total_units, ocr_confidence",
+        "document_id, training_hours, total_units, current_highest_education_level, is_graduated, ocr_training_hours, ocr_total_units, ocr_confidence",
       )
       .in("document_id", documentIds),
     reviewer.supabase
@@ -100,6 +100,7 @@ export async function getApplicantReviewDocuments(applicantNumber: string) {
         certificateDate: details.certificate_date,
         trainingHours: metrics.training_hours,
         totalUnits: metrics.total_units,
+        isGraduated: metrics.is_graduated,
         currentHighestEducationLevel: metrics.current_highest_education_level,
         ocrTrainingHours: metrics.ocr_training_hours,
         ocrTotalUnits: metrics.ocr_total_units,

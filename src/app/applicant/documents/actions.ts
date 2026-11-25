@@ -331,12 +331,14 @@ export async function uploadApplicantDocument(
     "training_hours",
     "pds_learning_development_id",
     "total_units",
+    "is_graduated",
     "pds_education_id",
     "current_highest_education_level",
   ].some((key) => formData.has(key));
   if (
     (isTrainingCertificate &&
       (formData.has("total_units") ||
+        formData.has("is_graduated") ||
         formData.has("pds_education_id") ||
         formData.has("current_highest_education_level") ||
         formData.has("ocr_total_units"))) ||
@@ -389,12 +391,24 @@ export async function uploadApplicantDocument(
       message: "Enter a certificate title of 200 characters or fewer.",
     };
   }
+  const rawIsGraduated = isTranscript ? formData.get("is_graduated") : null;
+  const isGraduated = rawIsGraduated === "true";
+  if (
+    isTranscript &&
+    rawIsGraduated !== "true" &&
+    rawIsGraduated !== "false"
+  ) {
+    return {
+      success: false,
+      message: "Indicate whether you have graduated from this education level.",
+    };
+  }
   const unitsResult = isTranscript
     ? parseMetric(
         formData.get("total_units"),
         99999999.99,
         "total transcript units",
-        true,
+        !isGraduated,
       )
     : { value: null, error: null };
   const rawHighestEducationLevel = isTranscript
@@ -711,6 +725,7 @@ export async function uploadApplicantDocument(
       : {}),
     ...(isTranscript
       ? {
+          is_graduated: isGraduated,
           total_units: unitsResult.value,
           pds_education_id: pdsEducationId,
           current_highest_education_level: currentHighestEducationLevel,

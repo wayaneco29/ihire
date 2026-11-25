@@ -12,6 +12,7 @@ export type ReviewerDocument = {
   certificateDate: string | null;
   trainingHours: number | null;
   totalUnits: number | null;
+  isGraduated: boolean | null;
   currentHighestEducationLevel: string | null;
   ocrTrainingHours: number | null;
   ocrTotalUnits: number | null;

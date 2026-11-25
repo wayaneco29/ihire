@@ -37,17 +37,6 @@ export type ApplicantItem = {
   }[];
 };
 
-type ApplicantFilter = "QUALIFIED" | "HIRED" | "NOT_SELECTED";
-const FILTERS: { id: ApplicantFilter; label: string }[] = [
-  { id: "QUALIFIED", label: "Qualified" },
-  { id: "HIRED", label: "Hired" },
-  { id: "NOT_SELECTED", label: "Not selected" },
-];
-
-function matchesFilter(applicant: ApplicantItem, filter: ApplicantFilter) {
-  return applicant.application_status === filter;
-}
-
 function positionLabel(applicant: ApplicantItem) {
   if (!applicant.position_title) return "Position not recorded";
   return formatPositionLabel(
@@ -69,17 +58,18 @@ function trainingLabel(hours: number | null) {
 export function PostingApplicants({
   applicants,
   assessmentScoresUnavailable,
+  hiredCount,
   hiringReadiness,
   initialApplicationId = null,
   slots,
 }: Readonly<{
   applicants: ApplicantItem[];
   assessmentScoresUnavailable: boolean;
+  hiredCount: number;
   hiringReadiness: HiringReadiness | null;
   initialApplicationId?: string | null;
   slots: number;
 }>) {
-  const [filter, setFilter] = useState<ApplicantFilter>("QUALIFIED");
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState("ALL");
   const [educationFilter, setEducationFilter] = useState("ALL");
@@ -95,9 +85,6 @@ export function PostingApplicants({
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [isWorking, startTransition] = useTransition();
 
-  const hiredCount = applicants.filter(
-    (applicant) => applicant.application_status === "HIRED",
-  ).length;
   const slotsFull = hiredCount >= slots;
   const canHire =
     hiringReadiness?.can_hire === true &&
@@ -126,22 +113,11 @@ export function PostingApplicants({
       ].sort((a, b) => a.localeCompare(b)),
     [applicants],
   );
-  const counts = useMemo(
-    () =>
-      Object.fromEntries(
-        FILTERS.map(({ id }) => [
-          id,
-          applicants.filter((applicant) => matchesFilter(applicant, id)).length,
-        ]),
-      ) as Record<ApplicantFilter, number>,
-    [applicants],
-  );
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
     return applicants
       .filter(
         (applicant) =>
-          matchesFilter(applicant, filter) &&
           (!term ||
             applicant.applicant_number.toLocaleLowerCase().includes(term)) &&
           (positionFilter === "ALL" ||
@@ -171,7 +147,7 @@ export function PostingApplicants({
         );
         return result;
       });
-  }, [applicants, educationFilter, filter, positionFilter, search]);
+  }, [applicants, educationFilter, positionFilter, search]);
 
   const currentPage = Math.min(
     page,
@@ -385,29 +361,13 @@ export function PostingApplicants({
           </dl>
         </section>
       )}
-      <div className="mt-4 grid gap-3 xl:grid-cols-[auto_minmax(220px,1fr)_170px_190px] xl:items-center">
-        <nav
-          aria-label="Filter applicants by status"
-          className="inline-flex w-fit max-w-full flex-wrap gap-1 rounded-lg bg-panel-muted p-1"
-        >
-          {FILTERS.map((option) => (
-            <Button
-              aria-pressed={filter === option.id}
-              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${filter === option.id ? "bg-panel text-ink" : "text-muted hover:text-ink"}`}
-              key={option.id}
-              onClick={() => updateFilter(setFilter, option.id)}
-              type="button"
-              variant="unstyled"
-            >
-              {option.label}{" "}
-              <span
-                className={`rounded-full px-1.5 py-0.5 text-xs tabular-nums ${filter === option.id ? "bg-success/15 text-success" : "text-muted"}`}
-              >
-                {counts[option.id].toLocaleString()}
-              </span>
-            </Button>
-          ))}
-        </nav>
+      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(180px,auto)_minmax(220px,1fr)] xl:grid-cols-[minmax(180px,auto)_minmax(220px,1fr)_170px_190px] xl:items-center">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">Qualified applicants</h2>
+          <p className="mt-1 text-xs text-muted">
+            {applicants.length.toLocaleString()} qualified applicants
+          </p>
+        </div>
         <label>
           <span className="sr-only">Search by applicant number</span>
           <Input
@@ -470,8 +430,8 @@ export function PostingApplicants({
       )}
 
       <p aria-live="polite" className="sr-only">
-        Showing page {currentPage} of applicants. {filtered.length} applicants
-        match the current filters.
+        Showing page {currentPage} of qualified applicants. {filtered.length} qualified
+        applicants match the current filters.
       </p>
 
       <div className="mt-3 overflow-hidden rounded-xl border border-line bg-panel">
@@ -484,16 +444,10 @@ export function PostingApplicants({
             emptyText: (
               <div className="py-12 text-center">
                 <p className="text-sm font-semibold text-ink">
-                  No{" "}
-                  {filter === "QUALIFIED"
-                    ? "qualified"
-                    : filter === "HIRED"
-                      ? "hired"
-                      : "not selected"}{" "}
-                  applicants
+                  No qualified applicants
                 </p>
                 <p className="mt-1 text-sm text-muted">
-                  No applicants match these filters.
+                  No qualified applicants match these filters.
                 </p>
               </div>
             ),
