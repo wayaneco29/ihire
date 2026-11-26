@@ -4,6 +4,11 @@ import type { Json } from "./database-json";
 export type PublicFunctions = {
     save_position_scoring_profile: { Args: { p_position_id: string; p_rules: Json }; Returns: string };
     save_scored_posting: { Args: { p_job_id: string | null; p_title: string; p_description: string; p_requirements: string | null; p_slots: number; p_status: PublicEnums["job_status"]; p_deadline: string | null; p_position_ids: string[]; p_scoring: Json | null }; Returns: string };
+    save_scored_posting_with_minimums: { Args: { p_job_id: string | null; p_title: string; p_description: string; p_requirements: string | null; p_slots: number; p_status: PublicEnums["job_status"]; p_deadline: string | null; p_position_ids: string[]; p_scoring: Json | null; p_minimum_scores: Json }; Returns: string };
+    issue_applicant_otp_challenge: { Args: { p_id: string; p_purpose: string; p_user_id: string | null; p_email: string; p_phone_number: string; p_code_hash: string }; Returns: string };
+    consume_applicant_otp_challenge: { Args: { p_id: string; p_code_hash: string }; Returns: { is_valid: boolean; purpose: string; user_id: string | null; email: string; phone_number: string }[] };
+    authorize_applicant_session: { Args: { p_user_id: string; p_session_id: string }; Returns: undefined };
+    is_applicant_session_verified: { Args: Record<PropertyKey, never>; Returns: boolean };
     application_scoring: { Args: { p_application_id: string }; Returns: { criterion_key: string; applicant_level: number | null; minimum_level: number | null; maximum_points: number; points: number | null; matched_threshold: number | null }[] };
 
     "education_points": {
@@ -159,6 +164,7 @@ export type PublicFunctions = {
     "hire_qualified_applicant": {
         Args: {
             "p_application_id": string;
+            "p_remarks": string;
         };
         Returns: string;
     };

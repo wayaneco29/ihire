@@ -139,6 +139,7 @@ export type HiringDecisionsTable = {
         "application_id": string;
         "decided_at": string;
         "decision": string;
+        "decision_remarks": string;
         "hr_id": string;
         "id": string;
     };
@@ -147,6 +148,7 @@ export type HiringDecisionsTable = {
         "application_id": string;
         "decided_at"?: string;
         "decision": string;
+        "decision_remarks"?: string;
         "hr_id": string;
         "id"?: string;
     };
@@ -154,6 +156,7 @@ export type HiringDecisionsTable = {
         "application_id"?: string;
         "decided_at"?: string;
         "decision"?: string;
+        "decision_remarks"?: string;
         "hr_id"?: string;
         "id"?: string;
     };

@@ -28,7 +28,7 @@ function validationMessage(error: unknown) {
 
 export async function createInvitation(values: unknown): Promise<ActionResult> {
   const admin = await getAdminContext();
-  if (!admin) return { success: false, message: "Admin access is required." };
+  if (!admin) return { success: false, message: "Super Admin access is required." };
 
   let input;
   try {
@@ -80,7 +80,7 @@ export async function createInvitation(values: unknown): Promise<ActionResult> {
 
 export async function revokeInvitation(id: string) {
   const admin = await getAdminContext();
-  if (!admin) return { success: false, message: "Admin access is required." };
+  if (!admin) return { success: false, message: "Super Admin access is required." };
 
   const { data, error } = await admin.supabase
     .from("invitations")
@@ -100,7 +100,7 @@ export async function revokeInvitation(id: string) {
 
 export async function resendInvitation(id: string): Promise<ActionResult> {
   const admin = await getAdminContext();
-  if (!admin) return { success: false, message: "Admin access is required." };
+  if (!admin) return { success: false, message: "Super Admin access is required." };
 
   const token = newToken();
   const expiresAt = new Date(Date.now() + INVITATION_LIFETIME_MS).toISOString();

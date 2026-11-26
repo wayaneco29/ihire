@@ -236,7 +236,7 @@ try {
   ]);
 
   const [adminProfiles, applicantARows, applicantBRows, documentTypes] = await Promise.all([
-    getRows('profiles', { select: 'id', role: 'eq.ADMIN' }),
+    getRows('profiles', { select: 'id', role: 'eq.SUPER_ADMIN' }),
     getRows('applicants', { select: 'id,applicant_number', profile_id: `eq.${applicantA.profileId}` }),
     getRows('applicants', { select: 'id,applicant_number', profile_id: `eq.${applicantB.profileId}` }),
     getRows('document_types', { select: 'id', name: 'eq.Transcript of Records' }),
@@ -246,7 +246,7 @@ try {
     throw new Error('Required local RLS verification fixtures were not available.');
   }
 
-  const admin = { profileId: adminProfiles[0].id, role: 'ADMIN' };
+  const admin = { profileId: adminProfiles[0].id, role: 'SUPER_ADMIN' };
   const jobA = (await insertRows('job_postings', {
     hr_id: hrA.profileId,
     title: 'Temporary RLS Verification A',
@@ -421,7 +421,7 @@ try {
   ownerUrl.username = 'supabase_admin';
 
   runSupabase(['db', 'query', '--db-url', ownerUrl.toString(), '--file', sqlFile]);
-  console.info('RLS verification passed for Applicant, HR, Evaluator, and Admin roles.');
+  console.info('RLS verification passed for Applicant, HR, Evaluator, and SUPER_ADMIN roles.');
 } catch (error) {
   console.error(`RLS verification failed: ${error instanceof Error ? error.message : 'Unknown error.'}`);
   process.exitCode = 1;

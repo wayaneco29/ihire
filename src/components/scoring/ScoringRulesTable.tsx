@@ -1,6 +1,7 @@
 "use client";
 
 import type { EducationLevel, ScoringRule } from "@/types/scoring";
+import { TableEmptyRow } from "@/components/ui/TableEmptyState";
 import { isAutomaticCriterion, levelDescription } from "@/utils/scoring";
 
 export function ScoringRulesTable({
@@ -30,6 +31,13 @@ export function ScoringRulesTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle">
+              {rules.length === 0 && (
+                <TableEmptyRow
+                  colSpan={2}
+                  description="Scoring criteria will appear here when they are configured."
+                  title="No scoring criteria configured"
+                />
+              )}
               {rules.map((rule) => (
                 <tr key={rule.criterion_id}>
                   <th className="p-2 font-medium" scope="row">

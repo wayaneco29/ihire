@@ -165,6 +165,8 @@ export type ProfilesTable = {
         "email": string;
         "has_submitted_pds": boolean;
         "id": string;
+        "phone_number": string | null;
+        "phone_verified_at": string | null;
         "role": PublicEnums["user_role"];
     };
     ComputedFields: never;
@@ -173,6 +175,8 @@ export type ProfilesTable = {
         "email": string;
         "has_submitted_pds"?: boolean;
         "id": string;
+        "phone_number"?: string | null;
+        "phone_verified_at"?: string | null;
         "role"?: PublicEnums["user_role"];
     };
     Update: {
@@ -180,6 +184,8 @@ export type ProfilesTable = {
         "email"?: string;
         "has_submitted_pds"?: boolean;
         "id"?: string;
+        "phone_number"?: string | null;
+        "phone_verified_at"?: string | null;
         "role"?: PublicEnums["user_role"];
     };
     Relationships: [

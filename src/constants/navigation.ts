@@ -148,7 +148,23 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
       ],
     },
   ],
-  ADMIN: [
+  SDS: [
+    {
+      title: "Hiring",
+      items: [
+        { label: "Applications", href: "/sds/applications", icon: ClipboardDocumentCheckIcon, available: true },
+      ],
+    },
+  ],
+  ASDS: [
+    {
+      title: "Applications",
+      items: [
+        { label: "Application review", href: "/asds/applications", icon: ClipboardDocumentCheckIcon, available: true },
+      ],
+    },
+  ],
+  SUPER_ADMIN: [
     {
       title: "Administration",
       items: [

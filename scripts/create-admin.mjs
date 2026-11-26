@@ -17,7 +17,7 @@ async function main() {
 
   if (values.help) {
     console.info('npm run admin:create -- --email "admin@example.com" --password "your-password"');
-    console.info('Alternatively, set ADMIN_EMAIL and ADMIN_PASSWORD in the environment.');
+    console.info('Creates the initial SUPER_ADMIN. Alternatively, set ADMIN_EMAIL and ADMIN_PASSWORD in the environment.');
     return;
   }
 
@@ -47,7 +47,7 @@ async function main() {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
   const { data: existing, error: lookupError, status: lookupStatus } = await admin
-    .from('profiles').select('id,email').eq('role', 'ADMIN');
+    .from('profiles').select('id,email').eq('role', 'SUPER_ADMIN');
   if (lookupError) {
     const errorCode = lookupError.code || 'none';
     const reason = lookupStatus === 0
@@ -63,7 +63,7 @@ async function main() {
   let userId;
   if (existing.length > 0) {
     if (existing.length !== 1 || existing[0].email?.toLowerCase() !== email) {
-      throw new AdminSetupError('A different admin already exists. This project permits only one admin.');
+      throw new AdminSetupError('A different SUPER_ADMIN already exists. This script only initializes the first account.');
     }
     userId = existing[0].id;
   } else {
@@ -71,11 +71,11 @@ async function main() {
       email,
       password,
       email_confirm: true,
-      app_metadata: { role: 'ADMIN' },
+      app_metadata: { role: 'SUPER_ADMIN' },
     });
     if (error || !data.user) {
       // Do not print request bodies, passwords, service keys, or raw errors.
-      throw new AdminSetupError(`Admin creation failed (${error?.code ?? error?.status ?? 'unknown'}). Check whether the email is already registered or the password violates your Auth policy. Existing accounts are not promoted or reset.`);
+      throw new AdminSetupError(`SUPER_ADMIN creation failed (${error?.code ?? error?.status ?? 'unknown'}). Check whether the email is already registered or the password violates your Auth policy. Existing accounts are not promoted or reset.`);
     }
     userId = data.user.id;
   }
@@ -84,15 +84,15 @@ async function main() {
   const { data: profile, error: profileError } = await admin
     .from('profiles').select('id,email,role').eq('id', userId).single();
   if (accountError || profileError ||
-      account.user?.app_metadata?.role !== 'ADMIN' ||
+      account.user?.app_metadata?.role !== 'SUPER_ADMIN' ||
       account.user?.email?.toLowerCase() !== email ||
-      profile?.role !== 'ADMIN' || profile.email?.toLowerCase() !== email) {
-    throw new AdminSetupError('Could not verify both the Auth account and ADMIN profile. The account may already exist; check the profile synchronization triggers before retrying.');
+      profile?.role !== 'SUPER_ADMIN' || profile.email?.toLowerCase() !== email) {
+    throw new AdminSetupError('Could not verify both the Auth account and SUPER_ADMIN profile. The account may already exist; check the profile synchronization triggers before retrying.');
   }
 
   console.info(existing.length > 0
-    ? 'Admin account already exists and is verified. Password was not changed.'
-    : 'Admin account created and verified. You can now sign in.');
+    ? 'SUPER_ADMIN account already exists and is verified. Password was not changed.'
+    : 'SUPER_ADMIN account created and verified. You can now sign in.');
 }
 
 main().catch((error) => {

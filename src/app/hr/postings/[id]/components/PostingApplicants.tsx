@@ -1,23 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
-import { Alert, Input, Modal, Popconfirm, Select, Table } from "antd";
-import { CheckIcon } from "@heroicons/react/20/solid";
+import { useMemo, useState } from "react";
+import { Alert, Input, Modal, Select, Table } from "antd";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import type { ColumnsType } from "antd/es/table";
 import { Button } from "@/components/ui/Button";
+import {
+  TableEmptyRow,
+  TableEmptyState,
+} from "@/components/ui/TableEmptyState";
 import { EDUCATION_LEVEL_OPTIONS } from "@/constants/pds-options";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
-import {
-  getHiringReadinessBlockers,
-  type HiringReadiness,
-} from "@/utils/hiring-readiness";
-import { recordHiringDecision } from "../actions";
 
 export type ApplicantItem = {
   application_id: string;
+  applicant_name: string;
   applicant_number: string;
   application_status: string;
   applied_at: string;
@@ -58,17 +57,11 @@ function trainingLabel(hours: number | null) {
 export function PostingApplicants({
   applicants,
   assessmentScoresUnavailable,
-  hiredCount,
-  hiringReadiness,
   initialApplicationId = null,
-  slots,
 }: Readonly<{
   applicants: ApplicantItem[];
   assessmentScoresUnavailable: boolean;
-  hiredCount: number;
-  hiringReadiness: HiringReadiness | null;
   initialApplicationId?: string | null;
-  slots: number;
 }>) {
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState("ALL");
@@ -78,21 +71,6 @@ export function PostingApplicants({
   const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(
     initialApplicationId,
   );
-  const [feedback, setFeedback] = useState<{
-    success: boolean;
-    message: string;
-  } | null>(null);
-  const [workingId, setWorkingId] = useState<string | null>(null);
-  const [isWorking, startTransition] = useTransition();
-
-  const slotsFull = hiredCount >= slots;
-  const canHire =
-    hiringReadiness?.can_hire === true &&
-    !slotsFull &&
-    !assessmentScoresUnavailable;
-  const readinessBlockers = hiringReadiness
-    ? getHiringReadinessBlockers(hiringReadiness)
-    : [];
   const selectedApplicant =
     applicants.find(
       (applicant) => applicant.application_id === selectedApplicantId,
@@ -119,7 +97,8 @@ export function PostingApplicants({
       .filter(
         (applicant) =>
           (!term ||
-            applicant.applicant_number.toLocaleLowerCase().includes(term)) &&
+            (applicant.applicant_number.toLocaleLowerCase().includes(term) ||
+              applicant.applicant_name.toLocaleLowerCase().includes(term))) &&
           (positionFilter === "ALL" ||
             positionLabel(applicant) === positionFilter) &&
           (educationFilter === "ALL" ||
@@ -160,16 +139,6 @@ export function PostingApplicants({
     setSelectedApplicantId(null);
   }
 
-  function decide(applicationId: string) {
-    setWorkingId(applicationId);
-    startTransition(async () => {
-      const result = await recordHiringDecision(applicationId);
-      setFeedback(result);
-      setWorkingId(null);
-      if (result.success) setSelectedApplicantId(null);
-    });
-  }
-
   const columns: ColumnsType<ApplicantItem> = [
     {
       title: "Rank",
@@ -184,6 +153,15 @@ export function PostingApplicants({
           : `#${applicant.assessment_rank}`,
     },
     {
+      title: "Applicant name",
+      dataIndex: "applicant_name",
+      key: "applicant_name",
+      fixed: "left",
+      width: 210,
+      ellipsis: true,
+      render: (name: string) => <span className="font-semibold text-ink">{name}</span>,
+    },
+    {
       title: "Applicant ID",
       dataIndex: "applicant_number",
       key: "applicant_number",
@@ -192,6 +170,13 @@ export function PostingApplicants({
       render: (applicantNumber: string) => (
         <span className="font-semibold text-ink">{applicantNumber}</span>
       ),
+    },
+    {
+      title: "Status",
+      dataIndex: "application_status",
+      key: "application_status",
+      width: 150,
+      render: (status: string) => formatCodeLabel(status),
     },
     {
       title: "Position",
@@ -263,14 +248,6 @@ export function PostingApplicants({
 
   return (
     <section className="mt-4">
-      {feedback && (
-        <Alert
-          className="mb-4"
-          message={feedback.message}
-          showIcon
-          type={feedback.success ? "success" : "error"}
-        />
-      )}
       {assessmentScoresUnavailable && (
         <Alert
           className="mb-4"
@@ -279,99 +256,17 @@ export function PostingApplicants({
           type="warning"
         />
       )}
-      {!hiringReadiness ? (
-        <Alert
-          className="mb-4"
-          message="Hiring readiness could not be checked. Refresh the page before making a hiring decision."
-          showIcon
-          type="warning"
-        />
-      ) : (
-        <section
-          aria-labelledby="hiring-readiness-heading"
-          aria-describedby="hiring-readiness-guidance"
-          className="mb-4 overflow-hidden rounded-xl border border-line bg-panel"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6">
-            <div>
-              <h2
-                className="text-sm font-semibold text-ink"
-                id="hiring-readiness-heading"
-              >
-                Hiring readiness
-              </h2>
-              <div
-                className="mt-1 max-w-2xl text-xs leading-6 text-muted"
-                id="hiring-readiness-guidance"
-              >
-                {canHire ? (
-                  <p>
-                    All evaluations, required document checks, and correction
-                    windows are complete. HR can now hire qualified applicants.
-                  </p>
-                ) : (
-                  <>
-                    {assessmentScoresUnavailable && (
-                      <p>
-                        Applicant score data is unavailable. Refresh before
-                        making a hiring decision.
-                      </p>
-                    )}
-                    {readinessBlockers.length > 0 ? (
-                      <ul className="mt-1 list-disc space-y-0.5 pl-5">
-                        {readinessBlockers.map((blocker) => (
-                          <li key={blocker}>{blocker}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      !assessmentScoresUnavailable && (
-                        <p>
-                          Hiring readiness could not be confirmed. Refresh the
-                          page to check the latest applicant and slot data.
-                        </p>
-                      )
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-            <span
-              className={`inline-flex min-h-7 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${canHire ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
-            >
-              {canHire && <CheckIcon aria-hidden="true" className="size-4" />}
-              {canHire ? "Ready to hire" : "Hiring on hold"}
-            </span>
-          </div>
-          <dl className="grid border-t border-line-subtle text-sm sm:grid-cols-3">
-            <ReadinessCount
-              divided={false}
-              label="Applications awaiting evaluation"
-              value={hiringReadiness.pending_applications}
-            />
-            <ReadinessCount
-              divided
-              label="Required documents awaiting verification"
-              value={hiringReadiness.pending_required_documents}
-            />
-            <ReadinessCount
-              divided
-              label="Open correction windows"
-              value={hiringReadiness.pending_document_corrections}
-            />
-          </dl>
-        </section>
-      )}
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(180px,auto)_minmax(220px,1fr)] xl:grid-cols-[minmax(180px,auto)_minmax(220px,1fr)_170px_190px] xl:items-center">
         <div>
-          <h2 className="text-sm font-semibold text-ink">Qualified applicants</h2>
+          <h2 className="text-sm font-semibold text-ink">Applicants</h2>
           <p className="mt-1 text-xs text-muted">
-            {applicants.length.toLocaleString()} qualified applicants
+            {applicants.length.toLocaleString()} applications
           </p>
         </div>
         <label>
-          <span className="sr-only">Search by applicant number</span>
+          <span className="sr-only">Search by applicant name or number</span>
           <Input
-            aria-label="Search by applicant number"
+            aria-label="Search by applicant name or number"
             className="w-full rounded-md!"
             onChange={(event) => updateFilter(setSearch, event.target.value)}
             prefix={
@@ -380,7 +275,7 @@ export function PostingApplicants({
                 className="size-4 text-muted"
               />
             }
-            placeholder="Search by applicant number, e.g. 0053"
+            placeholder="Search by applicant name or number"
             size="medium"
             type="search"
             value={search}
@@ -422,16 +317,9 @@ export function PostingApplicants({
         </label>
       </div>
 
-      {slotsFull && (
-        <p className="mt-3 rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
-          All {slots} hiring slots are filled. This posting has been closed
-          automatically.
-        </p>
-      )}
-
       <p aria-live="polite" className="sr-only">
-        Showing page {currentPage} of qualified applicants. {filtered.length} qualified
-        applicants match the current filters.
+        Showing page {currentPage} of applicants. {filtered.length} applications
+        match the current filters.
       </p>
 
       <div className="mt-3 overflow-hidden rounded-xl border border-line bg-panel">
@@ -442,14 +330,10 @@ export function PostingApplicants({
           dataSource={filtered}
           locale={{
             emptyText: (
-              <div className="py-12 text-center">
-                <p className="text-sm font-semibold text-ink">
-                  No qualified applicants
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  No qualified applicants match these filters.
-                </p>
-              </div>
+              <TableEmptyState
+                description="No applications match these filters."
+                title="No applications found"
+              />
             ),
           }}
           onChange={(pagination) => {
@@ -465,7 +349,7 @@ export function PostingApplicants({
                   showSizeChanger: true,
                   total: filtered.length,
                   showTotal: (total, range) =>
-                    `Showing ${range[0]}–${range[1]} of ${total.toLocaleString()} applicants`,
+                    `Showing ${range[0]}–${range[1]} of ${total.toLocaleString()} applications`,
                 }
               : false
           }
@@ -482,7 +366,7 @@ export function PostingApplicants({
         open={Boolean(selectedApplicant)}
         title={
           selectedApplicant
-            ? `Review applicant ${selectedApplicant.applicant_number}`
+          ? `Review ${selectedApplicant.applicant_name}`
             : "Review applicant"
         }
         width={860}
@@ -490,15 +374,6 @@ export function PostingApplicants({
         {selectedApplicant && (
           <ApplicantDetails
             applicant={selectedApplicant}
-            evaluated={selectedApplicant.application_status === "QUALIFIED"}
-            onDecide={decide}
-            pending={
-              isWorking && workingId === selectedApplicant.application_id
-            }
-            canHire={canHire}
-            terminal={["HIRED", "NOT_SELECTED"].includes(
-              selectedApplicant.application_status,
-            )}
           />
         )}
       </Modal>
@@ -508,22 +383,13 @@ export function PostingApplicants({
 
 function ApplicantDetails({
   applicant,
-  evaluated,
-  onDecide,
-  pending,
-  canHire,
-  terminal,
 }: Readonly<{
   applicant: ApplicantItem;
-  evaluated: boolean;
-  onDecide: (applicationId: string) => void;
-  pending: boolean;
-  canHire: boolean;
-  terminal: boolean;
 }>) {
   return (
     <div className="max-h-[70dvh] space-y-6 overflow-y-auto pr-1">
       <dl className="grid gap-x-5 gap-y-4 rounded-sm bg-panel-muted/50 p-4 sm:grid-cols-2">
+        <Detail label="Applicant name" value={applicant.applicant_name} />
         <Detail label="Applicant ID" value={applicant.applicant_number} />
         <Detail
           label="Rank"
@@ -579,27 +445,27 @@ function ApplicantDetails({
             }) ?? "Unavailable"}
           </p>
         </div>
-        {applicant.criterion_scores.length ? (
-          <div className="overflow-hidden rounded-sm border border-line">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-panel-muted text-sm font-semibold text-ink">
-                <tr>
-                  <th className="px-4 py-3 font-semibold" scope="col">
-                    Category
-                  </th>
-                  <th className="px-4 py-3 font-semibold" scope="col">
-                    Source
-                  </th>
-                  <th
-                    className="px-4 py-3 text-right font-semibold"
-                    scope="col"
-                  >
-                    Points
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line-subtle">
-                {applicant.criterion_scores.map((score) => (
+        <div className="overflow-hidden rounded-sm border border-line">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-panel-muted text-sm font-semibold text-ink">
+              <tr>
+                <th className="px-4 py-3 font-semibold" scope="col">
+                  Category
+                </th>
+                <th className="px-4 py-3 font-semibold" scope="col">
+                  Source
+                </th>
+                <th
+                  className="px-4 py-3 text-right font-semibold"
+                  scope="col"
+                >
+                  Points
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line-subtle">
+              {applicant.criterion_scores.length > 0 ? (
+                applicant.criterion_scores.map((score) => (
                   <tr key={score.key}>
                     <td className="px-4 py-3 font-medium text-ink">
                       {score.title}
@@ -617,58 +483,26 @@ function ApplicantDetails({
                         ` / ${score.maximumPoints.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="rounded-sm border border-line bg-panel-muted p-4 text-sm text-muted">
-            No criterion scores are available for this applicant.
-          </p>
-        )}
+                ))
+              ) : (
+                <TableEmptyRow
+                  colSpan={3}
+                  description="Scores will appear here when the application has been evaluated."
+                  title="No criterion scores available"
+                />
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line-subtle pt-4">
-        {applicant.application_status === "HIRED" && (
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            href={`/hr/applications/${applicant.application_id}/pds`}
-          >
-            Printable PDS
-          </Link>
-        )}
-        {evaluated && !terminal && (
-          <Popconfirm
-            onConfirm={() => onDecide(applicant.application_id)}
-            title={`Hire ${applicant.applicant_number}?`}
-            description="This uses one hiring slot. If it fills the last slot, all remaining qualified applicants will be marked Not Selected."
-          >
-            <Button
-              disabled={!canHire || pending}
-              loading={pending}
-              variant="filled"
-            >
-              Hire
-            </Button>
-          </Popconfirm>
-        )}
+        <Link
+          className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          href={`/hr/applications/${applicant.application_id}/pds/download`}
+        >
+          Download PDS
+        </Link>
       </div>
-    </div>
-  );
-}
-
-function ReadinessCount({
-  label,
-  value,
-  divided,
-}: Readonly<{ label: string; value: number; divided: boolean }>) {
-  return (
-    <div
-      className={`border-t border-line-subtle px-5 py-4 first:border-t-0 sm:border-t-0 ${divided ? "sm:border-l" : "sm:border-l-0"}`}
-    >
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">
-        {value}
-      </dd>
     </div>
   );
 }

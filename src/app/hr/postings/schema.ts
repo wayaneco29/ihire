@@ -77,6 +77,12 @@ export const postingSchema = yup.object({
     position_id: yup.string().uuid().required(),
     rules: scoringRulesSchema,
   })).required(),
+  minimumScores: yup.array().of(yup.object({
+    position_id: yup.string().uuid().required(),
+    minimum_total_points: yup.number().transform((value, original) => original === "" || original == null ? null : value)
+      .nullable().defined().min(0, "Minimum total score cannot be less than zero.")
+      .max(100, "Minimum total score cannot exceed 100 points."),
+  })).required(),
 });
 
 export type PostingValues = yup.InferType<typeof postingSchema>;

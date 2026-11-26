@@ -3,7 +3,9 @@ export const USER_ROLES = [
   "EVALUATOR",
   "DOCUMENT_REVIEWER",
   "HR",
-  "ADMIN",
+  "SDS",
+  "ASDS",
+  "SUPER_ADMIN",
 ] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
@@ -13,5 +15,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   EVALUATOR: "Evaluator",
   DOCUMENT_REVIEWER: "Document reviewer",
   HR: "Human resources",
-  ADMIN: "Administrator",
+  SDS: "School Division Superintendent",
+  ASDS: "Assistant School Division Superintendent",
+  SUPER_ADMIN: "Super Administrator",
 };

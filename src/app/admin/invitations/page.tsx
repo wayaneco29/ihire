@@ -22,7 +22,7 @@ export default async function InvitationsPage() {
         <PageHeader
           eyebrow="Administration"
           title="Staff invitations"
-          description="Invite HR, Evaluator, and Document Reviewer staff with a one-time link. Links are not sent by email."
+          description="Invite staff with a one-time link. Links are not sent by email."
         />
         <InvitationManager invitations={data ?? []} />
       </div>

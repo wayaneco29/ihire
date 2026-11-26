@@ -42,7 +42,7 @@ export default async function InvitePage({
           <SurfaceCard as="section" className="p-6 sm:p-8">
             <Alert
               message="Invitation unavailable"
-              description="This link may have expired, been revoked, or already been used. Ask the Admin to resend it."
+              description="This link may have expired, been revoked, or already been used. Ask the Super Admin to resend it."
               showIcon
               type="warning"
             />

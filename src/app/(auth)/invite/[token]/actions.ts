@@ -125,7 +125,7 @@ export async function acceptInvitation(
       return {
         success: false,
         message:
-          "The invitation could not be accepted. Contact the Admin who invited you.",
+          "The invitation could not be accepted. Contact the Super Admin who invited you.",
       };
     }
 
@@ -138,7 +138,7 @@ export async function acceptInvitation(
       return {
         success: false,
         message:
-          "The invitation could not be completed. Please try again or contact the Admin who invited you.",
+          "The invitation could not be completed. Please try again or contact the Super Admin who invited you.",
       };
     }
     account = updated.user;

@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2200 1600" role="img" aria-labelledby="title description">
+  <title id="title">Applicant signup to job application workflow</title>
+  <desc id="description">Swimlane workflow for posting setup, applicant phone-verified signup, PDS and document prerequisites, application submission, evaluation scoring, automatic minimum-score disqualification, and SDS hiring. ASDS and HR can view named applications and PDS; HR manages postings and criteria.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4f8fb"/><stop offset="1" stop-color="#e8f1f6"/></linearGradient>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#12344a"/><stop offset="1" stop-color="#176b69"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#153447" flood-opacity=".12"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6d8797"/></marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#27816e"/></marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c04d4d"/></marker>
+    <style>
+      text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;fill:#183448}
+      .title{font-size:36px;font-weight:750;fill:#fff;letter-spacing:-.5px}
+      .subtitle{font-size:16px;fill:#d4e8ed}
+      .lane-title{font-size:17px;font-weight:750;letter-spacing:1.1px;fill:#24465b}
+      .lane-note{font-size:13px;fill:#678090}
+      .card-title{font-size:15px;font-weight:700}
+      .body{font-size:12.5px;fill:#506c7c}
+      .small{font-size:11.5px;fill:#607b8a}
+      .label{font-size:11px;font-weight:700;letter-spacing:.7px}
+      .card{fill:#fff;stroke:#cbdbe2;stroke-width:1.3;rx:13;filter:url(#shadow)}
+      .teal{fill:#e7f4f1;stroke:#8dc8b7}
+      .blue{fill:#eaf2fb;stroke:#a9c4e4}
+      .gold{fill:#fff4df;stroke:#e8c887}
+      .red{fill:#fff0ef;stroke:#e3a5a1}
+      .purple{fill:#f0edfa;stroke:#bfb2e5}
+      .line{fill:none;stroke:#6d8797;stroke-width:2.2;marker-end:url(#arrow)}
+      .line-green{fill:none;stroke:#27816e;stroke-width:2.4;marker-end:url(#arrowGreen)}
+      .line-red{fill:none;stroke:#c04d4d;stroke-width:2.4;marker-end:url(#arrowRed)}
+      .dashed{stroke-dasharray:7 7}
+      .pill{font-size:10px;font-weight:750;letter-spacing:.6px}
+    </style>
+  </defs>
+  <rect width="2200" height="1600" fill="url(#background)"/>
+  <rect x="0" y="0" width="2200" height="130" fill="url(#header)"/>
+  <text class="title" x="62" y="58">Applicant signup to job application</text>
+  <text class="subtitle" x="64" y="91">Verified onboarding · complete PDS and required documents · apply · score · superintendent decision</text>
+  <g transform="translate(1740 34)">
+    <rect width="400" height="58" rx="12" fill="#ffffff" fill-opacity=".12"/>
+    <circle cx="22" cy="20" r="6" fill="#6ac2aa"/><text class="subtitle" x="38" y="24">Applicant flow</text>
+    <circle cx="160" cy="20" r="6" fill="#91b7e1"/><text class="subtitle" x="176" y="24">Staff review</text>
+    <circle cx="294" cy="20" r="6" fill="#efb94d"/><text class="subtitle" x="310" y="24">System decision</text>
+    <text x="20" y="46" font-size="10.5" fill="#d4e8ed">Follow arrows; dashed paths show correction or retry loops.</text>
+  </g>
+
+  <!-- Swimlanes -->
+  <rect x="44" y="156" width="2112" height="150" rx="18" fill="#e4f0ed" stroke="#c4ddd5"/>
+  <rect x="44" y="322" width="2112" height="524" rx="18" fill="#edf4fb" stroke="#d0dfed"/>
+  <rect x="44" y="862" width="2112" height="168" rx="18" fill="#fbf3e3" stroke="#ead9b4"/>
+  <rect x="44" y="1046" width="2112" height="430" rx="18" fill="#f1eef9" stroke="#dad3ee"/>
+
+  <text class="lane-title" x="68" y="188">HR POSTING SETUP</text><text class="lane-note" x="68" y="210">HR manages its own job postings and criteria.</text>
+  <text class="lane-title" x="68" y="354">APPLICANT</text><text class="lane-note" x="68" y="376">Create account, complete prerequisites, apply, and track progress.</text>
+  <text class="lane-title" x="68" y="894">SYSTEM SCORING</text><text class="lane-note" x="68" y="916">Automatic disqualification waits until every configured criterion has points.</text>
+  <text class="lane-title" x="68" y="1078">EVALUATOR · SDS · ASDS · HR</text><text class="lane-note" x="68" y="1100">Evaluator sees an anonymized record. SDS, ASDS, and HR can see the applicant name and open the PDS.</text>
+
+  <!-- HR setup -->
+  <g>
+    <rect class="card teal" x="430" y="177" width="300" height="94"/>
+    <text class="card-title" x="454" y="207">Set position criteria</text>
+    <text class="body" x="454" y="231">Choose scoring rules for each position.</text>
+    <text class="body" x="454" y="250">Set minimum total score (0–100).</text>
+    <rect class="card teal" x="868" y="177" width="342" height="94"/>
+    <text class="card-title" x="892" y="207">Publish the job posting</text>
+    <text class="body" x="892" y="231">Every position needs a minimum</text>
+    <text class="body" x="892" y="250">before a new posting opens.</text>
+    <rect class="card gold" x="1350" y="177" width="410" height="94"/>
+    <text class="card-title" x="1374" y="207">Existing open postings</text>
+    <text class="body" x="1374" y="231">No cutoff remains grandfathered until HR sets one.</text>
+    <text class="body" x="1374" y="250">After scores begin, the cutoff is locked.</text>
+    <path class="line-green" d="M730 224H859"/><path class="line" d="M1210 224H1342"/>
+  </g>
+
+  <!-- applicant main flow -->
+  <g>
+    <rect class="card blue" x="90" y="416" width="245" height="124"/>
+    <text class="label" x="114" y="442" fill="#41739c">01 · SIGN UP</text>
+    <text class="card-title" x="114" y="468">Enter account details</text>
+    <text class="body" x="114" y="491">Email and password</text>
+    <text class="body" x="114" y="510">Philippine mobile with fixed +63</text>
+
+    <rect class="card blue" x="392" y="416" width="225" height="124"/>
+    <text class="label" x="416" y="442" fill="#41739c">02 · OTP</text>
+    <text class="card-title" x="416" y="468">Verify phone</text>
+    <text class="body" x="416" y="491">Enter the six-digit SMS code.</text>
+    <text class="body" x="416" y="510">Retry or request a new code.</text>
+
+    <polygon points="710,418 765,478 710,538 655,478" fill="#fff" stroke="#a9c4e4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text class="small" x="710" y="475" text-anchor="middle">Code</text><text class="small" x="710" y="492" text-anchor="middle">valid?</text>
+
+    <rect class="card teal" x="823" y="416" width="235" height="124"/>
+    <text class="label" x="847" y="442" fill="#37806e">03 · ACCOUNT</text>
+    <text class="card-title" x="847" y="468">Create account</text>
+    <text class="body" x="847" y="491">Phone verified; profile created.</text>
+    <text class="body" x="847" y="510">Applicant stays signed out.</text>
+
+    <rect class="card blue" x="1110" y="416" width="252" height="124"/>
+    <text class="label" x="1134" y="442" fill="#41739c">04 · SIGN IN</text>
+    <text class="card-title" x="1134" y="468">Password + phone OTP</text>
+    <text class="body" x="1134" y="491">OTP required on every applicant</text>
+    <text class="body" x="1134" y="510">login; staff use password only.</text>
+
+    <rect class="card purple" x="1412" y="416" width="276" height="124"/>
+    <text class="label" x="1436" y="442" fill="#7060a3">05 · DASHBOARD</text>
+    <text class="card-title" x="1436" y="468">Open applicant dashboard</text>
+    <text class="body" x="1436" y="491">Legacy account without a verified</text>
+    <text class="body" x="1436" y="510">phone enrolls one before continuing.</text>
+
+    <path class="line" d="M335 478H383"/><path class="line" d="M617 478H650"/>
+    <path class="line-green" d="M765 478H814"/><text class="small" x="788" y="464">Yes</text>
+    <path class="line-red dashed" d="M710 418V394H507V408"/><text class="small" x="584" y="389">No · retry</text>
+    <path class="line-green" d="M1058 478H1102"/><path class="line-green" d="M1362 478H1404"/>
+  </g>
+
+  <!-- PDS and documents -->
+  <g>
+    <rect class="card teal" x="1412" y="604" width="276" height="135"/>
+    <text class="label" x="1436" y="630" fill="#37806e">06 · PDS</text>
+    <text class="card-title" x="1436" y="656">Complete and submit PDS</text>
+    <text class="body" x="1436" y="680">The PDS must be submitted before</text>
+    <text class="body" x="1436" y="699">the applicant can apply.</text>
+
+    <rect class="card blue" x="1080" y="604" width="270" height="135"/>
+    <text class="label" x="1104" y="630" fill="#41739c">07 · REQUIRED DOCUMENTS</text>
+    <text class="card-title" x="1104" y="656">Upload and submit for review</text>
+    <text class="body" x="1104" y="680">Resolve corrections; documents</text>
+    <text class="body" x="1104" y="699">must be submitted or approved.</text>
+
+    <polygon points="1012,609 1068,671 1012,733 956,671" fill="#fff" stroke="#a9c4e4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text class="small" x="1012" y="668" text-anchor="middle">Ready to</text><text class="small" x="1012" y="685" text-anchor="middle">apply?</text>
+
+    <rect class="card teal" x="690" y="604" width="220" height="135"/>
+    <text class="label" x="714" y="630" fill="#37806e">08 · BROWSE</text>
+    <text class="card-title" x="714" y="656">Choose open job</text>
+    <text class="body" x="714" y="680">Select one eligible</text>
+    <text class="body" x="714" y="699">position in the posting.</text>
+
+    <rect class="card teal" x="392" y="604" width="225" height="135"/>
+    <text class="label" x="416" y="630" fill="#37806e">09 · APPLY</text>
+    <text class="card-title" x="416" y="656">Submit application</text>
+    <text class="body" x="416" y="680">System checks posting, position,</text>
+    <text class="body" x="416" y="699">duplicate, and PDS eligibility.</text>
+
+    <rect class="card purple" x="90" y="604" width="230" height="135"/>
+    <text class="label" x="114" y="630" fill="#7060a3">10 · TRACK</text>
+    <text class="card-title" x="114" y="656">Track application</text>
+    <text class="body" x="114" y="680">Status updates appear in</text>
+    <text class="body" x="114" y="699">the applicant dashboard.</text>
+
+    <path class="line" d="M1550 540V596"/><path class="line" d="M1412 671H1358"/><path class="line" d="M1080 671H1076"/>
+    <path class="line-red dashed" d="M1012 733V775H1228V747"/><text class="small" x="1090" y="793">No · complete or correct prerequisites</text>
+    <path class="line-green" d="M956 671H918"/><text class="small" x="925" y="656">Yes</text>
+    <path class="line" d="M690 671H625"/><path class="line-green" d="M392 671H328"/>
+    <path class="line" d="M205 604V558H1540V548" opacity="0"/>
+  </g>
+
+  <!-- system scoring -->
+  <g>
+    <rect class="card gold" x="252" y="890" width="362" height="107"/>
+    <text class="label" x="276" y="916" fill="#9a6a12">AUTOMATIC PDS POINTS</text>
+    <text class="card-title" x="276" y="943">Education · Training · Experience</text>
+    <text class="body" x="276" y="967">Calculated from the submitted PDS and documents.</text>
+
+    <rect class="card gold" x="692" y="890" width="362" height="107"/>
+    <text class="label" x="716" y="916" fill="#9a6a12">EVALUATOR POINTS</text>
+    <text class="card-title" x="716" y="943">Score every configured criterion</text>
+    <text class="body" x="716" y="967">No partial rating triggers the cutoff.</text>
+
+    <polygon points="1264,888 1333,943 1264,998 1195,943" fill="#fff" stroke="#e8c887" stroke-width="1.5" filter="url(#shadow)"/>
+    <text class="small" x="1264" y="940" text-anchor="middle">All criteria</text><text class="small" x="1264" y="957" text-anchor="middle">have points?</text>
+
+    <polygon points="1558,888 1627,943 1558,998 1489,943" fill="#fff" stroke="#e8c887" stroke-width="1.5" filter="url(#shadow)"/>
+    <text class="small" x="1558" y="940" text-anchor="middle">Total below</text><text class="small" x="1558" y="957" text-anchor="middle">minimum?</text>
+
+    <rect class="card red" x="1785" y="890" width="290" height="107"/>
+    <text class="label" x="1809" y="916" fill="#a33e3a">AUTO DISQUALIFY</text>
+    <text class="card-title" x="1809" y="943">Mark Not Qualified</text>
+    <text class="body" x="1809" y="967">Hired applications are preserved.</text>
+
+    <path class="line" d="M614 943H683"/><path class="line" d="M1054 943H1187"/>
+    <path class="line-red dashed" d="M1264 888V854H870V890"/><text class="small" x="1030" y="849">No · wait for remaining scores</text>
+    <path class="line" d="M1333 943H1480"/><text class="small" x="1390" y="929">Yes</text>
+    <path class="line-red" d="M1627 943H1777"/><text class="small" x="1680" y="929">Yes</text>
+    <path class="line-green" d="M1558 998V1020H965V1037"/><text class="small" x="1160" y="1017">No · continue evaluator decision</text>
+  </g>
+
+  <!-- staff review -->
+  <g>
+    <rect class="card blue" x="190" y="1143" width="300" height="120"/>
+    <text class="label" x="214" y="1169" fill="#41739c">EVALUATOR · ANONYMIZED</text>
+    <text class="card-title" x="214" y="1196">Review documents and score</text>
+    <text class="body" x="214" y="1220">Names stay hidden; all configured</text>
+    <text class="body" x="214" y="1239">manual criteria need points.</text>
+
+    <rect class="card teal" x="590" y="1143" width="335" height="120"/>
+    <text class="label" x="614" y="1169" fill="#37806e">QUALIFIED · COMPLETE TOTAL</text>
+    <text class="card-title" x="614" y="1196">Move to superintendent review</text>
+    <text class="body" x="614" y="1220">Below cutoff is already Not Qualified;</text>
+    <text class="body" x="614" y="1239">equality or above continues review.</text>
+
+    <rect class="card purple" x="1034" y="1143" width="300" height="120"/>
+    <text class="label" x="1058" y="1169" fill="#7060a3">SDS · HIRING AUTHORITY</text>
+    <text class="card-title" x="1058" y="1196">Hire qualified applicant</text>
+    <text class="body" x="1058" y="1220">Required remarks are saved</text>
+    <text class="body" x="1058" y="1239">with the final decision.</text>
+
+    <rect class="card blue" x="1442" y="1143" width="302" height="120"/>
+    <text class="label" x="1466" y="1169" fill="#41739c">ASDS · VIEW ONLY</text>
+    <text class="card-title" x="1466" y="1196">Review named application</text>
+    <text class="body" x="1466" y="1220">Can view applicant name and</text>
+    <text class="body" x="1466" y="1239">download / print submitted PDS.</text>
+
+    <rect class="card teal" x="1848" y="1143" width="260" height="120"/>
+    <text class="label" x="1872" y="1169" fill="#37806e">HR · POSTING OWNER</text>
+    <text class="card-title" x="1872" y="1196">Manage posting and criteria</text>
+    <text class="body" x="1872" y="1220">Can view names and PDS;</text>
+    <text class="body" x="1872" y="1239">cannot hire or reject.</text>
+
+    <path class="line" d="M490 1203H582"/><path class="line-green" d="M925 1203H1026"/>
+    <path class="line" d="M1334 1203H1434"/><path class="line" d="M1744 1203H1840"/>
+    <path class="line" d="M90 1342H210"/>
+    <rect class="card" x="248" y="1304" width="1184" height="112"/>
+    <text class="card-title" x="274" y="1337">Access boundaries</text>
+    <text class="body" x="274" y="1363">SDS: only role that can hire; remarks are required.  ·  ASDS: application and PDS viewing only.  ·  HR: own postings and criteria, plus named application/PDS viewing.</text>
+    <text class="body" x="274" y="1387">Super Admin: staff invitations and evaluator assignments. Applicant sign-up never creates an authenticated session.</text>
+  </g>
+
+  <g transform="translate(1648 1320)">
+    <rect width="432" height="96" rx="15" fill="#153d50"/>
+    <text x="24" y="34" font-size="13" font-weight="700" fill="#8fe0c8">IMPORTANT RULE</text>
+    <text x="24" y="59" font-size="13" fill="#e2f0f2">Below minimum → automatic disqualification</text>
+    <text x="24" y="80" font-size="13" fill="#e2f0f2">Only after every configured criterion is scored.</text>
+  </g>
+
+  <!-- applicant journey connector down into scoring -->
+  <path class="line" d="M505 739V831H430V881"/>
+  <text class="small" x="442" y="824">Application submitted</text>
+  <path class="line" d="M430 997V1037H330V1134"/>
+</svg>

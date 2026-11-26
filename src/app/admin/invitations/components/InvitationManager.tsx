@@ -40,7 +40,7 @@ const INVITATION_ROLES: {
   {
     value: "HR",
     title: "HR",
-    description: "Manages applicants and staff records",
+    description: "Posts job openings and criteria; views applicant records",
   },
   {
     value: "EVALUATOR",
@@ -51,6 +51,21 @@ const INVITATION_ROLES: {
     value: "DOCUMENT_REVIEWER",
     title: "Document reviewer",
     description: "Checks submitted documents",
+  },
+  {
+    value: "SDS",
+    title: "School Division Superintendent",
+    description: "Reviews applicants and makes hiring decisions with remarks",
+  },
+  {
+    value: "ASDS",
+    title: "Assistant School Division Superintendent",
+    description: "Views applicant applications and PDS records",
+  },
+  {
+    value: "SUPER_ADMIN",
+    title: "Super Admin",
+    description: "Manages staff invitations and evaluator assignments",
   },
 ];
 

@@ -19,7 +19,7 @@ export async function reassignApplication(
   values: unknown,
 ): Promise<ActionResult> {
   const admin = await getAdminContext();
-  if (!admin) return { success: false, message: "Admin access is required." };
+  if (!admin) return { success: false, message: "Super Admin access is required." };
 
   let input;
   try {

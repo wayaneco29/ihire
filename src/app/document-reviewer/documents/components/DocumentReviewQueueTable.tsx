@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Modal, Pagination, Table } from "antd";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { TableEmptyState } from "@/components/ui/TableEmptyState";
 import { loadApplicantReviewDocuments } from "../../actions";
 import { ApplicantDocumentReviewList } from "./ApplicantDocumentReviewList";
 import type { ColumnsType } from "antd/es/table";
@@ -73,6 +74,10 @@ export function DocumentReviewQueueTable({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const currentPage = Math.min(page, Math.max(1, Math.ceil(applicants.length / pageSize)));
+  const visibleApplicants = applicants.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   function changePage(nextPage: number, nextPageSize: number) {
     setPage(nextPage);
@@ -83,7 +88,14 @@ export function DocumentReviewQueueTable({
     <>
       <div className="md:hidden">
         <ul className="divide-y divide-line">
-          {applicants.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((applicant) => (
+          {visibleApplicants.length === 0 ? (
+            <li>
+              <TableEmptyState
+                description="Submitted documents ready for review will appear here."
+                title="No applicants awaiting review"
+              />
+            </li>
+          ) : visibleApplicants.map((applicant) => (
             <li className="space-y-3 p-4" key={applicant.applicantNumber}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-base font-semibold text-ink">Applicant {applicant.applicantNumber}</h2>
@@ -100,22 +112,34 @@ export function DocumentReviewQueueTable({
         )}
       </div>
       <div className="hidden md:block">
-      <Table<ReviewerApplicant>
-        className="[&_.ant-table-thead>tr>th]:bg-panel-muted [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-ink [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink"
-        columns={getColumns(setSelectedApplicant)}
-        dataSource={applicants}
-        pagination={{
-          current: currentPage,
-          pageSize,
-          onChange: changePage,
-          pageSizeOptions: [25, 50, 100],
-          showSizeChanger: true,
-          showTotal: (total) => `${total} applicants awaiting review`,
-        }}
-        rowKey="applicantNumber"
-        scroll={{ x: 760 }}
-        size="middle"
-      />
+        <Table<ReviewerApplicant>
+          className="[&_.ant-table-thead>tr>th]:bg-panel-muted [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-ink [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink"
+          columns={getColumns(setSelectedApplicant)}
+          dataSource={applicants}
+          locale={{
+            emptyText: (
+              <TableEmptyState
+                description="Submitted documents ready for review will appear here."
+                title="No applicants awaiting review"
+              />
+            ),
+          }}
+          pagination={
+            applicants.length > 0
+              ? {
+                  current: currentPage,
+                  pageSize,
+                  onChange: changePage,
+                  pageSizeOptions: [25, 50, 100],
+                  showSizeChanger: true,
+                  showTotal: (total) => `${total} applicants awaiting review`,
+                }
+              : false
+          }
+          rowKey="applicantNumber"
+          scroll={{ x: 760 }}
+          size="middle"
+        />
       </div>
       {selectedApplicant && (
         <Modal

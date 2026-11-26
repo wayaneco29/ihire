@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { ArrowRightIcon, BriefcaseIcon } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  TableEmptyRow,
+  TableEmptyState,
+} from "@/components/ui/TableEmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { formatDate } from "@/utils/format-date";
 import { formatPositionLabel } from "@/utils/format-position-track";
@@ -147,7 +151,7 @@ export function ReviewQueueList({
       </div>
     </nav>
   );
-  if (!selectedJob || !applicants.length) {
+  if (!selectedJob) {
     return (
       <>
         {selectedJob && statusFilter}
@@ -177,6 +181,21 @@ export function ReviewQueueList({
     );
   }
 
+  const emptyTitle = selectedStatus
+    ? "No applicants with this status"
+    : "Queue is clear";
+  const emptyDescription = selectedStatus
+    ? "Choose another status to see applicants in this posting."
+    : "This posting no longer has applicants waiting for review.";
+  const backToPostings = (
+    <Link
+      className="font-semibold text-primary hover:text-primary-dark"
+      href="/evaluator/reviews"
+    >
+      Back to job postings
+    </Link>
+  );
+
   return (
     <>
       {statusFilter}
@@ -193,8 +212,15 @@ export function ReviewQueueList({
           </p>
         </div>
         <div className="divide-y divide-line-subtle md:hidden">
-          {applicants.map((item) => (
-            <article className="p-5" key={item.application_id}>
+          {applicants.length === 0 ? (
+            <TableEmptyState
+              action={backToPostings}
+              description={emptyDescription}
+              title={emptyTitle}
+            />
+          ) : (
+            applicants.map((item) => (
+              <article className="p-5" key={item.application_id}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-ink">
@@ -230,8 +256,9 @@ export function ReviewQueueList({
                 Review applicant{" "}
                 <ArrowRightIcon aria-hidden="true" className="size-4" />
               </Link>
-            </article>
-          ))}
+              </article>
+            ))
+          )}
         </div>
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[680px] text-left text-sm">
@@ -258,7 +285,15 @@ export function ReviewQueueList({
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle">
-              {applicants.map((item) => (
+              {applicants.length === 0 ? (
+                <TableEmptyRow
+                  action={backToPostings}
+                  colSpan={6}
+                  description={emptyDescription}
+                  title={emptyTitle}
+                />
+              ) : (
+                applicants.map((item) => (
                 <tr
                   className="transition hover:bg-panel-muted/60"
                   key={item.application_id}
@@ -300,37 +335,40 @@ export function ReviewQueueList({
                     </Link>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between gap-3 border-t border-line-subtle px-5 py-4">
-          <Link
-            aria-disabled={page <= 1}
-            className={`text-sm font-semibold ${page <= 1 ? "pointer-events-none text-muted" : "text-primary hover:text-primary-dark"}`}
-            href={reviewQueueHref(
-              selectedJobId,
-              Math.max(1, page - 1),
-              selectedStatus,
-            )}
-          >
-            Previous
-          </Link>
-          <p className="text-sm text-muted">
-            Page {page} of {totalPages}
-          </p>
-          <Link
-            aria-disabled={page >= totalPages}
-            className={`text-sm font-semibold ${page >= totalPages ? "pointer-events-none text-muted" : "text-primary hover:text-primary-dark"}`}
-            href={reviewQueueHref(
-              selectedJobId,
-              Math.min(totalPages, page + 1),
-              selectedStatus,
-            )}
-          >
-            Next
-          </Link>
-        </div>
+        {applicants.length > 0 && (
+          <div className="flex items-center justify-between gap-3 border-t border-line-subtle px-5 py-4">
+            <Link
+              aria-disabled={page <= 1}
+              className={`text-sm font-semibold ${page <= 1 ? "pointer-events-none text-muted" : "text-primary hover:text-primary-dark"}`}
+              href={reviewQueueHref(
+                selectedJobId,
+                Math.max(1, page - 1),
+                selectedStatus,
+              )}
+            >
+              Previous
+            </Link>
+            <p className="text-sm text-muted">
+              Page {page} of {totalPages}
+            </p>
+            <Link
+              aria-disabled={page >= totalPages}
+              className={`text-sm font-semibold ${page >= totalPages ? "pointer-events-none text-muted" : "text-primary hover:text-primary-dark"}`}
+              href={reviewQueueHref(
+                selectedJobId,
+                Math.min(totalPages, page + 1),
+                selectedStatus,
+              )}
+            >
+              Next
+            </Link>
+          </div>
+        )}
       </div>
     </>
   );

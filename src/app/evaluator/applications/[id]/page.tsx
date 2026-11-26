@@ -17,6 +17,7 @@ import { buildApplicationCriterionPoints } from "@/utils/build-application-crite
 import { formatPositionLabel } from "@/utils/format-position-track";
 import { ApplicationEvaluationPanel } from "../components/ApplicationEvaluationPanel";
 import { ApplicationAssessmentScheduleForm } from "../components/ApplicationAssessmentScheduleForm";
+import { ApplicationCriterionScoresForm } from "../components/ApplicationCriterionScoresForm";
 import {
   REVIEW_QUEUE_PAGE_SIZE,
   reviewQueueHref,
@@ -99,7 +100,7 @@ export default async function EvaluatorApplicationReviewPage({
       .maybeSingle(),
     evaluator.supabase
       .from("job_posting_positions")
-      .select("position_id, weight_profile_id")
+      .select("position_id, weight_profile_id, minimum_total_points")
       .eq("job_id", application.job_id),
     evaluator.supabase
       .from("document_types")
@@ -205,12 +206,9 @@ export default async function EvaluatorApplicationReviewPage({
     application.application_status === "ASSESSMENT_SCHEDULED" &&
     Boolean(schedule?.scheduled_assessment_at) &&
     requiredDocumentsVerified;
-  const readyForEvaluation =
-    application.position_track === "TEACHING"
-      ? ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
-          application.application_status,
-        )
-      : readyForAssessment || Boolean(evaluationResult.data);
+  const readyForEvaluation = ["ASSESSMENT_SCORED", "QUALIFIED"].includes(
+    application.application_status,
+  );
   const publicTeachingExperience = calculatePublicTeachingExperience(
     experienceResult.data ?? [],
   );
@@ -248,18 +246,21 @@ export default async function EvaluatorApplicationReviewPage({
       experienceUnavailable: experiencePointsUnavailable,
       scoresUnavailable: Boolean(criterionScoresResult.error),
     });
-  const submittedAssessmentScores = (criterionScoresResult.data ?? []).filter(
-    (score) =>
-      score.criterion?.criterion_key === "PERFORMANCE" ||
-      score.criterion?.criterion_key === "CLASSROOM_OBSERVATION" ||
-      score.criterion?.criterion_key === "TEACHER_REFLECTION",
+  const automaticCriterionKeys = new Set(["EDUCATION", "TRAINING", "EXPERIENCE"]);
+  const manualCriteria = (criteriaResult.data ?? [])
+    .filter((criterion) => !automaticCriterionKeys.has(criterion.criterion_key))
+    .map((criterion) => ({
+      id: criterion.id,
+      criterionKey: criterion.criterion_key,
+      title: criterion.title,
+      maxPoints: Number(criterionWeightsResult.data?.find((weight) => weight.criterion_id === criterion.id)?.points ?? 0),
+    }));
+  const existingScores = Object.fromEntries(
+    (criterionScoresResult.data ?? []).map((score) => [score.criterion_id, Number(score.points)]),
   );
   const assessmentScoresReady =
     !criterionScoresResult.error &&
-    (submittedAssessmentScores.length === 3 ||
-      ["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
-        application.application_status,
-      ));
+    manualCriteria.length > 0 && manualCriteria.every((criterion) => existingScores[criterion.id] != null);
 
   const queueItems = queueApplicantsResult.error
     ? []
@@ -412,8 +413,26 @@ export default async function EvaluatorApplicationReviewPage({
           scheduledAt={schedule?.scheduled_assessment_at ?? null}
         />
       </div>
+      {requiredDocumentsVerified && Boolean(schedule?.scheduled_assessment_at) &&
+      ["ASSESSMENT_SCHEDULED", "ASSESSMENT_SCORED"].includes(application.application_status) && (
+        <div className="mt-5">
+          <ApplicationCriterionScoresForm
+            applicationId={id}
+            applicationStatus={application.application_status}
+            returnHref={`/evaluator/applications/${id}${jobId ? `?jobId=${jobId}` : ""}`}
+            criteria={manualCriteria}
+            existingScores={existingScores}
+            scoresUnavailable={criteriaUnavailable || Boolean(criterionScoresResult.error)}
+          />
+        </div>
+      )}
+      {application.application_status === "NOT_QUALIFIED" && jobPosition?.minimum_total_points != null && (
+        <p className="mt-5 rounded-sm border border-danger/30 bg-danger/5 p-4 text-sm text-danger" role="status">
+          This application was automatically disqualified after all criteria were scored because the total is below the {jobPosition.minimum_total_points} point minimum.
+        </p>
+      )}
       {readyForEvaluation &&
-      (application.position_track !== "TEACHING" || assessmentScoresReady) ? (
+      assessmentScoresReady ? (
         <div className="mt-5">
           <ApplicationEvaluationPanel
             applicationId={id}
@@ -423,9 +442,7 @@ export default async function EvaluatorApplicationReviewPage({
         </div>
       ) : (
         <p className="mt-5 rounded-sm border border-line bg-panel-muted p-4 text-sm text-muted">
-          {application.position_track === "TEACHING"
-            ? "The evaluator decision will appear after both assessment scores are submitted."
-            : "The evaluation panel will appear after all required documents are verified and an assessment has been scheduled."}
+          The evaluator decision will appear after every configured criterion has points and all required documents are verified.
         </p>
       )}
     </>

@@ -94,6 +94,7 @@ export function PostingForm({
           hiringTrack: posting.hiringTrack,
           positionIds: posting.positionIds,
           scoring: posting.scoring,
+          minimumScores: posting.minimumScores,
         }
       : {
           title: "",
@@ -104,11 +105,28 @@ export function PostingForm({
           status: "DRAFT",
           positionIds: [],
           scoring: [],
+          minimumScores: [],
         },
   });
   const hiringTrack = useWatch({ control, name: "hiringTrack" });
+  const postingStatus = useWatch({ control, name: "status" });
   const selectedPositionIds = useWatch({ control, name: "positionIds" }) ?? [];
   const scoring = useWatch({ control, name: "scoring" }) ?? [];
+  const minimumScores = useWatch({ control, name: "minimumScores" }) ?? [];
+
+  useEffect(() => {
+    const byPosition = new Map(minimumScores.map((entry) => [entry.position_id, entry.minimum_total_points]));
+    const normalized = selectedPositionIds.map((positionId) => ({
+      position_id: positionId,
+      minimum_total_points: byPosition.get(positionId) ?? null,
+    }));
+    if (normalized.length !== minimumScores.length || normalized.some((entry, index) =>
+      entry.position_id !== minimumScores[index]?.position_id ||
+      entry.minimum_total_points !== minimumScores[index]?.minimum_total_points
+    )) {
+      setValue("minimumScores", normalized, { shouldDirty: true, shouldValidate: true });
+    }
+  }, [minimumScores, selectedPositionIds, setValue]);
 
   useEffect(() => {
     if (!posting?.deadline) return;
@@ -136,6 +154,10 @@ export function PostingForm({
         position_id: positionId,
         rules: values.scoring.find((entry) => entry.position_id === positionId)?.rules ??
           positions.find((position) => position.id === positionId)?.scoringRules ?? [],
+      })),
+      minimumScores: values.positionIds.map((positionId) => ({
+        position_id: positionId,
+        minimum_total_points: values.minimumScores.find((entry) => entry.position_id === positionId)?.minimum_total_points ?? null,
       })),
     };
     const result = savedPostingId
@@ -355,6 +377,38 @@ export function PostingForm({
               </div>;
             })}
             {posting?.scoringLockedAt && <Alert className="mt-3" message="These scoring rules were locked when the posting was published." type="info" showIcon />}
+            <div className="mt-4 rounded-xl border border-line bg-panel-muted p-4">
+              <h4 className="font-semibold text-ink">Automatic disqualification cutoff</h4>
+              <p className="mt-1 text-sm leading-6 text-muted">Applications are disqualified only after every configured criterion has points. A total below this value is marked Not Qualified; a tie passes.</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {selectedPositionIds.map((positionId, index) => {
+                  const position = positions.find((item) => item.id === positionId);
+                  const savedMinimum = posting?.minimumScores.find((entry) => entry.position_id === positionId)?.minimum_total_points;
+                  const grandfatheredWithoutMinimum = posting?.status === "OPEN" &&
+                    posting.positionIds.includes(positionId) && savedMinimum == null;
+                  const required = postingStatus === "OPEN" && !grandfatheredWithoutMinimum;
+                  const hint = required
+                    ? "Required before a new posting opens."
+                    : grandfatheredWithoutMinimum && postingStatus === "OPEN"
+                      ? "This open posting has no cutoff yet. Set one when ready."
+                      : "Optional while this posting is a draft or closed.";
+                  return (
+                    <FormInput
+                      key={positionId}
+                      control={control}
+                      label={`${position?.title ?? "Position"} minimum total points`}
+                      name={`minimumScores.${index}.minimum_total_points`}
+                      type="number"
+                      min={0}
+                      max={100}
+                      step="0.01"
+                      required={required}
+                      hint={hint}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </section>
 

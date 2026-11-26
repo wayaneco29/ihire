@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  CalendarDaysIcon,
-  DocumentTextIcon,
-} from "@heroicons/react/24/outline";
+import { CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { TableEmptyRow } from "@/components/ui/TableEmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getEvaluatorContext } from "@/lib/auth/server";
 import { formatPositionLabel } from "@/utils/format-position-track";
@@ -287,11 +285,6 @@ export async function TeachingAssessmentPage({
               The assessment schedule could not be loaded. Refresh and try
               again.
             </p>
-          ) : teachingSchedule.length === 0 ? (
-            <p className="p-5 text-sm text-muted">
-              No teaching applicants are awaiting assessment on this day. Choose
-              another date to review upcoming assessments.
-            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[700px] text-left text-sm">
@@ -315,7 +308,13 @@ export async function TeachingAssessmentPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line-subtle">
-                  {teachingSchedule.map((row) => (
+                  {teachingSchedule.length === 0 ? (
+                    <TableEmptyRow
+                      colSpan={5}
+                      description="Choose another date to review upcoming assessments."
+                      title="No teaching applicants scheduled for this day"
+                    />
+                  ) : teachingSchedule.map((row) => (
                     <tr
                       className={
                         row.id === applicationId

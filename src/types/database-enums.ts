@@ -8,5 +8,5 @@ export type PublicEnums = {
     "other_info_category": "SKILL_HOBBY" | "RECOGNITION" | "MEMBERSHIP";
     "pds_status": "DRAFT" | "SUBMITTED";
     "question_code": "34A" | "34B" | "35A" | "35B" | "36" | "37" | "38A" | "38B" | "39" | "40A" | "40B" | "40C";
-    "user_role": "APPLICANT" | "HR" | "EVALUATOR" | "DOCUMENT_REVIEWER" | "ADMIN";
+    "user_role": "APPLICANT" | "HR" | "EVALUATOR" | "DOCUMENT_REVIEWER" | "ADMIN" | "SUPER_ADMIN" | "SDS" | "ASDS";
 };

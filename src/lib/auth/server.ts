@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
-export async function getAdminContext() {
+export async function getSuperAdminContext() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -14,10 +14,12 @@ export async function getAdminContext() {
     .select("id, role")
     .eq("id", user.id)
     .maybeSingle();
-  if (profile?.role !== "ADMIN") return null;
+  if (profile?.role !== "SUPER_ADMIN") return null;
 
   return { supabase, user };
 }
+
+export const getAdminContext = getSuperAdminContext;
 
 export async function getApplicantContext() {
   const supabase = await createClient();
@@ -26,6 +28,8 @@ export async function getApplicantContext() {
     error: authError,
   } = await supabase.auth.getUser();
   if (authError || !user) return null;
+  const { data: otpVerified, error: otpError } = await supabase.rpc("is_applicant_session_verified");
+  if (otpError || !otpVerified) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -77,5 +81,19 @@ export async function getHrContext() {
   if (authError || !user) return null;
   if (user.app_metadata.role !== "HR") return null;
 
+  return { supabase, user };
+}
+
+export async function getSdsContext() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user || user.app_metadata.role !== "SDS") return null;
+  return { supabase, user };
+}
+
+export async function getAsdsContext() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user || user.app_metadata.role !== "ASDS") return null;
   return { supabase, user };
 }

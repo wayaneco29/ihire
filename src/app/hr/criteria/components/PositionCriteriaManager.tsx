@@ -11,6 +11,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { FormInput, FormSelect } from "@/components/form";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Button } from "@/components/ui/Button";
+import { TableEmptyState } from "@/components/ui/TableEmptyState";
 import {
   formatExperienceStandard,
   formatTrainingStandard,
@@ -425,7 +426,14 @@ export function PositionCriteriaManager({
           className="criteria-table [&_.ant-table-thead>tr>th]:bg-panel-muted [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-ink [&_.ant-table-tbody>tr>td]:border-line-subtle [&_.ant-table-tbody>tr>td]:bg-panel [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-ink [&_.ant-table-tbody>tr.criteria-group-row>td]:bg-panel-muted"
           columns={columns}
           dataSource={rows}
-          locale={{ emptyText: "No positions match this filter." }}
+          locale={{
+            emptyText: (
+              <TableEmptyState
+                description="Choose another filter or update the position criteria."
+                title="No positions match this filter"
+              />
+            ),
+          }}
           pagination={false}
           rowClassName={(row) =>
             row.kind === "group"

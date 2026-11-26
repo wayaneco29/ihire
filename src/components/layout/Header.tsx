@@ -10,10 +10,10 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function Header() {
   const { mobileNavOpen, setMobileNavOpen } = useAppShell();
-  const { user, role } = useAuth();
+  const { user, role, loading } = useAuth();
 
   return (
-    <header className="border-b border-line bg-panel px-4 py-3 print:hidden sm:px-6 lg:px-10">
+    <header className="sticky top-0 z-40 border-b border-line bg-panel px-4 py-3 print:hidden sm:px-6 lg:px-10">
       <a
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-sm focus:bg-panel focus:px-4 focus:py-3 focus:text-ink focus:shadow-dropdown"
         href="#main-content"
@@ -35,7 +35,7 @@ export function Header() {
           </Button>
           <div>
             <p className="text-base font-semibold text-ink">Recruitment portal</p>
-            <p className="text-xs text-muted">{role ? ROLE_LABELS[role] : "Division of Southern Leyte"}</p>
+            <p className="text-xs text-muted">{loading ? "Loading your account…" : role ? ROLE_LABELS[role] : "Division of Southern Leyte"}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

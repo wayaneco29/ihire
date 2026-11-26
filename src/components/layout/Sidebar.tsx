@@ -23,7 +23,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [signOutError, setSignOutError] = useState(false);
-  const sections = getNavigation(role);
+  const sections = loading ? [] : getNavigation(role);
 
   async function handleSignOut() {
     setSignOutError(false);
@@ -50,8 +50,17 @@ export function Sidebar() {
 
       <nav
         aria-label="Main navigation"
+        aria-busy={loading}
         className="flex-1 space-y-6 overflow-y-auto py-6"
       >
+        {loading && (
+          <div role="status" className="space-y-3 px-3">
+            <span className="sr-only">Loading navigation</span>
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} aria-hidden="true" className="h-11 animate-pulse rounded-sm bg-panel-muted motion-reduce:animate-none" />
+            ))}
+          </div>
+        )}
         {sections.map((section) => (
           <div key={section.title}>
             <p className="px-3 text-xs font-semibold text-muted">
@@ -99,7 +108,7 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      {user && (
+      {user && !loading && (
         <div className="pt-2 pb-4">
           <Button
             block
@@ -140,7 +149,7 @@ export function Sidebar() {
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-ink">
-              {role ? ROLE_LABELS[role] : "Recruitment portal"}
+              {loading ? "Loading your account…" : role ? ROLE_LABELS[role] : "Recruitment portal"}
             </p>
             <p className="truncate text-xs text-muted">
               {user?.email ??

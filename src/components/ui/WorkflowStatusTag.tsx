@@ -1,4 +1,5 @@
 import { StatusTag } from "./StatusTag";
+import { formatStatusLabel } from "@/utils/format-status-label";
 
 const statusStyles: Record<string, string> = {
   DRAFT: "border-line bg-panel-muted text-muted",
@@ -21,14 +22,6 @@ const statusStyles: Record<string, string> = {
   UNAVAILABLE: "border-line bg-panel-muted text-muted",
 };
 
-function formatStatus(status: string) {
-  return status
-    .toLowerCase()
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export function WorkflowStatusTag({
   status,
   label,
@@ -40,7 +33,7 @@ export function WorkflowStatusTag({
     <StatusTag
       className={`min-w-0 justify-center text-center ${statusStyles[status] ?? "border-line bg-panel-muted text-muted"}`}
     >
-      {label ?? formatStatus(status)}
+      {label ?? formatStatusLabel(status)}
     </StatusTag>
   );
 }

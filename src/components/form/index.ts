@@ -2,6 +2,7 @@ export { FormCheckbox } from "./FormCheckbox";
 export { FormCheckboxGroup } from "./FormCheckboxGroup";
 export { FormDatePicker } from "./FormDatePicker";
 export { FormInput } from "./FormInput";
+export { FormOtp } from "./FormOtp";
 export { FormRadio } from "./FormRadio";
 export { FormRadioYesNo } from "./FormRadioYesNo";
 export { FormSelect } from "./FormSelect";

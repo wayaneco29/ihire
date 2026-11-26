@@ -5,7 +5,9 @@ export const ROLE_HOME: Record<UserRole, string> = {
   EVALUATOR: "/evaluator/reviews",
   DOCUMENT_REVIEWER: "/document-reviewer/documents",
   HR: "/hr/dashboard",
-  ADMIN: "/admin/invitations",
+  SDS: "/sds/applications",
+  ASDS: "/asds/applications",
+  SUPER_ADMIN: "/admin/invitations",
 };
 
 export function isUserRole(value: unknown): value is UserRole {

@@ -125,6 +125,11 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
   if (values.status === "OPEN" && values.deadline && Date.parse(values.deadline) <= Date.now()) {
     return { success: false, message: "An expired posting cannot be opened." };
   }
+  if (values.status === "OPEN" && values.positionIds.some((positionId) =>
+    values.minimumScores.find((entry) => entry.position_id === positionId)?.minimum_total_points == null
+  )) {
+    return { success: false, message: "Set a minimum total score for every position before opening this posting." };
+  }
 
   if (values.status !== "DRAFT") {
     for (const entry of values.scoring) {
@@ -133,7 +138,7 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
     }
   }
 
-  const { data, error } = await hr.supabase.rpc("save_scored_posting", {
+  const { data, error } = await hr.supabase.rpc("save_scored_posting_with_minimums", {
     p_job_id: null,
     p_title: values.title,
     p_description: values.description,
@@ -143,6 +148,7 @@ export async function createJobPosting(input: unknown): Promise<ActionResult> {
     p_deadline: deadlineIso(values.deadline),
     p_position_ids: values.positionIds,
     p_scoring: values.scoring as unknown as Json,
+    p_minimum_scores: values.minimumScores as unknown as Json,
   });
 
   if (error || !data) {
@@ -176,7 +182,7 @@ export async function updateJobPosting(
   const { data: currentPositionLinks, error: currentPositionLinksError } =
     await hr.supabase
       .from("job_posting_positions")
-      .select("position_id")
+      .select("position_id, minimum_total_points")
       .eq("job_id", jobId);
   if (currentPositionLinksError) {
     return {
@@ -211,8 +217,24 @@ export async function updateJobPosting(
     }
   }
 
+  if (values.status === "OPEN") {
+    const currentStatusResult = await hr.supabase.from("job_postings").select("status").eq("id", jobId).maybeSingle();
+    if (currentStatusResult.error || !currentStatusResult.data) {
+      return { success: false, message: "The posting status could not be checked. Refresh and try again." };
+    }
+    const currentLinks = new Map((currentPositionLinks ?? []).map((link) => [link.position_id, link.minimum_total_points]));
+    const isGrandfatheredOpen = currentStatusResult.data.status === "OPEN";
+    const missingRequiredMinimum = values.positionIds.some((positionId) => {
+      const nextValue = values.minimumScores.find((entry) => entry.position_id === positionId)?.minimum_total_points;
+      return nextValue == null && (!isGrandfatheredOpen || !currentLinks.has(positionId) || currentLinks.get(positionId) != null);
+    });
+    if (missingRequiredMinimum) {
+      return { success: false, message: "Set a minimum total score for every position before opening this posting." };
+    }
+  }
+
   const { data, error } = await hr.supabase.rpc(
-    "save_scored_posting",
+    "save_scored_posting_with_minimums",
     {
       p_job_id: jobId,
       p_title: values.title,
@@ -223,6 +245,7 @@ export async function updateJobPosting(
       p_deadline: deadlineIso(values.deadline),
       p_position_ids: values.positionIds,
       p_scoring: values.scoring as unknown as Json,
+      p_minimum_scores: values.minimumScores as unknown as Json,
     },
   );
 

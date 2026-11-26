@@ -50,14 +50,6 @@ export default async function HrPostingDetailPage({
     .maybeSingle();
   if (postingError || !posting) notFound();
 
-  const { data: hiringReadinessRows, error: hiringReadinessError } =
-    await hr.supabase.rpc("get_posting_hiring_readiness", {
-      p_job_id: posting.id,
-    });
-  const hiringReadiness = hiringReadinessError
-    ? null
-    : (hiringReadinessRows?.[0] ?? null);
-
   const applicantColumns =
     "application_id, applicant_number, application_status, applied_at, education_levels, experience_years, training_hours, skills, position_title, position_track";
   const [firstApplicantPage, hiredCountResult] = await Promise.all([
@@ -65,7 +57,6 @@ export default async function HrPostingDetailPage({
       .from("v_anonymized_applicants")
       .select(applicantColumns, { count: "exact" })
       .eq("job_id", posting.id)
-      .eq("application_status", "QUALIFIED")
       .order("applied_at", { ascending: false })
       .range(0, 999),
     hr.supabase
@@ -95,7 +86,6 @@ export default async function HrPostingDetailPage({
           .from("v_anonymized_applicants")
           .select(applicantColumns)
           .eq("job_id", posting.id)
-          .eq("application_status", "QUALIFIED")
           .order("applied_at", { ascending: false })
           .range(offset, offset + 999),
       ),
@@ -106,6 +96,18 @@ export default async function HrPostingDetailPage({
   }
 
   const applicantIds = applicants.map((applicant) => applicant.application_id);
+  const applicantNameBatches = await Promise.all(
+    Array.from({ length: Math.ceil(applicantIds.length / 100) }, (_, index) =>
+      hr.supabase
+        .from("v_staff_application_reviews")
+        .select("application_id, applicant_name")
+        .in("application_id", applicantIds.slice(index * 100, (index + 1) * 100)),
+    ),
+  );
+  if (!applicantsError) {
+    applicantsError = applicantNameBatches.find((batch) => batch.error)?.error ?? null;
+  }
+
   const scoreApplicantIdBatches = Array.from(
     { length: Math.ceil(applicantIds.length / 100) },
     (_, index) => applicantIds.slice(index * 100, (index + 1) * 100),
@@ -253,8 +255,13 @@ export default async function HrPostingDetailPage({
       index + 1,
     ]),
   );
+  const applicantNameById = new Map(
+    applicantNameBatches.flatMap((batch) => batch.data ?? [])
+      .map((row) => [row.application_id, row.applicant_name] as const),
+  );
   const applicantItems = applicants.map((applicant) => ({
     ...applicant,
+    applicant_name: applicantNameById.get(applicant.application_id) ?? "Name unavailable",
     assessment_points:
       totalPointsByApplication.get(applicant.application_id) ?? null,
     assessment_rank: rankByApplicantId.get(applicant.application_id) ?? null,
@@ -300,8 +307,7 @@ export default async function HrPostingDetailPage({
   )
     ? requestedApplicationId
     : null;
-  const hiredCount =
-    hiredCountResult.count ?? hiringReadiness?.hired_count ?? 0;
+  const hiredCount = hiredCountResult.count ?? 0;
   const deadlineTimestamp = posting.deadline
     ? Date.parse(posting.deadline)
     : null;
@@ -391,10 +397,7 @@ export default async function HrPostingDetailPage({
         <PostingApplicants
           applicants={applicantItems}
           assessmentScoresUnavailable={rankingDataUnavailable}
-          hiredCount={hiredCount}
-          hiringReadiness={hiringReadiness}
           initialApplicationId={initialApplicationId}
-          slots={posting.slots}
         />
       )}
     </div>

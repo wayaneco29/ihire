@@ -1,6 +1,6 @@
 import { getApplicantContext } from "@/lib/auth/server";
-import { Buffer } from "node:buffer";
 import { createPdsWorkbook } from "../../export-pds-workbook";
+import { pdsWorkbookDownloadResponse } from "@/lib/pds/download-response";
 
 export const runtime = "nodejs";
 
@@ -31,14 +31,7 @@ export async function GET(
     if (!workbook) {
       return new Response("PDS data could not be loaded", { status: 503 });
     }
-    return new Response(Buffer.from(workbook), {
-      headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="PDS-version-${version.version_no}.xlsx"`,
-        "Cache-Control": "private, no-store",
-      },
-    });
+    return pdsWorkbookDownloadResponse(workbook, version.version_no);
   } catch (error) {
     console.log(error);
     return new Response("PDS export could not be generated", { status: 500 });

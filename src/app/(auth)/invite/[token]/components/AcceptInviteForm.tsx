@@ -36,7 +36,7 @@ export function AcceptInviteForm({
       else setError(result.message);
     } catch {
       setError(
-        "We couldn't confirm the result. Submit again to safely resume, or contact the Admin who invited you.",
+        "We couldn't confirm the result. Submit again to safely resume, or contact the Super Admin who invited you.",
       );
     }
   });
@@ -46,6 +46,12 @@ export function AcceptInviteForm({
       ? "Evaluator"
       : role === "DOCUMENT_REVIEWER"
         ? "Document reviewer"
+        : role === "SDS"
+          ? "School Division Superintendent"
+          : role === "ASDS"
+            ? "Assistant School Division Superintendent"
+            : role === "SUPER_ADMIN"
+              ? "Super Admin"
         : role;
 
   return (

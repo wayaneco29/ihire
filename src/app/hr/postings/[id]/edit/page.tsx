@@ -34,7 +34,7 @@ export default async function EditPostingPage({
 
   const selectedResult = await hr.supabase
     .from("job_posting_positions")
-    .select("position_id, weight_profile_id")
+    .select("position_id, weight_profile_id, minimum_total_points")
     .eq("job_id", id);
   if (selectedResult.error) {
     return (
@@ -187,6 +187,10 @@ export default async function EditPostingPage({
             hiringTrack === "NON_TEACHING" ? "NON_TEACHING" : "TEACHING",
           positionIds,
           scoring,
+          minimumScores: (selectedResult.data ?? []).map((link) => ({
+            position_id: link.position_id,
+            minimum_total_points: link.minimum_total_points,
+          })),
           scoringLockedAt: posting.scoring_locked_at,
           requirementsPdfUrl: requirementsPdf?.signedUrl ?? null,
         }}

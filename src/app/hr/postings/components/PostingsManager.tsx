@@ -4,11 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { Pagination, Select, Table, type TableColumnsType } from "antd";
 import { Button } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { TableEmptyState } from "@/components/ui/TableEmptyState";
 
 import type { PostingDisplayStatus } from "@/utils/job-posting-status";
 import { PostingStatusPill } from "./PostingStatusPill";
-import { EyeFilled } from "@ant-design/icons";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 type PostingItem = {
@@ -183,23 +182,49 @@ export function PostingsManager({
           {filtered.length} {filtered.length === 1 ? "posting" : "postings"}
         </p>
       </div>
-      {filtered.length ? (
-        <div
-          className="overflow-hidden rounded-sm border border-line bg-panel"
-          role="region"
-          aria-label="Job postings table"
-        >
-          <Table<PostingItem>
-            className="[&_.ant-table]:rounded-none! [&_.ant-table-container]:rounded-none! [&_.ant-table-content]:rounded-none! [&_.ant-table-header]:rounded-none! [&_.ant-table-thead>tr>th]:rounded-none! [&_.ant-table-thead>tr>th]:!bg-primary-light [&_.ant-table-thead>tr>th]:!text-ink [&_.ant-table-tbody>tr.ant-table-row>th]:py-4! [&_.ant-table-tbody>tr.ant-table-row>td]:py-2! [&_.ant-table-thead>tr>th]:!text-xs [&_.ant-table-thead>tr>th]:!font-medium [&_.ant-table-thead>tr>th]:!border-line [&_.ant-table-thead>tr>th::before]:!hidden [&_.ant-table-tbody>tr.ant-table-row>td]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>th]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>td]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row>th]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row>td]:!py-6 [&_.ant-table-tbody>tr.ant-table-row>th]:!py-6 [&_.ant-table-tbody>tr.ant-table-row:hover>td]:!bg-panel-muted [&_.ant-table-tbody>tr.ant-table-row:hover>th]:!bg-panel-muted"
-            columns={POSTING_COLUMNS}
-            dataSource={visiblePostings}
-            rowKey="id"
-            pagination={false}
-            scroll={{ x: 1040 }}
-            tableLayout="fixed"
-            size="small"
-          />
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line bg-panel px-6 py-4">
+      <div
+        className="overflow-hidden rounded-sm border border-line bg-panel"
+        role="region"
+        aria-label="Job postings table"
+      >
+        <Table<PostingItem>
+          className="[&_.ant-table]:rounded-none! [&_.ant-table-container]:rounded-none! [&_.ant-table-content]:rounded-none! [&_.ant-table-header]:rounded-none! [&_.ant-table-thead>tr>th]:rounded-none! [&_.ant-table-thead>tr>th]:!bg-primary-light [&_.ant-table-thead>tr>th]:!text-ink [&_.ant-table-tbody>tr.ant-table-row>th]:py-4! [&_.ant-table-tbody>tr.ant-table-row>td]:py-2! [&_.ant-table-thead>tr>th]:!text-xs [&_.ant-table-thead>tr>th]:!font-medium [&_.ant-table-thead>tr>th]:!border-line [&_.ant-table-thead>tr>th::before]:!hidden [&_.ant-table-tbody>tr.ant-table-row>td]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>th]:!bg-panel [&_.ant-table-tbody>tr.ant-table-row>td]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row>th]:!border-line-subtle [&_.ant-table-tbody>tr.ant-table-row>td]:!py-6 [&_.ant-table-tbody>tr.ant-table-row>th]:!py-6 [&_.ant-table-tbody>tr.ant-table-row:hover>td]:!bg-panel-muted [&_.ant-table-tbody>tr.ant-table-row:hover>th]:!bg-panel-muted"
+          columns={POSTING_COLUMNS}
+          dataSource={visiblePostings}
+          locale={{
+            emptyText: (
+              <TableEmptyState
+                action={
+                  postings.length > 0 && status !== "ALL" ? (
+                    <Button
+                      onClick={() => setStatus("ALL")}
+                      variant="bordered"
+                    >
+                      Show all postings
+                    </Button>
+                  ) : undefined
+                }
+                description={
+                  postings.length === 0
+                    ? "Your job postings will appear here after you create one."
+                    : "Choose another status or show all postings."
+                }
+                title={
+                  postings.length === 0
+                    ? "No postings yet"
+                    : "No matching postings"
+                }
+              />
+            ),
+          }}
+          rowKey="id"
+          pagination={false}
+          scroll={{ x: 1040 }}
+          tableLayout="fixed"
+          size="small"
+        />
+          {filtered.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line bg-panel px-6 py-4">
             {/* <p aria-live="polite" className="text-xs text-muted">
               Showing {startIndex + 1}–
               {Math.min(startIndex + pageSize, filtered.length)} of{" "}
@@ -242,20 +267,9 @@ export function PostingsManager({
                 setPage(1);
               }}
             />
-          </div>
-        </div>
-      ) : (
-        <EmptyState
-          className="mt-4"
-          title="No matching postings"
-          description="Choose another status to see your postings."
-          action={
-            <Button onClick={() => setStatus("ALL")} variant="bordered">
-              Show all postings
-            </Button>
-          }
-        />
-      )}
+            </div>
+          )}
+      </div>
     </section>
   );
 }

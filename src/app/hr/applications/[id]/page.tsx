@@ -19,24 +19,16 @@ export default async function HrApplicationPage({
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: application, error: applicationError } = await hr.supabase
-    .from("v_anonymized_applicants")
+    .from("v_staff_application_reviews")
     .select(
-      "application_id, applicant_number, application_status, applied_at, job_id, position_title",
+      "application_id, applicant_name, applicant_number, application_status, applied_at, job_id, position_title, job_title",
     )
     .eq("application_id", id)
     .maybeSingle();
 
   if (applicationError || !application) notFound();
 
-  const { data: posting, error: postingError } = await hr.supabase
-    .from("job_postings")
-    .select("id, title")
-    .eq("id", application.job_id)
-    .maybeSingle();
-
-  if (postingError || !posting) notFound();
-
-  const postingHref = `/hr/postings/${posting.id}`;
+  const postingHref = `/hr/postings/${application.job_id}`;
   const canOpenReview = POSTING_REVIEW_STATUSES.has(
     application.application_status,
   );
@@ -47,9 +39,9 @@ export default async function HrApplicationPage({
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader
-        description={posting.title}
+        description={application.job_title}
         eyebrow="HR workspace · Application"
-        title={`Applicant ${application.applicant_number}`}
+        title={application.applicant_name}
         backHref={reviewHref}
         backLabel={canOpenReview ? "Back to applicants" : "Job posting"}
       />
@@ -76,7 +68,7 @@ export default async function HrApplicationPage({
           <div>
             <dt className="text-xs font-medium text-muted">Job posting</dt>
             <dd className="mt-1 text-sm font-semibold text-ink">
-              {posting.title}
+              {application.job_title}
             </dd>
           </div>
           <div>
@@ -90,6 +82,10 @@ export default async function HrApplicationPage({
             <dd className="mt-1 text-sm font-semibold text-ink">
               {formatDate(application.applied_at, "MMM D, YYYY · h:mm A")}
             </dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-muted">Applicant name</dt>
+            <dd className="mt-1 text-sm font-semibold text-ink">{application.applicant_name}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium text-muted">Applicant number</dt>
@@ -106,14 +102,12 @@ export default async function HrApplicationPage({
           >
             {canOpenReview ? "Open posting review" : "View posting"}
           </Link>
-          {application.application_status === "HIRED" && (
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              href={`/hr/applications/${application.application_id}/pds`}
-            >
-              Open printable PDS
-            </Link>
-          )}
+          <Link
+            className="inline-flex min-h-11 items-center justify-center rounded-[8px] border-[1.5px] border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href={`/hr/applications/${application.application_id}/pds/download`}
+          >
+            Download PDS
+          </Link>
         </div>
       </section>
     </div>

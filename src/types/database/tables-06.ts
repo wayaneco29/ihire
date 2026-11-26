@@ -3,18 +3,21 @@ export type JobPostingPositionsTable = {
   Row: {
     created_at: string;
     job_id: string;
+    minimum_total_points: number | null;
     position_id: string;
     weight_profile_id: string;
   };
   Insert: {
     created_at?: string;
     job_id: string;
+    minimum_total_points?: number | null;
     position_id: string;
     weight_profile_id: string;
   };
   Update: {
     created_at?: string;
     job_id?: string;
+    minimum_total_points?: number | null;
     position_id?: string;
     weight_profile_id?: string;
   };

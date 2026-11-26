@@ -9,7 +9,9 @@ const PROTECTED_AREAS: { prefix: string; role: UserRole }[] = [
   { prefix: "/evaluator", role: "EVALUATOR" },
   { prefix: "/document-reviewer", role: "DOCUMENT_REVIEWER" },
   { prefix: "/hr", role: "HR" },
-  { prefix: "/admin", role: "ADMIN" },
+  { prefix: "/sds", role: "SDS" },
+  { prefix: "/asds", role: "ASDS" },
+  { prefix: "/admin", role: "SUPER_ADMIN" },
 ];
 
 function copyCookies(source: NextResponse, destination: NextResponse) {
@@ -53,18 +55,29 @@ export async function proxy(request: NextRequest) {
   const roleClaim = user?.app_metadata?.role;
   let role = isSignedIn && isUserRole(roleClaim) ? roleClaim : null;
   let applicantHasSubmittedPds: boolean | undefined;
+  let applicantSessionRejected = false;
 
-  // Registration creates an APPLICANT profile without adding an Auth role.
-  // Verify that profile instead of treating a valid applicant session as signed out.
-  if (isSignedIn && user && !role) {
+  // Confirm applicant access against the profile and the verified-session allowlist.
+  if (isSignedIn && user && (!role || role === "APPLICANT")) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role, has_submitted_pds")
       .eq("id", user.id)
       .maybeSingle();
     if (!profileError && profile?.role === "APPLICANT") {
-      role = "APPLICANT";
-      applicantHasSubmittedPds = profile.has_submitted_pds;
+      const { data: otpVerified } = await supabase.rpc("is_applicant_session_verified");
+      if (otpVerified) {
+        role = "APPLICANT";
+        applicantHasSubmittedPds = profile.has_submitted_pds;
+      } else {
+        role = null;
+        applicantSessionRejected = true;
+      }
+    } else if (!profileError && !role && profile?.role === "SUPER_ADMIN") {
+      role = "SUPER_ADMIN";
+    } else if (role === "APPLICANT") {
+      role = null;
+      applicantSessionRejected = true;
     }
   }
   const pathname = request.nextUrl.pathname;
@@ -110,6 +123,7 @@ export async function proxy(request: NextRequest) {
     return copyCookies(response, NextResponse.redirect(destination));
   }
 
+  if (applicantSessionRejected && pathname === "/") return response;
   return response;
 }
 
@@ -121,6 +135,8 @@ export const config = {
     "/evaluator/:path*",
     "/document-reviewer/:path*",
     "/hr/:path*",
+    "/sds/:path*",
+    "/asds/:path*",
     "/admin/:path*",
   ],
 };

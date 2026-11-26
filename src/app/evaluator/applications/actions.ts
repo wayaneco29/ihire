@@ -97,16 +97,11 @@ export async function submitApplicationEvaluation(input: {
   if (applicationError || !application) {
     return { success: false, message: "This application is no longer available for review." };
   }
-  if (["HIRED", "NOT_SELECTED", "REJECTED"].includes(application.application_status)) {
+  if (["HIRED", "NOT_SELECTED", "REJECTED", "NOT_QUALIFIED"].includes(application.application_status)) {
     return { success: false, message: "This application already has a final hiring outcome." };
   }
-  if (
-    application.position_track === "TEACHING" &&
-    !["ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED"].includes(
-      application.application_status,
-    )
-  ) {
-    return { success: false, message: "Submit both assessment scores before making the evaluation decision." };
+  if (!["ASSESSMENT_SCORED", "QUALIFIED"].includes(application.application_status)) {
+    return { success: false, message: "Submit a score for every configured criterion before making the evaluation decision." };
   }
 
   const [requiredTypesResult, documentsResult] = await Promise.all([
@@ -253,43 +248,31 @@ export async function submitApplicationCriterionScores(input: {
       weights.map((weight) => weight.criterion_id),
     )
     .eq("position_id", applicationResult.data.position_id)
-    .in("criterion_key", [
-      "PERFORMANCE",
-      "CLASSROOM_OBSERVATION",
-      "TEACHER_REFLECTION",
-    ]);
+    .order("display_order");
   if (criteriaError || !criteria?.length) {
     return { success: false, message: "The position scoring criteria could not be loaded." };
   }
 
-  if (
-    criteria.some(
-      (criterion) =>
-        !["PERFORMANCE", "CLASSROOM_OBSERVATION", "TEACHER_REFLECTION"].includes(
-          criterion.criterion_key,
-        ),
-    )
-  ) {
-    return { success: false, message: "The position scoring criteria are invalid." };
-  }
+  const automaticCriterionKeys = new Set(["EDUCATION", "TRAINING", "EXPERIENCE"]);
+  const manualCriteria = criteria.filter((criterion) => !automaticCriterionKeys.has(criterion.criterion_key));
   const maximumByCriterion = new Map(
     weights.map((weight) => [weight.criterion_id, weight.points]),
   );
   if (
-    criteria.length !== 3 ||
-    new Set(criteria.map((criterion) => criterion.criterion_key)).size !== 3 ||
-    input.scores.length !== 3 ||
-    new Set(input.scores.map((score) => score.criterionId)).size !== 3 ||
-    criteria.some((criterion) => !input.scores.some((score) => score.criterionId === criterion.id))
+    manualCriteria.length === 0 ||
+    new Set(manualCriteria.map((criterion) => criterion.criterion_key)).size !== manualCriteria.length ||
+    input.scores.length !== manualCriteria.length ||
+    new Set(input.scores.map((score) => score.criterionId)).size !== manualCriteria.length ||
+    manualCriteria.some((criterion) => !input.scores.some((score) => score.criterionId === criterion.id))
   ) {
     return {
       success: false,
-      message: "Enter performance, demo teaching and teaching reflection form points.",
+      message: "Enter points for every configured assessment criterion.",
     };
   }
   const validatedScores: { criterionId: string; points: number }[] = [];
   for (const score of input.scores) {
-    const criterion = criteria.find((item) => item.id === score.criterionId);
+    const criterion = manualCriteria.find((item) => item.id === score.criterionId);
     const maximum = maximumByCriterion.get(score.criterionId);
     if (
       !criterion ||
@@ -323,7 +306,9 @@ export async function submitApplicationCriterionScores(input: {
   if (saveError) {
     const message = saveError.message.includes("another evaluator")
       ? "This application already has scores from another evaluator."
-      : saveError.message.includes("no longer assigned")
+      : saveError.message.includes("below the minimum total score")
+        ? "The applicant is below the minimum total score and was automatically marked Not Qualified."
+        : saveError.message.includes("no longer assigned")
         ? "This application is no longer assigned to you."
         : "Criterion scores could not be saved. Refresh and try again.";
     return { success: false, message };
@@ -335,8 +320,15 @@ export async function submitApplicationCriterionScores(input: {
   revalidatePath(`/applicant/applications/${input.applicationId}`);
   revalidatePath("/applicant/applications");
   revalidatePath("/applicant/dashboard");
+  const { data: scoredApplication } = await evaluator.supabase
+    .from("v_anonymized_applicants")
+    .select("application_status")
+    .eq("application_id", input.applicationId)
+    .maybeSingle();
   return {
     success: true,
-    message: "Assessment scores saved. Review the applicant and qualify them to forward their application to HR.",
+    message: scoredApplication?.application_status === "NOT_QUALIFIED"
+      ? "Criterion scores are saved. This application is marked Not Qualified."
+      : "All configured criterion scores are saved. Review the completed total before qualifying the applicant.",
   };
 }

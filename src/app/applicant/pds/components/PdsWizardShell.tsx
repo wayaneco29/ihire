@@ -168,7 +168,7 @@ export function PdsWizardShell({
       <PdsFormNavigationContext.Provider value={registerNavigationGuard}>
         <section className="relative min-h-[calc(100vh-4.5rem)] px-4 pb-28 pt-7 sm:-mx-6 sm:px-6 sm:pt-8 lg:-mx-10 lg:px-10">
           <div className="mx-auto grid w-full grid-cols-1 gap-7 lg:grid-cols-[15rem_minmax(0,1fr)] xl:gap-10">
-            <aside className="lg:sticky lg:top-24 lg:self-start rounded-sm border border-line-subtle bg-panel p-4 text-ink">
+            <aside className="lg:sticky lg:top-10 lg:self-start rounded-sm border border-line-subtle bg-panel p-4 text-ink">
               <div className="mt-5 lg:hidden">
                 <label className="sr-only" htmlFor="pds-mobile-step">
                   Choose a PDS section
@@ -203,7 +203,7 @@ export function PdsWizardShell({
                   aria-hidden="true"
                   className="absolute bottom-4 left-6 top-4 w-px bg-line-strong"
                 />
-                <ol className="space-y-1">
+                <ol className="space-y-1.5">
                   {STEPS.map((label, index) => {
                     const step = index + 1;
                     const completed = completedSteps.includes(step);
@@ -250,7 +250,7 @@ export function PdsWizardShell({
                               step
                             )}
                           </span>
-                          <span>{label}</span>
+                          <span className="text-xs">{label}</span>
                         </Button>
                       </li>
                     );

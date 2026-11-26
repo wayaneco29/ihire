@@ -57,6 +57,36 @@ export type PublicViews = {
         Relationships: [
         ];
     };
+    "v_staff_application_reviews": {
+        Row: {
+            "application_id": string;
+            "applicant_id": string;
+            "applicant_name": string;
+            "applicant_number": string;
+            "application_status": PublicEnums["application_status"];
+            "applied_at": string;
+            "job_id": string;
+            "job_title": string;
+            "pds_version_id": string;
+            "position_title": string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
+    "v_staff_application_scores": {
+        Row: {
+            "application_id": string;
+            "criterion_key": string;
+            "criterion_title": string;
+            "is_complete": boolean;
+            "maximum_points": number;
+            "minimum_total_points": number | null;
+            "points": number | null;
+            "total_points": number;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
     "v_anonymized_credibility": {
         Row: {
             "applicant_number": string;

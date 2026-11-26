@@ -47,19 +47,19 @@ const headers = {
 
 const profilesUrl = new URL('/rest/v1/profiles', supabaseUrl);
 profilesUrl.searchParams.set('select', 'id,email');
-profilesUrl.searchParams.set('role', 'eq.ADMIN');
+profilesUrl.searchParams.set('role', 'eq.SUPER_ADMIN');
 
 const existingAdminsResponse = await fetch(profilesUrl, { headers });
 if (!existingAdminsResponse.ok) {
-  throw new Error(`Could not inspect local Admin profiles (HTTP ${existingAdminsResponse.status}).`);
+  throw new Error(`Could not inspect local SUPER_ADMIN profiles (HTTP ${existingAdminsResponse.status}).`);
 }
 
 const existingAdmins = await existingAdminsResponse.json();
 if (existingAdmins.length > 0) {
   if (existingAdmins.length === 1 && existingAdmins[0].email?.toLowerCase() === email) {
-    console.info('The local Admin account already exists; no changes were made.');
+    console.info('The local SUPER_ADMIN account already exists; no changes were made.');
   } else {
-    throw new Error('A different local Admin account already exists; refusing to create another.');
+    throw new Error('A different local SUPER_ADMIN account already exists; refusing to create another.');
   }
 } else {
   const usersUrl = new URL('/auth/v1/admin/users', supabaseUrl);
@@ -83,12 +83,12 @@ if (existingAdmins.length > 0) {
         email,
         password,
         email_confirm: true,
-        app_metadata: { role: 'ADMIN' },
+        app_metadata: { role: 'SUPER_ADMIN' },
       }),
     });
 
     if (!createUserResponse.ok) {
-      throw new Error(`Could not create the local Admin account (HTTP ${createUserResponse.status}).`);
+      throw new Error(`Could not create the local SUPER_ADMIN account (HTTP ${createUserResponse.status}).`);
     }
 
     localUser = await createUserResponse.json();
@@ -99,12 +99,12 @@ if (existingAdmins.length > 0) {
     {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ app_metadata: { role: 'ADMIN' } }),
+    body: JSON.stringify({ app_metadata: { role: 'SUPER_ADMIN' } }),
     },
   );
 
   if (!updateUserResponse.ok) {
-    throw new Error(`Could not assign the ADMIN Auth role (HTTP ${updateUserResponse.status}).`);
+    throw new Error(`Could not assign the SUPER_ADMIN Auth role (HTTP ${updateUserResponse.status}).`);
   }
 
   const createdProfileUrl = new URL('/rest/v1/profiles', supabaseUrl);
@@ -113,7 +113,7 @@ if (existingAdmins.length > 0) {
 
   const createdProfileResponse = await fetch(createdProfileUrl, { headers });
   if (!createdProfileResponse.ok) {
-    throw new Error(`Could not confirm the local Admin profile (HTTP ${createdProfileResponse.status}).`);
+    throw new Error(`Could not confirm the local SUPER_ADMIN profile (HTTP ${createdProfileResponse.status}).`);
   }
 
   const createdProfiles = await createdProfileResponse.json();
@@ -121,17 +121,17 @@ if (existingAdmins.length > 0) {
     throw new Error('The auth trigger did not create the expected profile.');
   }
 
-  if (createdProfiles[0].role !== 'ADMIN') {
+  if (createdProfiles[0].role !== 'SUPER_ADMIN') {
     const repairResponse = await fetch(createdProfileUrl, {
       method: 'PATCH',
       headers: { ...headers, prefer: 'return=minimal' },
-      body: JSON.stringify({ role: 'ADMIN' }),
+      body: JSON.stringify({ role: 'SUPER_ADMIN' }),
     });
 
     if (!repairResponse.ok) {
-      throw new Error(`Could not repair the local Admin profile (HTTP ${repairResponse.status}).`);
+      throw new Error(`Could not repair the local SUPER_ADMIN profile (HTTP ${repairResponse.status}).`);
     }
   }
 
-  console.info('Created the local Admin account.');
+  console.info('Created the local SUPER_ADMIN account.');
 }

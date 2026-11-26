@@ -121,7 +121,7 @@ export function buildRlsAssertions({
 
   const invitationChecks = [
     roleBlock(admin.profileId, 'admin_checks', `
-      ${checkCount('public.profiles', 1, 'Admin own profile')}
+      ${checkCount('public.profiles', 1, 'SUPER_ADMIN own profile')}
       insert into public.invitations (email, role, token_hash, invited_by, expires_at)
       values (
         ${quoteSql(invitationEmail)},
@@ -130,7 +130,7 @@ export function buildRlsAssertions({
         (select auth.uid()),
         now() + interval '1 day'
       );
-      ${checkCount('public.invitations', 1, 'Admin can manage invitations', `where token_hash = ${quoteSql(invitationTokenHash)}`)}
+      ${checkCount('public.invitations', 1, 'SUPER_ADMIN can manage invitations', `where token_hash = ${quoteSql(invitationTokenHash)}`)}
       delete from public.invitations where token_hash = ${quoteSql(invitationTokenHash)};
     `),
     roleBlock(hrA.profileId, 'hr_invitation_denied', checkCount('public.invitations', 0, 'HR cannot read invitations')),
