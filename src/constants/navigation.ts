@@ -10,6 +10,8 @@ import {
   ShieldCheckIcon,
   Squares2X2Icon,
   UserIcon,
+  BriefcaseIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import type { UserRole } from "./roles";
 
@@ -152,15 +154,16 @@ const roleNavigation: Record<UserRole, NavigationSection[]> = {
     {
       title: "Hiring",
       items: [
-        { label: "Applications", href: "/sds/applications", icon: ClipboardDocumentCheckIcon, available: true },
+        { label: "Job postings", href: "/sds/postings", icon: BriefcaseIcon, available: true },
+        { label: "Decision history", href: "/sds/decisions", icon: ClockIcon, available: true },
       ],
     },
   ],
   ASDS: [
     {
-      title: "Applications",
+      title: "Hiring",
       items: [
-        { label: "Application review", href: "/asds/applications", icon: ClipboardDocumentCheckIcon, available: true },
+        { label: "Job postings", href: "/asds/postings", icon: BriefcaseIcon, available: true },
       ],
     },
   ],

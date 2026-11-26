@@ -5,8 +5,8 @@ export const ROLE_HOME: Record<UserRole, string> = {
   EVALUATOR: "/evaluator/reviews",
   DOCUMENT_REVIEWER: "/document-reviewer/documents",
   HR: "/hr/dashboard",
-  SDS: "/sds/applications",
-  ASDS: "/asds/applications",
+  SDS: "/sds/postings",
+  ASDS: "/asds/postings",
   SUPER_ADMIN: "/admin/invitations",
 };
 

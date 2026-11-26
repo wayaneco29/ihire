@@ -87,6 +87,23 @@ export type PublicViews = {
         ComputedFields: never;
         Relationships: [];
     };
+    "v_staff_sds_decision_history": {
+        Row: {
+            "applicant_name": string;
+            "applicant_number": string;
+            "application_id": string;
+            "decision": string;
+            "decision_id": string;
+            "decision_remarks": string;
+            "decided_at": string;
+            "decided_by_email": string;
+            "job_id": string;
+            "job_title": string;
+            "position_title": string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+    };
     "v_anonymized_credibility": {
         Row: {
             "applicant_number": string;

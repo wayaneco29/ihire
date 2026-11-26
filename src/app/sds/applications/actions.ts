@@ -31,6 +31,12 @@ export async function hireApplicant(applicationId: string, remarks: string) {
           : "The hiring decision could not be saved. Refresh and try again.";
     return { success: false, message };
   }
+  revalidatePath("/sds/postings");
+  revalidatePath(`/sds/postings/${application.job_id}`);
+  revalidatePath("/sds/decisions");
+  revalidatePath("/asds/postings");
+  revalidatePath(`/asds/postings/${application.job_id}`);
+  revalidatePath("/asds/decisions");
   revalidatePath("/sds/applications");
   revalidatePath(`/sds/applications/${applicationId}`);
   revalidatePath("/asds/applications");
