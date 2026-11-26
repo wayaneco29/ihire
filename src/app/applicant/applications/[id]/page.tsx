@@ -46,6 +46,10 @@ export default async function ApplicantApplicationDetailPage({
   }
   if (!application) notFound();
 
+  const specialOrder = application.status === "HIRED"
+    ? await applicant.supabase.from("application_special_orders").select("application_id").eq("application_id", id).maybeSingle()
+    : null;
+
   const [
     { data: job },
     { data: evaluations },
@@ -314,6 +318,11 @@ export default async function ApplicantApplicationDetailPage({
           />
         </div>
         <aside className="grid gap-6 rounded-md border border-line bg-panel shadow-card">
+          {application.status === "HIRED" && <section className="px-6 pt-6">
+            <h2 className="font-semibold text-ink">Special Order</h2>
+            {specialOrder?.data ? <a className="mt-2 inline-block font-medium text-primary underline" href={`/applicant/applications/${id}/special-order`}>Download Special Order</a>
+              : <p className="mt-2 text-sm text-muted">{specialOrder?.error ? "Special Order availability could not be checked. Refresh to try again." : "Your Special Order will be available here once SDS saves it."}</p>}
+          </section>}
           <ApplicationProvisionalTotal
             rows={criteriaRows}
             unavailable={criteriaUnavailable}

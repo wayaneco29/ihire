@@ -181,10 +181,12 @@ export async function StaffApplicationDetailPage({
           </p>
         )}
       </section>
-      {canHire && application.application_status === "QUALIFIED" && (
+      {canHire && ["QUALIFIED", "HIRED"].includes(application.application_status) && (
         <HiringRemarksForm
           applicationId={application.application_id}
           applicantName={application.applicant_name}
+          positionTitle={application.position_title ?? ""}
+          hired={application.application_status === "HIRED"}
         />
       )}
     </div>

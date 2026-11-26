@@ -18,7 +18,7 @@ export async function closePostingIntake(jobId: string) {
     return {
       success: false,
       message: error?.message.includes("Only your open postings")
-        ? "This posting is no longer open or has a deadline. Refresh the page."
+        ? "Only your own open postings can be closed. Refresh the page to check its status."
         : "The posting could not be closed. Refresh and try again.",
     };
   }
@@ -28,5 +28,9 @@ export async function closePostingIntake(jobId: string) {
   revalidatePath(`/hr/postings/${jobId}`);
   revalidatePath("/applicant/jobs");
   revalidatePath(`/applicant/jobs/${jobId}`);
+  revalidatePath("/sds/postings");
+  revalidatePath(`/sds/postings/${jobId}`);
+  revalidatePath("/asds/postings");
+  revalidatePath(`/asds/postings/${jobId}`);
   return { success: true, message: "Application intake is now closed." };
 }

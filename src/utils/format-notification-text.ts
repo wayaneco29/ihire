@@ -26,6 +26,9 @@ const notificationStatusPattern = new RegExp(
 );
 
 export function formatNotificationText(text: string): string {
+  if (text === "Your application status changed to HIRED.") {
+    return "Congratulations! You've been hired.";
+  }
   return text.replace(
     notificationStatusPattern,
     (match, prefix: string, status: string) =>
@@ -48,6 +51,12 @@ export function getNotificationStatusMessage(
   }
 
   if (type === "APPLICATION_STATUS") {
+    if (match[1] === "HIRED") {
+      return {
+        prefix: "Congratulations!",
+        status: "You've been hired.",
+      };
+    }
     return {
       prefix: "Your application is now",
       status: NOTIFICATION_STATUS_LABELS[match[1]],

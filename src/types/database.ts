@@ -1,4 +1,5 @@
 import type { DatabaseTables01 } from './database/tables-01';
+import type { SpecialOrderTables } from './database/special-orders';
 import type { DatabaseTables02 } from './database/tables-02';
 import type { DatabaseTables03 } from './database/tables-03';
 import type { DatabaseTables04 } from './database/tables-04';
@@ -13,7 +14,7 @@ export { Constants } from './database-constants';
 
 export type Database = {
   public: {
-    Tables: DatabaseTables01 & DatabaseTables02 & DatabaseTables03 & DatabaseTables04 & DatabaseTables05 & DatabaseTables06;
+    Tables: DatabaseTables01 & DatabaseTables02 & DatabaseTables03 & DatabaseTables04 & DatabaseTables05 & DatabaseTables06 & SpecialOrderTables;
     Views: PublicViews;
     Functions: PublicFunctions;
     Enums: PublicEnums;
