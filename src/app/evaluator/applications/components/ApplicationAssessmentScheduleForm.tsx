@@ -96,7 +96,7 @@ export function ApplicationAssessmentScheduleForm({
             required
             showTime={{ format: "h:mm A", use12Hours: true }}
             valueFormat="YYYY-MM-DDTHH:mm"
-            disabledDate={(newDate) => dayjs().isAfter(newDate)}
+            // disabledDate={(newDate) => dayjs().isAfter(newDate)}
           />
           <Button disabled={pending} type="submit" variant="filled">
             {pending

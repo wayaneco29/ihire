@@ -16,10 +16,12 @@ import type { EducationLevel, ScoringRule } from "@/types/scoring";
 import {
   isAutomaticCriterion,
   levelDescription,
+  nextScoringBands,
   previewScore,
 } from "@/utils/scoring";
 import {
   scoringFormSchema,
+  automaticBandsError,
   scoringPublicationError,
   type ScoringFormValues,
 } from "@/utils/scoring-schema";
@@ -34,7 +36,7 @@ function RuleFields({
   educationLevels: EducationLevel[];
 }) {
   const rule = useWatch({ control, name: `rules.${index}` });
-  const { fields, append, remove } = useFieldArray({
+  const { fields, replace, remove } = useFieldArray({
     control,
     name: `rules.${index}.bands`,
   });
@@ -51,6 +53,7 @@ function RuleFields({
       points: Number(band.points),
     })),
   };
+  const nextBands = nextScoringBands(numericRule.bands, numericRule.points);
 
   return (
     <section className="space-y-3 rounded-xl border border-line p-4">
@@ -132,19 +135,8 @@ function RuleFields({
                 </div>
               ))}
               <Button
-                disabled={
-                  fields.length >= 32 ||
-                  Number(rule.bands.at(-1)?.threshold ?? 0) >= 31
-                }
-                onClick={() =>
-                  append({
-                    threshold: Math.min(
-                      31,
-                      Number(rule.bands.at(-1)?.threshold ?? 0) + 2,
-                    ),
-                    points: Number(rule.bands.at(-1)?.points ?? 0),
-                  })
-                }
+                disabled={fields.length >= 32 || !nextBands}
+                onClick={() => nextBands && replace(nextBands)}
                 variant="bordered"
               >
                 Add band
@@ -249,6 +241,7 @@ export function ScoringProfileEditor({
             },
             () =>
               setError(
+                  automaticBandsError(form.getValues("rules")) ??
                 "Check the scoring rules: use ascending bands, points within each maximum, and a total of 100.",
               ),
           )}

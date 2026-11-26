@@ -71,7 +71,7 @@ export function LoginForm() {
   function resetCode(result: { expiresAt: number; resendAt: number }) {
     codeForm.reset({ code: "" });
     setTiming({ expiresAt: result.expiresAt, resendAt: result.resendAt });
-    setNow(Date.now());
+    setNow(result.resendAt - 60_000);
   }
 
   async function startLogin(email: string, password: string) {
@@ -185,7 +185,7 @@ export function LoginForm() {
           {step === "LOGIN"
             ? "Sign in to access your dashboard, staff tools, and school services."
             : step === "ENROLL"
-              ? "To protect your applicant account, verify a Philippine mobile number before continuing."
+              ? "Your applicant profile does not have a mobile number yet. Add a Philippine number to verify your account."
               : `We sent a six-digit code to ${phoneHint ?? "your mobile number"}. The code expires in 10 minutes.`}
         </p>
 

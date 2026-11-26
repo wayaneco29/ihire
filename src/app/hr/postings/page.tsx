@@ -39,8 +39,8 @@ export default async function HrPostingsPage() {
     return (
       <>
         <PageHeader
+          eyebrow="HR workspace"
           description="Track applicants, qualified candidates and open slots for each posting."
-          divider={false}
           title="Job postings"
         />
         <div className="mt-7">
@@ -61,7 +61,7 @@ export default async function HrPostingsPage() {
     return (
       <>
         <PageHeader
-          divider={false}
+          eyebrow="HR workspace"
           title="Job postings"
           description="Track applicants, qualified candidates and open slots for each posting."
         />
@@ -132,7 +132,7 @@ export default async function HrPostingsPage() {
   return (
     <div className="mx-auto">
       <PageHeader
-        divider={false}
+        eyebrow="HR workspace"
         title="Job postings"
         description="Track applicants, qualified candidates and open slots for each posting."
         actions={
@@ -145,16 +145,7 @@ export default async function HrPostingsPage() {
           </Link>
         }
       />
-      {postingItems.length ? (
-        <PostingsManager postings={postingItems} />
-      ) : (
-        <div className="mt-7">
-          <EmptyState
-            description="Your postings will appear here, with applicant and qualification counts."
-            title="No postings yet"
-          />
-        </div>
-      )}
+      <PostingsManager postings={postingItems} />
     </div>
   );
 }

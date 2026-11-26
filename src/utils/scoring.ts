@@ -10,6 +10,42 @@ export function readBands(value: unknown): ScoringBand[] {
     .sort((a, b) => a.threshold - b.threshold);
 }
 
+export function nextScoringBands(
+  bands: ScoringBand[],
+  maximumPoints: number,
+): ScoringBand[] | null {
+  if (!Number.isFinite(maximumPoints) || maximumPoints <= 0) return null;
+
+  const lastBand = bands.at(-1);
+  if (!lastBand) return [{ threshold: 0, points: 0 }];
+
+  const maximumThreshold = Math.min(31, Math.ceil(maximumPoints));
+  if (
+    lastBand.threshold >= maximumThreshold ||
+    lastBand.points >= maximumPoints
+  ) {
+    return null;
+  }
+
+  const nextPoints = lastBand.points + 2;
+  // Fold a short final remainder into the preceding award and skip the
+  // intermediate band: for 15 points, 12:12 becomes 12:13 followed by 15:15.
+  if (nextPoints < maximumPoints && nextPoints + 2 > maximumPoints) {
+    return [
+      ...bands.slice(0, -1),
+      { ...lastBand, points: Math.round((maximumPoints - 2) * 100) / 100 },
+      { threshold: maximumThreshold, points: maximumPoints },
+    ];
+  }
+
+  return [...bands, {
+    threshold: nextPoints >= maximumPoints
+      ? maximumThreshold
+      : Math.min(maximumThreshold, lastBand.threshold + 2),
+    points: Math.min(maximumPoints, nextPoints),
+  }];
+}
+
 /** Preview only. Application ratings are calculated from trusted records in Postgres. */
 export function previewScore(rule: ScoringRule, level: number | null): number | null {
   if (rule.points === 0) return 0;

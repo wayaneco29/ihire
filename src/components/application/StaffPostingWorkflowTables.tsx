@@ -7,6 +7,7 @@ import {
   ArrowDownIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import { MetricCard } from "@/components/ui/MetricCard";
 import { TableEmptyRow } from "@/components/ui/TableEmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { APPLICATION_STATUSES } from "@/constants/statuses";
@@ -78,20 +79,6 @@ type DecisionRow = {
   decision_remarks: string;
   decided_by_email: string;
 };
-
-function MetricCard({
-  label,
-  value,
-}: Readonly<{ label: string; value: number | string }>) {
-  return (
-    <div className="rounded-xl border border-line bg-panel px-5 py-4">
-      <p className="text-sm text-muted">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
-        {value}
-      </p>
-    </div>
-  );
-}
 
 function formatPoints(value: number) {
   return Number.isInteger(value)

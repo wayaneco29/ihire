@@ -17,11 +17,15 @@ export async function StaffApplicationDetailPage({
   basePath,
   supabase,
   canHire,
+  workspace,
+  returnStatus = "QUALIFIED",
 }: Readonly<{
   applicationId: string;
   basePath: string;
   supabase: StaffSupabase;
   canHire: boolean;
+  workspace?: "SDS" | "ASDS" | "HR";
+  returnStatus?: string;
 }>) {
   if (!/^[0-9a-f-]{36}$/i.test(applicationId)) notFound();
   const { data: application, error } = await supabase
@@ -41,6 +45,11 @@ export async function StaffApplicationDetailPage({
     .order("criterion_key");
   const scoreRows = scoreResult.data ?? [];
   const scoreSummary = scoreRows[0] ?? null;
+  const workspaceLabel = workspace ?? (canHire ? "SDS" : "ASDS");
+  const backHref =
+    workspaceLabel === "HR"
+      ? `${basePath}/postings/${application.job_id}?status=${encodeURIComponent(returnStatus)}`
+      : `${basePath}/postings/${application.job_id}`;
 
   return (
     <div className="mx-auto">
@@ -54,11 +63,11 @@ export async function StaffApplicationDetailPage({
             Download PDS
           </Link>
         }
-        eyebrow={`${canHire ? "SDS" : "ASDS"} workspace · Application`}
+        eyebrow={`${workspaceLabel} workspace · Application`}
         title={application.applicant_name}
         description={`${application.job_title} · ${application.position_title ?? "Position not recorded"}`}
-        backHref={`${basePath}/postings/${application.job_id}`}
-        backLabel="Ranked applicants"
+        backHref={backHref}
+        backLabel={workspaceLabel === "HR" ? "Back to applicants" : "Ranked applicants"}
       />
       <section className="mt-7 rounded-xl border border-line bg-panel p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">

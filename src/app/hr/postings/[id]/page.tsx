@@ -3,6 +3,7 @@ import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { APPLICATION_STATUSES } from "@/constants/statuses";
 import { getHrContext } from "@/lib/auth/server";
 import { formatDate } from "@/utils/format-date";
 import { getPostingDisplayStatus } from "@/utils/job-posting-status";
@@ -51,7 +52,7 @@ export default async function HrPostingDetailPage({
   if (postingError || !posting) notFound();
 
   const applicantColumns =
-    "application_id, applicant_number, application_status, applied_at, education_levels, experience_years, training_hours, skills, position_title, position_track";
+    "application_id, applicant_number, application_status, applied_at, position_title, position_track";
   const [firstApplicantPage, hiredCountResult] = await Promise.all([
     hr.supabase
       .from("v_anonymized_applicants")
@@ -117,7 +118,7 @@ export default async function HrPostingDetailPage({
       hr.supabase
         .from("application_criterion_scores")
         .select(
-          "application_id, points, criterion:position_criteria(criterion_key, title)",
+          "application_id, points, criterion:position_criteria(criterion_key)",
         )
         .in("application_id", batch),
     ),
@@ -144,7 +145,7 @@ export default async function HrPostingDetailPage({
     ? await hr.supabase
         .from("position_criterion_weights")
         .select(
-          "profile_id, points, criterion:position_criteria(criterion_key, title)",
+          "profile_id, points, criterion:position_criteria(criterion_key)",
         )
         .in("profile_id", weightProfileIds)
     : { data: [], error: null };
@@ -169,17 +170,14 @@ export default async function HrPostingDetailPage({
     scoringBatches.some((batch) => batch.error),
   );
   const pointsByApplication = new Map<string, Map<string, number>>();
-  const titleByCriterion = new Map<string, string>();
   for (const score of assessmentScores) {
     const key = score.criterion?.criterion_key;
-    if (!key) continue;
+    if (!key || score.points == null) continue;
     const points =
       pointsByApplication.get(score.application_id) ??
       new Map<string, number>();
     points.set(key, Number(score.points));
     pointsByApplication.set(score.application_id, points);
-    if (score.criterion?.title)
-      titleByCriterion.set(key, score.criterion.title);
   }
   function addCalculatedPoints(
     applicationId: string,
@@ -208,22 +206,15 @@ export default async function HrPostingDetailPage({
       row.weight_profile_id,
     ]),
   );
-  const criteriaByProfile = new Map<
-    string,
-    Map<string, { title: string; maximumPoints: number }>
-  >();
+  const criteriaByProfile = new Map<string, Map<string, number>>();
   for (const weight of criterionWeightsResult.data ?? []) {
     const criterion = weight.criterion;
     const key = criterion?.criterion_key;
     if (!criterion || !key) continue;
     const profileCriteria =
       criteriaByProfile.get(weight.profile_id) ?? new Map();
-    profileCriteria.set(key, {
-      title: criterion.title,
-      maximumPoints: Number(weight.points),
-    });
+    profileCriteria.set(key, Number(weight.points));
     criteriaByProfile.set(weight.profile_id, profileCriteria);
-    titleByCriterion.set(key, criterion.title);
   }
   const totalPointsByApplication = new Map(
     [...pointsByApplication].map(
@@ -259,54 +250,46 @@ export default async function HrPostingDetailPage({
     applicantNameBatches.flatMap((batch) => batch.data ?? [])
       .map((row) => [row.application_id, row.applicant_name] as const),
   );
-  const applicantItems = applicants.map((applicant) => ({
-    ...applicant,
-    applicant_name: applicantNameById.get(applicant.application_id) ?? "Name unavailable",
-    assessment_points:
-      totalPointsByApplication.get(applicant.application_id) ?? null,
-    assessment_rank: rankByApplicantId.get(applicant.application_id) ?? null,
-    criterion_scores: (() => {
-      const positionId = positionByApplication.get(applicant.application_id);
-      const profileId = positionId ? profileByPosition.get(positionId) : null;
-      const configuredCriteria = profileId
-        ? criteriaByProfile.get(profileId)
-        : null;
-      const applicantPoints =
-        pointsByApplication.get(applicant.application_id) ??
-        new Map<string, number>();
-      const keys = new Set([
-        ...applicantPoints.keys(),
-        ...(configuredCriteria?.keys() ?? []),
-      ]);
-      return [...keys]
-        .map((key) => {
-          const configured = configuredCriteria?.get(key);
-          return {
-            key,
-            title:
-              configured?.title ??
-              titleByCriterion.get(key) ??
-              key
-                .toLowerCase()
-                .replaceAll("_", " ")
-                .replace(/\b\w/g, (letter) => letter.toUpperCase()),
-            points: applicantPoints.get(key) ?? null,
-            maximumPoints: configured?.maximumPoints ?? null,
-          };
-        })
-        .sort((a, b) => a.title.localeCompare(b.title));
-    })(),
-  }));
-  const requestedApplicationId =
-    typeof query.applicationId === "string" &&
-    /^[0-9a-f-]{36}$/i.test(query.applicationId)
-      ? query.applicationId
+  const applicantItems = applicants.map((applicant) => {
+    const positionId = positionByApplication.get(applicant.application_id);
+    const profileId = positionId ? profileByPosition.get(positionId) : null;
+    const configuredCriteria = profileId
+      ? criteriaByProfile.get(profileId)
       : null;
-  const initialApplicationId = applicantItems.some(
-    (applicant) => applicant.application_id === requestedApplicationId,
-  )
-    ? requestedApplicationId
-    : null;
+    const applicantPoints =
+      pointsByApplication.get(applicant.application_id) ??
+      new Map<string, number>();
+    const assessmentMaximumPoints = configuredCriteria
+      ? [...configuredCriteria.values()].reduce(
+          (sum, maximumPoints) => sum + maximumPoints,
+          0,
+        )
+      : null;
+    const assessmentIsComplete = Boolean(
+      configuredCriteria?.size &&
+        [...configuredCriteria.keys()].every((key) => applicantPoints.has(key)),
+    );
+
+    return {
+      ...applicant,
+      applicant_name:
+        applicantNameById.get(applicant.application_id) ?? "Name unavailable",
+      assessment_points:
+        totalPointsByApplication.get(applicant.application_id) ?? null,
+      assessment_rank: rankByApplicantId.get(applicant.application_id) ?? null,
+      assessment_maximum_points: assessmentMaximumPoints,
+      assessment_is_complete: assessmentIsComplete,
+    };
+  });
+  const validApplicationStatuses = new Set<string>([
+    "ALL",
+    ...APPLICATION_STATUSES,
+  ]);
+  const initialStatusFilter =
+    typeof query.status === "string" &&
+    validApplicationStatuses.has(query.status)
+      ? query.status
+      : "QUALIFIED";
   const hiredCount = hiredCountResult.count ?? 0;
   const deadlineTimestamp = posting.deadline
     ? Date.parse(posting.deadline)
@@ -334,10 +317,11 @@ export default async function HrPostingDetailPage({
   return (
     <div className="mx-auto">
       <PageHeader
+        eyebrow="HR workspace · Job posting"
         title={posting.title}
         description={posting.description ?? undefined}
         backHref="/hr/postings"
-        backLabel="Job postings"
+        backLabel="All job postings"
         actions={
           displayStatus === "OPEN" ? (
             <div className="flex flex-wrap items-center gap-2">
@@ -356,24 +340,29 @@ export default async function HrPostingDetailPage({
 
       <section
         aria-label="Posting status and hiring progress"
-        className="mt-6 flex flex-col gap-4 rounded-xl border border-line bg-panel px-5 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:py-5"
+        className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
       >
-        <PostingStatusPill compact status={displayStatus} />
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-semibold text-ink">
-            {hiredCount} of {posting.slots}
-          </span>
-          <span className="text-muted">slots filled</span>
+        <div className="rounded-xl border border-line bg-panel px-5 py-4">
+          <p className="text-sm text-muted">Posting status</p>
+          <div className="mt-3">
+            <PostingStatusPill compact status={displayStatus} />
+          </div>
         </div>
-        <p className="text-sm text-muted ml-auto">
-          Deadline{" "}
-          <span className="font-semibold text-ink">
+        <div className="rounded-xl border border-line bg-panel px-5 py-4">
+          <p className="text-sm text-muted">Slots filled</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
+            {hiredCount} <span className="text-base font-normal text-muted">of {posting.slots}</span>
+          </p>
+        </div>
+        <div className="rounded-xl border border-line bg-panel px-5 py-4">
+          <p className="text-sm text-muted">Application deadline</p>
+          <p className="mt-1 text-base font-semibold text-ink">
             {deadlineLabel ?? "No deadline"}
-          </span>
+          </p>
           {displayStatus === "OPEN" && daysRemaining !== null && (
-            <span
-              className={`ml-1 font-semibold ${
-                daysRemaining <= 7 ? "text-warning" : "text-muted-strong"
+            <p
+              className={`mt-1 text-sm font-semibold ${
+                daysRemaining <= 7 ? "text-warning" : "text-muted"
               }`}
             >
               {daysRemaining < 0
@@ -381,9 +370,9 @@ export default async function HrPostingDetailPage({
                 : daysRemaining === 0
                   ? "Due today"
                   : `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"} left`}
-            </span>
+            </p>
           )}
-        </p>
+        </div>
       </section>
 
       {applicantsError ? (
@@ -397,7 +386,7 @@ export default async function HrPostingDetailPage({
         <PostingApplicants
           applicants={applicantItems}
           assessmentScoresUnavailable={rankingDataUnavailable}
-          initialApplicationId={initialApplicationId}
+          initialStatusFilter={initialStatusFilter}
         />
       )}
     </div>

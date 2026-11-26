@@ -8,6 +8,7 @@ import { CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { formatPositionTrack } from "@/utils/format-position-track";
 import { formatPhilippineDateTime } from "@/utils/philippine-time";
 import { isDocumentComplianceRejection } from "@/utils/application-resubmission";
+import { isAutomaticCriterion } from "@/utils/scoring";
 import {
   ApplicationProvisionalTotal,
   ApplicationCriteriaPoints,
@@ -158,7 +159,7 @@ export default async function ApplicantApplicationDetailPage({
           criteriaRows = (criteriaResult.data ?? []).flatMap((criterion): ApplicationCriterionPointsRow[] => {
             const maximumPoints = weightsByCriterion.get(criterion.id);
             if (maximumPoints === undefined) return [];
-            if (["EDUCATION", "TRAINING", "EXPERIENCE"].includes(criterion.criterion_key)) {
+            if (isAutomaticCriterion(criterion.criterion_key)) {
               const score = calculatedByKey.get(criterion.criterion_key);
               const detail = score?.applicant_level !== null && score?.applicant_level !== undefined && score.minimum_level !== null
                 ? `Applicant level ${score.applicant_level}; minimum level ${score.minimum_level}; ${score.matched_threshold === null ? "no threshold matched" : `matched the level ${score.matched_threshold} threshold`}.`
@@ -168,7 +169,7 @@ export default async function ApplicantApplicationDetailPage({
                 earnedStatus: score?.points === null || score?.points === undefined ? "not_scored" : "scored",
                 detail }];
             }
-            const savedPoints = criterion.criterion_key === "CLASSROOM_OBSERVATION" ? scoresByCriterion.get(criterion.id) : undefined;
+            const savedPoints = scoresByCriterion.get(criterion.id);
             return [{ id: criterion.id, title: criterion.title, maximumPoints,
               earnedPoints: savedPoints ?? null, earnedStatus: savedPoints === undefined ? "not_scored" : "scored" }];
           });

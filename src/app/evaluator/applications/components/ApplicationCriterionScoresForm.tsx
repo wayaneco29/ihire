@@ -51,7 +51,12 @@ export function ApplicationCriterionScoresForm({
     reValidateMode: "onChange",
   });
   const isFinal = [
-    "ASSESSMENT_SCORED", "QUALIFIED", "NOT_QUALIFIED", "HIRED", "NOT_SELECTED", "REJECTED",
+    "ASSESSMENT_SCORED",
+    "QUALIFIED",
+    "NOT_QUALIFIED",
+    "HIRED",
+    "NOT_SELECTED",
+    "REJECTED",
   ].includes(applicationStatus);
 
   function submit(values: ApplicationCriterionScoresValues) {
@@ -83,8 +88,8 @@ export function ApplicationCriterionScoresForm({
             Award points
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted">
-            Record points for each configured criterion using the position&apos;s
-            scoring limits.
+            Record points for each configured criterion using the
+            position&apos;s scoring limits.
           </p>
         </div>
         {criteria.length > 0 && (
@@ -130,7 +135,9 @@ export function ApplicationCriterionScoresForm({
                         ? "Score the applicant's performance using the configured position criteria."
                         : criterion.criterionKey === "TEACHER_REFLECTION"
                           ? "Score the teaching reflection form."
-                          : "Score the applicant's demo teaching presentation."}
+                          : criterion.criterionKey === "CLASSROOM_OBSERVATION"
+                            ? "Score the applicant's demo teaching presentation."
+                            : `Score the applicant for ${criterion.title.toLowerCase()} using the configured position criteria.`}
                     </p>
                   </div>
                   <span className="rounded-sm border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold tabular-nums text-ink">
@@ -155,15 +162,17 @@ export function ApplicationCriterionScoresForm({
               </div>
             ))}
           </div>
-          <div className="border-t border-line-subtle pt-4">
-            <Button
-              disabled={pending || isFinal}
-              type="submit"
-              variant="filled"
-            >
-              {pending ? "Saving points…" : "Submit assessment points"}
-            </Button>
-          </div>
+          {!isFinal && (
+            <div className="border-t border-line-subtle pt-4">
+              <Button
+                disabled={pending || isFinal}
+                type="submit"
+                variant="filled"
+              >
+                {pending ? "Saving points…" : "Submit assessment points"}
+              </Button>
+            </div>
+          )}
           {isFinal && (
             <p className="text-sm text-muted">
               Assessment points have already been submitted or a decision has

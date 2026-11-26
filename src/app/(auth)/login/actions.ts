@@ -59,17 +59,22 @@ export async function beginLogin(email: string, password: string): Promise<Login
     refreshToken: signedIn.session.refresh_token,
     userId: profile.id,
   };
-  if (!profile.phone_number || !profile.phone_verified_at) {
+  if (!profile.phone_number?.trim()) {
     return { success: true, step: "ENROLL", ...tokens };
   }
+  const phoneNumber = normalizePhilippinePhone(profile.phone_number);
+  if (!phoneNumber) {
+    return { success: false, message: "The mobile number saved to this account is invalid. Contact support to update it." };
+  }
+  const purpose = profile.phone_verified_at ? "LOGIN" : "ENROLLMENT";
   const result = await issueApplicantOtp({
-    purpose: "LOGIN",
+    purpose,
     userId: profile.id,
     email: signedIn.user.email ?? email,
-    phoneNumber: profile.phone_number,
+    phoneNumber,
   });
   if (!result.success) return { success: false, message: result.message };
-  return { success: true, step: "OTP", challengeId: result.challengeId, phoneHint: maskedPhone(profile.phone_number), expiresAt: result.expiresAt, resendAt: result.resendAt, ...tokens };
+  return { success: true, step: "OTP", challengeId: result.challengeId, phoneHint: maskedPhone(phoneNumber), expiresAt: result.expiresAt, resendAt: result.resendAt, ...tokens };
 }
 
 export async function beginPhoneEnrollment(input: LoginSessionInput & { phoneInput: string }) {
@@ -78,9 +83,9 @@ export async function beginPhoneEnrollment(input: LoginSessionInput & { phoneInp
   if (!tokenSession || tokenSession.userId !== input.userId) return { success: false as const, message: "Sign in again to continue." };
   const admin = createAdminClient();
   const { data: authUser, error: userError } = await admin.auth.getUser(input.accessToken);
-  const { data: profile } = await admin.from("profiles").select("id, role, email, phone_verified_at")
+  const { data: profile } = await admin.from("profiles").select("id, role, email, phone_number, phone_verified_at")
     .eq("id", input.userId).maybeSingle();
-  if (userError || authUser.user?.id !== input.userId || profile?.role !== "APPLICANT" || profile.phone_verified_at) {
+  if (userError || authUser.user?.id !== input.userId || profile?.role !== "APPLICANT" || profile.phone_verified_at || profile.phone_number?.trim()) {
     return { success: false as const, message: "Sign in again to continue." };
   }
   const phoneNumber = normalizePhilippinePhone(input.phoneInput);
@@ -115,11 +120,15 @@ export async function verifyApplicantLoginOtp(input: LoginSessionInput & { chall
     .select("id, role, phone_number, phone_verified_at")
     .eq("id", input.userId).maybeSingle();
   if (profileError || profile?.role !== "APPLICANT") return { success: false as const, message: "Applicant account verification failed." };
-  if (verified.purpose === "LOGIN" && (!profile.phone_verified_at || profile.phone_number !== verified.phone_number)) {
+  const profilePhoneNumber = profile.phone_number ? normalizePhilippinePhone(profile.phone_number) : null;
+  if (verified.purpose === "LOGIN" && (!profile.phone_verified_at || profilePhoneNumber !== verified.phone_number)) {
     return { success: false as const, message: "Sign in again and request a new code." };
   }
   if (verified.purpose === "ENROLLMENT") {
-    if (profile.phone_verified_at) return { success: false as const, message: "The account phone number is already verified. Sign in again." };
+    const hasProfilePhone = Boolean(profile.phone_number?.trim());
+    if (profile.phone_verified_at || (hasProfilePhone && profilePhoneNumber !== verified.phone_number)) {
+      return { success: false as const, message: "Sign in again and request a new code." };
+    }
     const { error: updateError } = await admin.auth.admin.updateUserById(input.userId, {
       app_metadata: { ...authUser.user.app_metadata, role: "APPLICANT", phone_number: verified.phone_number, phone_verified: true },
     });

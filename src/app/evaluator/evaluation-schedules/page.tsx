@@ -6,6 +6,7 @@ import { TableEmptyRow } from "@/components/ui/TableEmptyState";
 import { WorkflowStatusTag } from "@/components/ui/WorkflowStatusTag";
 import { getEvaluatorContext } from "@/lib/auth/server";
 import { formatPositionLabel } from "@/utils/format-position-track";
+import { isAutomaticCriterion } from "@/utils/scoring";
 import {
   formatPhilippineDateTime,
   formatPhilippineDay,
@@ -79,7 +80,6 @@ export async function TeachingAssessmentPage({
             "application_id, applicant_number, application_status, position_title, position_track",
           )
           .in("application_id", scheduledIds)
-          .eq("position_track", "TEACHING")
       : Promise.resolve({ data: [], error: null }),
     scheduledRows?.length
       ? evaluator.supabase
@@ -97,7 +97,7 @@ export async function TeachingAssessmentPage({
   const scheduledJobById = new Map(
     (scheduledJobsResult.data ?? []).map((row) => [row.id, row.title]),
   );
-  const teachingSchedule = (scheduledRows ?? []).flatMap((row) => {
+  const assessmentSchedule = (scheduledRows ?? []).flatMap((row) => {
     const applicant = scheduledApplicantById.get(row.id);
     return applicant ? [{ ...row, applicant }] : [];
   });
@@ -178,7 +178,7 @@ export async function TeachingAssessmentPage({
     criterionIds.length
       ? evaluator.supabase
           .from("position_criteria")
-          .select("id, criterion_key, title")
+          .select("id, criterion_key, title, display_order")
           .in("id", criterionIds)
       : Promise.resolve({ data: [], error: null }),
     applicationIds.length
@@ -223,7 +223,7 @@ export async function TeachingAssessmentPage({
   return (
     <>
       <PageHeader
-        description="Review scheduled teaching assessments and score each configured criterion."
+        description="Review scheduled Teaching and Non-Teaching assessments and score each configured criterion."
         eyebrow="Evaluator workspace"
         title="Evaluation Schedules"
         backHref={showSchedule ? undefined : `/evaluator/evaluation-schedules?date=${date}`}
@@ -248,8 +248,8 @@ export async function TeachingAssessmentPage({
                 Scheduled applicants
               </h2>
               <p className="mt-1 text-sm text-muted">
-                {formatPhilippineDay(date)} · {teachingSchedule.length} teaching{" "}
-                {teachingSchedule.length === 1 ? "applicant" : "applicants"}
+                {formatPhilippineDay(date)} · {assessmentSchedule.length}{" "}
+                {assessmentSchedule.length === 1 ? "applicant" : "applicants"}
               </p>
             </div>
             {/* <nav
@@ -308,13 +308,13 @@ export async function TeachingAssessmentPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line-subtle">
-                  {teachingSchedule.length === 0 ? (
+                  {assessmentSchedule.length === 0 ? (
                     <TableEmptyRow
                       colSpan={5}
                       description="Choose another date to review upcoming assessments."
-                      title="No teaching applicants scheduled for this day"
+                      title="No applicants scheduled for this day"
                     />
-                  ) : teachingSchedule.map((row) => (
+                  ) : assessmentSchedule.map((row) => (
                     <tr
                       className={
                         row.id === applicationId
@@ -440,26 +440,10 @@ export async function TeachingAssessmentPage({
                 const criterion = criteriaById.get(weight.criterion_id);
                 return criterion ? [{ weight, criterion }] : [];
               })
-              .filter((item) =>
-                [
-                  "PERFORMANCE",
-                  "CLASSROOM_OBSERVATION",
-                  "TEACHER_REFLECTION",
-                ].includes(
-                  item.criterion.criterion_key,
-                ),
-              )
-              .sort((first, second) => {
-                const order = [
-                  "PERFORMANCE",
-                  "CLASSROOM_OBSERVATION",
-                  "TEACHER_REFLECTION",
-                ];
-                return (
-                  order.indexOf(first.criterion.criterion_key) -
-                  order.indexOf(second.criterion.criterion_key)
-                );
-              });
+              .filter(({ criterion }) => !isAutomaticCriterion(criterion.criterion_key))
+              .sort((first, second) =>
+                first.criterion.display_order - second.criterion.display_order,
+              );
 
             return (
               <article className="space-y-5" key={application.application_id}>
@@ -501,15 +485,9 @@ export async function TeachingAssessmentPage({
                 </header>
                 <div className="grid items-start gap-5]">
                   <div>
-                    {application.position_track !== "TEACHING" ? (
-                      <p className="rounded-sm border border-line-subtle bg-panel-muted p-4 text-sm text-muted">
-                        Teaching assessment points are only available for
-                        teaching positions.
-                      </p>
-                    ) : assessmentCriteria.length !== 3 ? (
+                    {assessmentCriteria.length === 0 ? (
                       <p className="rounded-sm border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
-                        Performance, demo teaching and teaching reflection form
-                        criteria must all be configured for this position.
+                        Assessment criteria must be configured for this position.
                       </p>
                     ) : (
                       <ApplicationCriterionScoresForm
@@ -520,13 +498,7 @@ export async function TeachingAssessmentPage({
                           ({ criterion, weight }) => ({
                             id: criterion.id,
                             criterionKey: criterion.criterion_key,
-                            title:
-                              criterion.criterion_key === "PERFORMANCE"
-                                ? "Performance points"
-                                : criterion.criterion_key ===
-                                    "CLASSROOM_OBSERVATION"
-                                  ? "Demo teaching points"
-                                  : "Teaching reflection form points",
+                            title: criterion.title,
                             maxPoints: weight.points,
                           }),
                         )}
@@ -538,7 +510,7 @@ export async function TeachingAssessmentPage({
                             ) ?? null,
                           ]),
                         )}
-                        scoresUnavailable={false}
+                        scoresUnavailable={lookupUnavailable}
                       />
                     )}
                   </div>
